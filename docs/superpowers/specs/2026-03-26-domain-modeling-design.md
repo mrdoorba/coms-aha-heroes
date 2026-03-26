@@ -48,29 +48,35 @@ src/
 │   ├── schemas/
 │   │   ├── index.ts              # barrel export
 │   │   ├── common.schema.ts      # pagination, UUID, signed URL input
-│   │   ├── user.schema.ts        # create/update user, query params
+│   │   ├── user.schema.ts        # create/update user, archive, query params
+│   │   ├── team.schema.ts        # create/update team
 │   │   ├── point.schema.ts       # submit bintang/penalti/poin-aha, approve/reject/revoke
 │   │   ├── dispute.schema.ts     # file challenge/appeal, resolve
 │   │   ├── reward.schema.ts      # create/update reward, request/reject redemption
-│   │   ├── social.schema.ts      # create/update comment
-│   │   └── settings.schema.ts    # update setting
+│   │   ├── social.schema.ts      # create/update comment, notification/comment query params
+│   │   ├── settings.schema.ts    # update setting, category management
+│   │   ├── leaderboard.schema.ts # leaderboard query params
+│   │   ├── dashboard.schema.ts   # dashboard query params
+│   │   └── admin.schema.ts       # audit log query params, branch update
 │   │
 │   ├── types/
 │   │   ├── index.ts              # barrel export
-│   │   ├── user.ts               # User, NewUser, UserWithTeam
-│   │   ├── point.ts              # AchievementPoint, PointCategory, PointSummary, AchievementPointDetail
-│   │   ├── dispute.ts            # Challenge, Appeal, with resolved-by joins
-│   │   ├── reward.ts             # Reward, Redemption, RedemptionWithReward
-│   │   ├── social.ts             # Comment, Notification, CommentWithAuthor
-│   │   └── audit.ts              # AuditLog, SheetSyncJob
+│   │   ├── common.ts             # PaginatedResponse<T>, ApiResponse<T>
+│   │   ├── user.ts               # User, NewUser, UserWithTeam, Branch, SystemSetting
+│   │   ├── point.ts              # AchievementPoint, NewAchievementPoint, PointCategory, PointCategoryTranslation, PointSummary, AchievementPointDetail, LeaderboardEntry, DashboardSummary
+│   │   ├── dispute.ts            # Challenge, NewChallenge, Appeal, NewAppeal, with resolved-by joins
+│   │   ├── reward.ts             # Reward, NewReward, Redemption, NewRedemption, RedemptionWithReward
+│   │   ├── social.ts             # Comment, NewComment, Notification, NewNotification, CommentWithAuthor
+│   │   └── audit.ts              # AuditLog, AuditLogWithActor, SheetSyncJob
 │   │
 │   └── constants/
 │       ├── index.ts              # barrel export
 │       ├── roles.ts              # USER_ROLES, ROLE_HIERARCHY
-│       ├── point-status.ts       # POINT_STATUSES, REDEMPTION_STATUSES, status transitions
+│       ├── point-status.ts       # POINT_STATUSES, REDEMPTION_STATUSES, SHEET_SYNC_STATUSES, status transitions
 │       ├── kitta.ts              # KITTA_CATEGORIES, VIOLATION_LEVELS
 │       ├── settings.ts           # SETTING_KEYS, defaults
-│       └── notifications.ts      # NOTIFICATION_TYPES
+│       ├── notifications.ts      # NOTIFICATION_TYPES, NOTIFICATION_ENTITY_TYPES
+│       └── audit.ts              # AUDIT_ACTIONS
 ```
 
 ### Bounded context grouping rationale
@@ -150,7 +156,7 @@ Relations:
 
 `achievementPoints` — id, branch_id FK, user_id FK, category_id FK, points (integer, CHECK > 0), reason (text), related_staff (text, nullable), screenshot_url (text, nullable), kitta_component (varchar 2, nullable, CHECK IN ('K', 'I', 'T1', 'T2', 'A') OR NULL), status (pointStatusEnum, default 'pending'), submitted_by FK, approved_by FK (nullable), approved_at (nullable), revoked_by FK (nullable), revoked_at (nullable), revoke_reason (text, nullable), metadata (jsonb, default '{}'), created_at, updated_at. Indexes: branch_id, user_id, status, category_id, submitted_by, created_at.
 
-`pointSummaries` — id, branch_id FK, user_id FK (UNIQUE), bintang_count (integer, default 0), penalti_points_sum (integer, default 0), direct_poin_aha (integer, default 0), redeemed_total (integer, default 0), updated_at. Indexes: (branch_id, bintang_count DESC), (branch_id, direct_poin_aha DESC).
+`pointSummaries` — id, branch_id FK (NOT NULL), user_id FK (NOT NULL, UNIQUE), bintang_count (integer, NOT NULL, default 0), penalti_points_sum (integer, NOT NULL, default 0), direct_poin_aha (integer, NOT NULL, default 0), redeemed_total (integer, NOT NULL, default 0), updated_at. Indexes: (branch_id, bintang_count DESC), (branch_id, direct_poin_aha DESC).
 
 ### 3.5 `disputes.ts`
 
@@ -184,7 +190,7 @@ Both tables share the same shape: id, branch_id FK, achievement_id FK, [challeng
 
 `comments` — id, branch_id FK, entity_type (varchar 30, CHECK IN ('achievement', 'challenge', 'appeal')), entity_id (uuid — polymorphic, no DB FK), author_id FK, body (text), created_at, updated_at. Index: (entity_type, entity_id), branch_id.
 
-`notifications` — id, branch_id FK, user_id FK, type (varchar 50), title (text), body (text, nullable), entity_type (varchar 30, nullable), entity_id (uuid, nullable), is_read (boolean, default false), read_at (timestamp, nullable), created_at. Indexes: (user_id, is_read), (read_at WHERE is_read = true), branch_id.
+`notifications` — id, branch_id FK, user_id FK, type (varchar 50), title (text), body (text, nullable), entity_type (varchar 30, nullable — values: 'achievement', 'challenge', 'appeal', 'redemption'), entity_id (uuid, nullable), is_read (boolean, default false), read_at (timestamp, nullable), created_at. Indexes: (user_id, is_read), (read_at WHERE is_read = true), branch_id. Note: no CHECK constraint on entity_type (unlike comments) because notifications can reference redemptions.
 
 ### 3.8 `audit.ts`
 
@@ -230,13 +236,21 @@ updateUserInput     // createUserInput.partial() — all fields optional
 usersQueryParams    // extends paginationParams + branch_id?, team_id?, department?, is_active?, role?
 ```
 
-### 4.3 `point.schema.ts`
+### 4.3 `team.schema.ts`
+
+```typescript
+createTeamInput     // name (z.string().min(1).max(100)), branch_id (uuid), leader_id? (uuid)
+updateTeamInput     // createTeamInput.partial()
+```
+
+### 4.4 `point.schema.ts`
 
 Three separate submit schemas — not a discriminated union. Each enforces its own category's rules:
 
 ```typescript
 submitBintangInput  // user_id (uuid), reason (z.string().min(1)),
                     // related_staff? (string), screenshot_url (z.string().url() — required)
+                    // Note: points is NOT included — server hardcodes 1 for Bintang
 
 submitPenaltiInput  // user_id, reason, kitta_component (z.enum(['K','I','T1','T2','A'])),
                     // points (z.number().int().min(1).max(10)),
@@ -247,11 +261,12 @@ submitPoinAhaInput  // user_id, reason, points (z.number().int().min(1).max(10))
 
 pointsQueryParams   // extends paginationParams + user_id?, category?, status?
 
-approveRejectInput  // reason? (string, optional — used for rejection reason)
+approveInput        // (no body required)
+rejectInput         // reason (z.string().min(1) — required for rejection)
 revokeInput         // reason (z.string().min(1) — required)
 ```
 
-### 4.4 `dispute.schema.ts`
+### 4.5 `dispute.schema.ts`
 
 ```typescript
 fileChallengeInput  // reason (z.string().min(1))
@@ -259,29 +274,54 @@ fileAppealInput     // reason (z.string().min(1))
 resolveDisputeInput // status (z.enum(['upheld', 'overturned'])), resolution_note (z.string().min(1))
 ```
 
-### 4.5 `reward.schema.ts`
+### 4.6 `reward.schema.ts`
 
 ```typescript
-createRewardInput   // name (varchar 200), description?, point_cost (z.number().int().min(1)),
+createRewardInput   // name (z.string().min(1).max(200)), description?, point_cost (z.number().int().min(1)),
                     // image_url?, branch_id? (uuid, nullable)
 updateRewardInput   // createRewardInput.partial()
 requestRedemptionInput // reward_id (uuid), notes?
 rejectRedemptionInput  // reason (z.string().min(1))
+redemptionsQueryParams // extends paginationParams + user_id?, status?
 ```
 
-### 4.6 `social.schema.ts`
+### 4.7 `social.schema.ts`
 
 ```typescript
 createCommentInput  // entity_type (z.enum(['achievement','challenge','appeal'])),
                     // entity_id (uuid), body (z.string().min(1))
 updateCommentInput  // body (z.string().min(1))
+commentsQueryParams // entity_type (required), entity_id (uuid, required) — both required to scope query
+notificationsQueryParams // extends paginationParams + is_read? (boolean)
 ```
 
-### 4.7 `settings.schema.ts`
+### 4.8 `settings.schema.ts`
 
 ```typescript
 updateSettingInput  // value (z.union([z.string(), z.number(), z.boolean()]))
                     // Settings store JSONB but values are simple scalars (impact numbers, flags)
+createCategoryInput // code, default_name, description?, icon?, requires_screenshot (boolean)
+updateCategoryInput // createCategoryInput.partial().omit({ code: true })
+```
+
+### 4.9 `leaderboard.schema.ts`
+
+```typescript
+leaderboardQueryParams // extends paginationParams + branch_id?, team_id?,
+                       // type (z.enum(['bintang', 'poin_aha']) — required)
+```
+
+### 4.10 `dashboard.schema.ts`
+
+```typescript
+dashboardQueryParams   // branch_id? (uuid)
+```
+
+### 4.11 `admin.schema.ts`
+
+```typescript
+auditLogQueryParams    // extends paginationParams + branch_id?, actor_id?, action?, from? (date), to? (date), entity_type?
+updateBranchInput      // name?, timezone?, locale? — all optional
 ```
 
 ---
@@ -294,9 +334,33 @@ Each types file exports:
 1. **Inferred types** from Drizzle `$inferSelect` / `$inferInsert`
 2. **Derived types** for API response shapes that join multiple tables
 
-### 5.1 `user.ts`
+### 5.1 `common.ts`
 
 ```typescript
+// API response envelope matching architecture Section 8
+type ApiResponse<T> = {
+  success: boolean
+  data: T
+  error: string | null
+  meta?: PaginationMeta
+}
+
+type PaginationMeta = {
+  total: number
+  page: number
+  limit: number
+}
+
+type PaginatedResponse<T> = ApiResponse<T[]> & { meta: PaginationMeta }
+```
+
+### 5.2 `user.ts`
+
+```typescript
+type Branch = typeof branches.$inferSelect
+type NewBranch = typeof branches.$inferInsert
+type SystemSetting = typeof systemSettings.$inferSelect
+
 type User = typeof users.$inferSelect
 type NewUser = typeof users.$inferInsert
 type Team = typeof teams.$inferSelect
@@ -307,12 +371,13 @@ type TeamWithLeader = Team & { leader: User | null }
 type TeamWithMembers = Team & { leader: User | null; members: User[] }
 ```
 
-### 5.2 `point.ts`
+### 5.3 `point.ts`
 
 ```typescript
 type AchievementPoint = typeof achievementPoints.$inferSelect
 type NewAchievementPoint = typeof achievementPoints.$inferInsert
 type PointCategory = typeof pointCategories.$inferSelect
+type PointCategoryTranslation = typeof pointCategoryTranslations.$inferSelect
 type PointSummary = typeof pointSummaries.$inferSelect
 
 // API response shape for point detail page
@@ -333,15 +398,25 @@ type LeaderboardEntry = {
   score: number  // bintang_count or computed poin_aha_balance
 }
 
+// Dashboard summary
+type DashboardSummary = {
+  bintangCount: number
+  poinAhaBalance: number
+  penaltiCount: number      // own view only
+  pendingActions: number
+}
+
 type PointCategoryCode = 'BINTANG' | 'PENALTI' | 'POIN_AHA'
 type PointStatus = 'pending' | 'active' | 'challenged' | 'frozen' | 'revoked' | 'rejected'
 ```
 
-### 5.3 `dispute.ts`
+### 5.4 `dispute.ts`
 
 ```typescript
 type Challenge = typeof challenges.$inferSelect
+type NewChallenge = typeof challenges.$inferInsert
 type Appeal = typeof appeals.$inferSelect
+type NewAppeal = typeof appeals.$inferInsert
 type DisputeStatus = 'open' | 'upheld' | 'overturned'
 
 type ChallengeDetail = Challenge & {
@@ -355,11 +430,13 @@ type AppealDetail = Appeal & {
 }
 ```
 
-### 5.4 `reward.ts`
+### 5.5 `reward.ts`
 
 ```typescript
 type Reward = typeof rewards.$inferSelect
+type NewReward = typeof rewards.$inferInsert
 type Redemption = typeof redemptions.$inferSelect
+type NewRedemption = typeof redemptions.$inferInsert
 
 type RedemptionWithReward = Redemption & {
   reward: Pick<Reward, 'id' | 'name' | 'image_url' | 'point_cost'>
@@ -367,23 +444,30 @@ type RedemptionWithReward = Redemption & {
 }
 ```
 
-### 5.5 `social.ts`
+### 5.6 `social.ts`
 
 ```typescript
 type Comment = typeof comments.$inferSelect
+type NewComment = typeof comments.$inferInsert
 type Notification = typeof notifications.$inferSelect
+type NewNotification = typeof notifications.$inferInsert
 
 type CommentWithAuthor = Comment & {
   author: Pick<User, 'id' | 'name' | 'avatar_url' | 'role'>
 }
 
-type EntityType = 'achievement' | 'challenge' | 'appeal'
+// Comments can reference achievements, challenges, appeals
+type CommentEntityType = 'achievement' | 'challenge' | 'appeal'
+
+// Notifications can additionally reference redemptions
+type NotificationEntityType = 'achievement' | 'challenge' | 'appeal' | 'redemption'
+
 type NotificationType = 'submission_received' | 'challenge_filed' | 'appeal_filed'
   | 'challenge_resolved' | 'appeal_resolved' | 'redemption_approved'
   | 'redemption_rejected' | 'self_submit_approved' | 'self_submit_rejected'
 ```
 
-### 5.6 `audit.ts`
+### 5.7 `audit.ts`
 
 ```typescript
 type AuditLog = typeof auditLogs.$inferSelect
@@ -418,6 +502,7 @@ function hasRole(actorRole: UserRole, requiredRole: UserRole): boolean
 ```typescript
 const POINT_STATUSES = ['pending', 'active', 'challenged', 'frozen', 'revoked', 'rejected'] as const
 const REDEMPTION_STATUSES = ['pending', 'approved', 'rejected'] as const
+const SHEET_SYNC_STATUSES = ['pending', 'running', 'completed', 'failed'] as const
 
 // Valid state transitions — used by service layer to enforce the state machine
 const POINT_STATUS_TRANSITIONS: Record<PointStatus, PointStatus[]> = {
@@ -480,6 +565,40 @@ const NOTIFICATION_TYPES = [
 ] as const
 
 type NotificationType = typeof NOTIFICATION_TYPES[number]
+
+// Notification entity types include 'redemption' (comments do not)
+const NOTIFICATION_ENTITY_TYPES = ['achievement', 'challenge', 'appeal', 'redemption'] as const
+type NotificationEntityType = typeof NOTIFICATION_ENTITY_TYPES[number]
+```
+
+### 6.6 `audit.ts`
+
+```typescript
+const AUDIT_ACTIONS = [
+  'POINT_SUBMITTED',
+  'POINT_APPROVED',
+  'POINT_REJECTED',
+  'POINT_REVOKED',
+  'CHALLENGE_FILED',
+  'CHALLENGE_RESOLVED',
+  'APPEAL_FILED',
+  'APPEAL_RESOLVED',
+  'REDEMPTION_REQUESTED',
+  'REDEMPTION_APPROVED',
+  'REDEMPTION_REJECTED',
+  'USER_CREATED',
+  'USER_UPDATED',
+  'USER_ARCHIVED',
+  'TEAM_CREATED',
+  'TEAM_UPDATED',
+  'TEAM_DELETED',
+  'REWARD_CREATED',
+  'REWARD_UPDATED',
+  'REWARD_DEACTIVATED',
+  'SETTING_UPDATED',
+] as const
+
+type AuditAction = typeof AUDIT_ACTIONS[number]
 ```
 
 ---
@@ -577,11 +696,15 @@ coms_aha_heroes/
 
 ### 7.3 Scattered reference fixes
 
+- Section 3 GCP table: "Next.js + Hono (single service)" → "TanStack Start + Hono (single service)" in Cloud Run row
 - Section 4 diagram: "Next.js 16 + Hono" → "TanStack Start v1 + Hono"
-- Section 4 diagram: "SSR + RSC + API routes" → "SSR + API routes"
+- Section 4 diagram: "SSR + RSC + API routes" → "SSR + API routes" (TanStack Start does not use RSC)
 - Section 7 middleware: clarify `beforeLoad` route guard is TanStack Router's hook
 - Section 9 i18n: "next-intl" → "Paraglide JS" throughout, update Layer 1 description
-- Section 12 CI/CD: "Next.js build" → "TanStack Start build" if referenced
+- Section 9 "Adding New Languages" step 3: "Add locale to next-intl config" → "Add locale to Paraglide config"
+- Section 12 CI/CD: "next build" → TanStack Start build command (`vinxi build` or equivalent)
+- Root files: remove `next.config.ts` and `tailwind.config.ts` (Tailwind v4 uses `@tailwindcss/vite`), add `app.config.ts`
+- `public/manifest.json` → `public/manifest.webmanifest`
 - Decision log entry 1: already updated (confirmed)
 - Decision log entry 8: already updated (confirmed)
 
