@@ -3,6 +3,7 @@ import { defineConfig } from 'vite'
 import viteReact from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { nitro } from 'nitro/vite'
+import { paraglideVitePlugin } from '@inlang/paraglide-js'
 
 export default defineConfig({
   server: {
@@ -16,5 +17,10 @@ export default defineConfig({
     tanstackStart(),
     viteReact(),
     nitro(),
+    paraglideVitePlugin({
+      project: './project.inlang',
+      outdir: './src/paraglide',
+      strategy: ['cookie', 'preferredLanguage', 'baseLocale'],
+    }),
   ],
 })
