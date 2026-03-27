@@ -1,5 +1,6 @@
 import { seedBase } from './base'
 import { seedDev } from './dev'
+import { seedAuth } from './auth'
 
 async function main() {
   console.log('Starting seed...\n')
@@ -9,6 +10,7 @@ async function main() {
   const isDev = process.env.NODE_ENV !== 'production'
   if (isDev) {
     await seedDev(base)
+    await seedAuth()
   }
 
   console.log('\nSeed complete!')
