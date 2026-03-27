@@ -1,28 +1,60 @@
-import { eq, count } from 'drizzle-orm'
-import { teams } from '~/db/schema'
+import { eq, count, ilike, and } from 'drizzle-orm'
+import { teams, users } from '~/db/schema'
 import type { DbClient } from './base'
 import { getDb } from './base'
 
 export type TeamRow = typeof teams.$inferSelect
 
 export async function listTeams(
-  opts: { page: number; limit: number },
+  opts: { page: number; limit: number; search?: string },
   tx?: DbClient,
 ) {
   const db = getDb(tx)
   const offset = (opts.page - 1) * opts.limit
+  const conditions = []
+
+  if (opts.search) conditions.push(ilike(teams.name, `%${opts.search}%`))
+
+  const where = conditions.length > 0 ? and(...conditions) : undefined
 
   const [rows, [{ total }]] = await Promise.all([
     db
       .select()
       .from(teams)
+      .where(where)
       .orderBy(teams.name)
       .limit(opts.limit)
       .offset(offset),
-    db.select({ total: count() }).from(teams),
+    db.select({ total: count() }).from(teams).where(where),
   ])
 
   return { rows, total }
+}
+
+export async function getTeamMembers(teamId: string, tx?: DbClient) {
+  const db = getDb(tx)
+  return db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      role: users.role,
+      department: users.department,
+      position: users.position,
+      isActive: users.isActive,
+    })
+    .from(users)
+    .where(and(eq(users.teamId, teamId), eq(users.isActive, true)))
+    .orderBy(users.name)
+}
+
+export async function getTeamMemberCount(teamId: string, tx?: DbClient) {
+  const db = getDb(tx)
+  const [{ total }] = await db
+    .select({ total: count() })
+    .from(users)
+    .where(and(eq(users.teamId, teamId), eq(users.isActive, true)))
+  return total
 }
 
 export async function getTeamById(id: string, tx?: DbClient) {
