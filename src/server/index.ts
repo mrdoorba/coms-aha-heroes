@@ -7,6 +7,7 @@ import { authMiddleware } from './middleware/auth'
 import { rlsMiddleware } from './middleware/rls'
 import { usersRoute } from './routes/users'
 import { teamsRoute } from './routes/teams'
+import { categoriesRoute } from './routes/categories'
 
 const app = new Hono().basePath('/api')
 
@@ -30,7 +31,7 @@ app.use('/v1/*', rlsMiddleware)
 // v1 routes
 app.route('/v1/users', usersRoute)
 app.route('/v1/teams', teamsRoute)
-// app.route('/v1/categories', categoriesRoute)
+app.route('/v1/categories', categoriesRoute)
 // app.route('/v1', pointsRoute)
 
 export type AppType = typeof app
