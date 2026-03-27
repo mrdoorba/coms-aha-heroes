@@ -5,6 +5,7 @@ import { health } from './routes/health'
 import { authRoute } from './routes/auth'
 import { authMiddleware } from './middleware/auth'
 import { rlsMiddleware } from './middleware/rls'
+import { usersRoute } from './routes/users'
 
 const app = new Hono().basePath('/api')
 
@@ -25,8 +26,8 @@ app.route('/', authRoute)
 app.use('/v1/*', authMiddleware)
 app.use('/v1/*', rlsMiddleware)
 
-// Placeholder: v1 routes will be mounted here
-// app.route('/v1', usersRoute)
+// v1 routes
+app.route('/v1/users', usersRoute)
 // app.route('/v1', teamsRoute)
 // app.route('/v1', pointsRoute)
 
