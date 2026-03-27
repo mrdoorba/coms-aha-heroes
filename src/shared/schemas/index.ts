@@ -8,7 +8,14 @@ export {
   type UpdateUserInput,
   type ListUsersInput,
 } from './users'
-export { createTeamSchema, updateTeamSchema, type CreateTeamInput, type UpdateTeamInput } from './teams'
+export {
+  createTeamSchema,
+  updateTeamSchema,
+  listTeamsSchema,
+  type CreateTeamInput,
+  type UpdateTeamInput,
+  type ListTeamsInput,
+} from './teams'
 export {
   submitPointSchema,
   listPointsSchema,
