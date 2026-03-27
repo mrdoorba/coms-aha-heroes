@@ -140,6 +140,59 @@ export async function rejectPoint(
   return updated
 }
 
+export async function revokePoint(
+  id: string,
+  input: ApproveRejectInput,
+  ctx: ServiceContext,
+) {
+  const result = await pointsRepo.getPointWithDetails(id, ctx.tx)
+  if (!result) throw new PointNotFoundError(id)
+
+  const { point, category, user: targetUser } = result
+
+  if (point.status !== 'active') throw new PointNotActiveError(id)
+
+  if (ctx.actor.role !== 'hr' && ctx.actor.role !== 'admin') {
+    throw new UnauthorizedApprovalError('Only HR or Admin can revoke points')
+  }
+
+  const now = new Date()
+  const updated = await pointsRepo.updatePointStatus(
+    id,
+    { status: 'revoked', approvedBy: ctx.actor.id, approvedAt: now },
+    ctx.tx,
+  )
+
+  await writeAuditLog(
+    {
+      actor: ctx.actor,
+      action: 'POINT_REVOKED',
+      entityType: 'achievement_points',
+      entityId: id,
+      newValue: { status: 'revoked', reason: input.reason ?? null },
+      ipAddress: ctx.ipAddress,
+    },
+    ctx.tx,
+  )
+
+  const categoryLabel = category.defaultName
+  const revokeSuffix = input.reason ? `: ${input.reason}` : ''
+
+  await createNotification(
+    {
+      branchId: ctx.actor.branchId,
+      userId: targetUser.id,
+      type: 'point_rejected',
+      title: `Your ${categoryLabel} point has been revoked${revokeSuffix}`,
+      entityType: 'achievement_points',
+      entityId: id,
+    },
+    ctx.tx,
+  )
+
+  return updated
+}
+
 function assertCanApproveReject(
   actor: AuthUser,
   targetUser: { id: string; teamId: string | null },
@@ -176,5 +229,12 @@ export class UnauthorizedApprovalError extends Error {
   constructor(message: string) {
     super(message)
     this.name = 'UnauthorizedApprovalError'
+  }
+}
+
+export class PointNotActiveError extends Error {
+  constructor(id: string) {
+    super(`Point is not active: ${id}`)
+    this.name = 'PointNotActiveError'
   }
 }
