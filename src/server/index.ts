@@ -16,6 +16,11 @@ import { dashboardRoute } from './routes/dashboard'
 import { challengesRoute } from './routes/challenges'
 import { appealsRoute } from './routes/appeals'
 import { commentsRoute } from './routes/comments'
+import { rewardsRoute } from './routes/rewards'
+import { redemptionsRoute } from './routes/redemptions'
+import { settingsRoute } from './routes/settings'
+import { auditLogsRoute } from './routes/audit-logs'
+import { reportsRoute } from './routes/reports'
 import { errorHandler } from './middleware/error-handler'
 
 const app = new Hono().basePath('/api')
@@ -50,6 +55,11 @@ app.route('/v1/dashboard', dashboardRoute)
 app.route('/v1', challengesRoute)
 app.route('/v1', appealsRoute)
 app.route('/v1/comments', commentsRoute)
+app.route('/v1/rewards', rewardsRoute)
+app.route('/v1/redemptions', redemptionsRoute)
+app.route('/v1/settings', settingsRoute)
+app.route('/v1/audit-logs', auditLogsRoute)
+app.route('/v1/reports', reportsRoute)
 
 export type AppType = typeof app
 

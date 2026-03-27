@@ -179,3 +179,37 @@ export const pointsRoute = new Hono<Env>()
       throw err
     }
   })
+
+  // PATCH /points/:id/revoke — revoke an active point (HR/Admin only)
+  .patch('/:id/revoke', zValidator('json', approveRejectSchema), async (c) => {
+    const id = c.req.param('id')
+    const input = c.req.valid('json')
+    const actor = c.get('authUser')
+    const tx = c.get('tx')
+    const ipAddress = c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip')
+
+    try {
+      const updated = await approvalService.revokePoint(id, input, { actor, tx, ipAddress })
+      return c.json<ApiResponse<typeof updated>>({ success: true, data: updated, error: null })
+    } catch (err) {
+      if (err instanceof approvalService.PointNotFoundError) {
+        return c.json<ApiError>(
+          { success: false, data: null, error: { code: 'NOT_FOUND', message: err.message } },
+          404,
+        )
+      }
+      if (err instanceof approvalService.PointNotActiveError) {
+        return c.json<ApiError>(
+          { success: false, data: null, error: { code: 'NOT_ACTIVE', message: err.message } },
+          409,
+        )
+      }
+      if (err instanceof approvalService.UnauthorizedApprovalError) {
+        return c.json<ApiError>(
+          { success: false, data: null, error: { code: 'FORBIDDEN', message: err.message } },
+          403,
+        )
+      }
+      throw err
+    }
+  })
