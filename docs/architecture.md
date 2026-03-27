@@ -231,6 +231,7 @@ Balance = (5 + 3) + (3 × 10) - (2 × 5) - 20 = 8 + 30 - 10 - 20 = 8
 | **TanStack Table** | v8 | Headless, type-safe data tables with sorting, filtering, pagination | AG Grid (paid license), MUI DataGrid (MUI lock-in) |
 | **TanStack Query** | v5 | Server state management, caching, background refetching | SWR (less features), raw fetch |
 | **Zustand** | latest | Minimal client-side global state (theme, sidebar) | Redux (boilerplate), Jotai (overkill for this scope) |
+| **Recharts** | v2 | Composable charting library (line, bar, pie, donut) built on D3 + React. Used for Reports Dashboard | Chart.js (imperative API), Nivo (heavier), Victory (less maintained) |
 
 ### Backend
 
@@ -258,7 +259,7 @@ Balance = (5 + 3) + (3 × 10) - (2 × 5) - 20 = 8 + 30 - 10 - 20 = 8
 | **OpenTofu** | Infrastructure as Code for all GCP resources (open source Terraform fork, state encryption via GCP KMS) |
 | **GitHub Actions** | CI/CD pipeline |
 | **Docker** | Containerization for Cloud Run deployments |
-| **pnpm** | Package management |
+| **bun** | Package management (bun as package manager, Node as runtime) |
 
 ### PWA & Mobile
 
@@ -278,6 +279,7 @@ Balance = (5 + 3) + (3 × 10) - (2 × 5) - 20 = 8 + 30 - 10 - 20 = 8
 - In-app only (no email for notifications)
 - Notification bell + unread count in header
 - Backed by `notifications` database table
+- **Delivery mechanism:** Polling via TanStack Query (`refetchInterval: 30000` — every 30s). SSE/WebSocket not justified for ~100 users. The unread count query (`SELECT COUNT(*) FROM notifications WHERE user_id = $1 AND is_read = false`) is indexed and fast.
 
 ### Transactional Email (Auth Only)
 
@@ -303,7 +305,7 @@ All GCP resources use the prefix `coms-aha-heroes-`.
 
 | Service | Resource Name | Purpose | Spec |
 |---------|--------------|---------|------|
-| **Cloud Run** | `coms-aha-heroes-app` | Next.js + Hono (single service) | 1 vCPU, 512MB, min 0 instances |
+| **Cloud Run** | `coms-aha-heroes-app` | TanStack Start + Hono (single service) | 1 vCPU, 512MB, min 0 instances |
 | **Cloud SQL** | `coms-aha-heroes-db` | PostgreSQL 18 (2 databases: `coms_aha_heroes_production` + `coms_aha_heroes_staging`) | db-f1-micro, 10GB SSD |
 | **Cloud Storage** | `coms-aha-heroes-uploads` | File uploads (achievement evidence) | Standard storage |
 | **Cloud Storage** | `coms-aha-heroes-exports` | Cached export files | Standard storage |
@@ -375,8 +377,8 @@ Old revisions, images, and files accumulate over time. All cleanup is automated 
 │  │  Cloud LB     │──────>│     (asia-southeast1)                    │   │
 │  │  (HTTPS)      │       │                                          │   │
 │  └──────────────┘       │  ┌──────────────────────────────────┐    │   │
-│                          │  │  Next.js 16 + Hono               │    │   │
-│                          │  │  (SSR + RSC + API routes)        │    │   │
+│                          │  │  TanStack Start v1 + Hono        │    │   │
+│                          │  │  (SSR + API routes)              │    │   │
 │                          │  │  Single container, Port 3000     │    │   │
 │                          │  └──────────────┬───────────────────┘    │   │
 │                          └─────────────────┼───────────────────────┘   │
@@ -413,51 +415,75 @@ Old revisions, images, and files accumulate over time. All cleanup is automated 
 
 ---
 
-## 5. Monorepo Structure
+## 5. Project Structure
 
 ```
 coms_aha_heroes/
+├── app/                            # TanStack Start application
+│   ├── routes/                     # File-based routing (TanStack Router)
+│   │   ├── __root.tsx              # Root layout (html, body, providers)
+│   │   ├── _authed.tsx             # Auth layout (middleware: session check)
+│   │   ├── _authed/                # Authenticated routes
+│   │   │   ├── dashboard.tsx
+│   │   │   ├── points/
+│   │   │   │   ├── index.tsx       # Points list
+│   │   │   │   ├── $id.tsx         # Point detail
+│   │   │   │   └── new/
+│   │   │   │       ├── bintang.tsx
+│   │   │   │       ├── penalti.tsx
+│   │   │   │       └── poin-aha.tsx
+│   │   │   ├── leaderboard.tsx
+│   │   │   ├── rewards/
+│   │   │   │   ├── index.tsx
+│   │   │   │   └── $id.redeem.tsx
+│   │   │   ├── redemptions.tsx
+│   │   │   ├── notifications.tsx
+│   │   │   ├── profile.tsx
+│   │   │   ├── users/              # HR/Admin only
+│   │   │   │   └── index.tsx
+│   │   │   ├── teams/              # HR/Admin only
+│   │   │   │   └── index.tsx
+│   │   │   ├── reports.tsx         # HR/Admin only
+│   │   │   ├── settings.tsx        # Admin only
+│   │   │   └── admin/
+│   │   │       └── audit-log.tsx   # Admin/HR only
+│   │   ├── login.tsx
+│   │   ├── change-password.tsx
+│   │   └── forgot-password.tsx
+│   ├── api.ts                      # Hono app mounted via API wildcard route
+│   ├── client.tsx                  # Client entry
+│   ├── router.tsx                  # Router configuration
+│   └── ssr.tsx                     # SSR entry
+│
 ├── src/
-│   ├── app/                        # Next.js 16 App Router
-│   │   ├── [locale]/               # i18n routing (id, en, th)
-│   │   │   ├── (auth)/             # login, register
-│   │   │   ├── (dashboard)/        # main app layout (bottom nav on mobile)
-│   │   │   │   ├── dashboard/
-│   │   │   │   ├── points/          # submissions, challenges, appeals
-│   │   │   │   ├── leaderboard/     # Bintang + Poin AHA rankings
-│   │   │   │   ├── rewards/         # catalog + redemption requests
-│   │   │   │   ├── notifications/
-│   │   │   │   ├── users/
-│   │   │   │   ├── teams/
-│   │   │   │   ├── reports/
-│   │   │   │   ├── settings/        # admin: system settings, point impacts
-│   │   │   │   └── admin/
-│   │   │   └── layout.tsx
-│   │   ├── api/                    # Next.js API routes → Hono
-│   │   │   └── [...route]/
-│   │   │       └── route.ts        # Hono catch-all handler
-│   │   └── layout.tsx
 │   ├── components/                 # UI components (shadcn/ui)
-│   ├── lib/                        # utilities, api client
+│   │   ├── ui/                     # shadcn/ui primitives
+│   │   └── ...                     # App-specific components
+│   ├── lib/                        # Utilities, api client (Hono RPC)
 │   ├── server/                     # Backend (Hono)
-│   │   ├── routes/                 # route handlers
-│   │   ├── services/               # business logic
-│   │   ├── repositories/           # data access (Drizzle)
+│   │   ├── routes/                 # Hono route handlers
+│   │   ├── services/               # Business logic
+│   │   ├── repositories/           # Data access (Drizzle)
 │   │   ├── middleware/             # auth, branch guard, team, RLS
-│   │   ├── jobs/                   # sheets sync, scheduled tasks
+│   │   ├── jobs/                   # Sheets sync, scheduled tasks
 │   │   └── index.ts                # Hono app entry
 │   ├── db/                         # Drizzle schema + migrations
-│   │   ├── schema/                 # table definitions
+│   │   ├── schema/                 # Table definitions
 │   │   ├── migrations/
 │   │   └── seed/
-│   ├── shared/                     # shared types, Zod schemas, constants
-│   │   ├── schemas/                # Zod validation schemas
-│   │   ├── types/                  # TypeScript interfaces
-│   │   └── constants/              # enums, config values
-│   └── messages/                   # i18n JSON files
+│   └── shared/                     # Shared types, Zod schemas, constants
+│       ├── schemas/                # Zod validation schemas
+│       ├── types/                  # TypeScript interfaces
+│       └── constants/              # Enums, config values
+│
+├── src/paraglide/                  # Paraglide JS (generated + messages)
+│   └── messages/
 │       ├── en.json
 │       ├── id.json
 │       └── th.json
+│
+├── project.inlang/                 # Paraglide / inlang config
+│   └── settings.json
 │
 ├── infra/                          # OpenTofu
 │   ├── modules/
@@ -491,17 +517,16 @@ coms_aha_heroes/
 │   └── architecture.md             # this file
 │
 ├── public/
-│   ├── manifest.json              # PWA manifest
-│   ├── sw.js                      # Service worker (offline indicator)
-│   └── icons/                     # PWA icons (192x192, 512x512)
+│   ├── manifest.webmanifest        # PWA manifest
+│   ├── sw.js                       # Service worker (offline indicator)
+│   └── icons/                      # PWA icons (192x192, 512x512)
 │
 ├── Dockerfile
-├── next.config.ts
+├── vite.config.ts                  # Vite + TanStack Start plugin config
 ├── drizzle.config.ts
-├── tailwind.config.ts
 ├── tsconfig.json
 ├── package.json
-└── pnpm-lock.yaml
+└── bun.lock
 ```
 
 ---
@@ -683,7 +708,7 @@ CREATE INDEX idx_points_submitted_by ON achievement_points(submitted_by);
 CREATE INDEX idx_points_created_at ON achievement_points(created_at);
 
 -- ============================================================
--- CHALLENGES (only Penalti submissions can be challenged — by any Leader/Employee)
+-- CHALLENGES (only Penalti submissions can be challenged — by Leaders only)
 -- ============================================================
 CREATE TABLE challenges (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -830,7 +855,11 @@ CREATE TABLE point_summaries (
 );
 
 CREATE INDEX idx_point_summaries_leaderboard_bintang ON point_summaries(branch_id, bintang_count DESC);
-CREATE INDEX idx_point_summaries_leaderboard_poin ON point_summaries(branch_id, direct_poin_aha DESC);
+-- Note: Poin AHA leaderboard sorts by computed balance at query time:
+--   direct_poin_aha + (bintang_count × bintang_impact) - (penalti_points_sum × penalti_impact) - redeemed_total
+-- A functional index is not practical here because impact values come from system_settings.
+-- For ~100 users per branch, sorting in application code after fetching summaries is sufficient.
+CREATE INDEX idx_point_summaries_branch_user ON point_summaries(branch_id, user_id);
 
 -- ============================================================
 -- AUDIT LOG (immutable)
@@ -939,6 +968,9 @@ CREATE TRIGGER trg_updated_at BEFORE UPDATE ON appeals FOR EACH ROW EXECUTE FUNC
 CREATE TRIGGER trg_updated_at BEFORE UPDATE ON comments FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
 CREATE TRIGGER trg_updated_at BEFORE UPDATE ON rewards FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
 CREATE TRIGGER trg_updated_at BEFORE UPDATE ON redemptions FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+CREATE TRIGGER trg_updated_at BEFORE UPDATE ON branches FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+CREATE TRIGGER trg_updated_at BEFORE UPDATE ON teams FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+CREATE TRIGGER trg_updated_at BEFORE UPDATE ON system_settings FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
 
 -- ============================================================
 -- ROW-LEVEL SECURITY
@@ -1053,10 +1085,12 @@ CREATE POLICY challenges_branch_isolation ON challenges
 CREATE POLICY challenges_insert ON challenges
     FOR INSERT
     WITH CHECK (
-        EXISTS (
+        current_setting('app.current_role', true) IN ('admin', 'leader')
+        AND EXISTS (
             SELECT 1 FROM achievement_points ap
+            JOIN point_categories pc ON pc.id = ap.category_id
             WHERE ap.id = achievement_id
-            AND ap.category = 'PENALTI'
+            AND pc.code = 'PENALTI'
         )
     );  -- only Penalti submissions can be challenged, by Leaders only
 
@@ -1180,7 +1214,9 @@ BEGIN
         u.branch_id,
         u.id,
         COALESCE(COUNT(*) FILTER (WHERE pc.code = 'BINTANG' AND ap.status = 'active'), 0),
-        COALESCE(SUM(ap.points) FILTER (WHERE pc.code = 'PENALTI' AND ap.status = 'active'), 0),
+        COALESCE(SUM(ap.points) FILTER (WHERE pc.code = 'PENALTI' AND ap.status IN ('active', 'challenged')), 0),
+        -- Frozen Penalti (under appeal) are excluded from the sum per design.
+        -- 'challenged' Penalti remain counted (challenge doesn't freeze points; only appeal does).
         COALESCE(SUM(ap.points) FILTER (WHERE pc.code = 'POIN_AHA' AND ap.status = 'active'), 0)
     FROM users u
     LEFT JOIN achievement_points ap ON ap.user_id = u.id
@@ -1272,6 +1308,15 @@ Client (browser)
 - Signed read URLs expire after 15 minutes — even if shared, they stop working
 - No virus scanning needed (images only, rendered in `<img>` tags, not executed)
 
+### Orphaned Upload Cleanup
+
+Users may upload a file via signed URL but never submit the form. These orphaned objects accumulate in Cloud Storage.
+
+- **Policy:** Cloud Storage lifecycle rule deletes objects in `uploads/` older than 7 days that are not referenced by any `achievement_points.screenshot_url`
+- **Implementation:** Cloud Scheduler job (weekly) runs a cleanup function that lists objects > 7 days old and checks for matching `screenshot_url` rows. Unreferenced objects are deleted.
+- **Alternative (simpler, acceptable at this scale):** Accept the small storage cost (~$0.02/GB/month) and skip cleanup until it becomes measurable. The lifecycle rule can be added later via OpenTofu without code changes.
+- **Phase 1:** Accept orphans (no cleanup). Revisit if storage exceeds 1GB.
+
 ---
 
 ## 7. Authentication & Authorization
@@ -1345,7 +1390,7 @@ HR/Admin creates user via POST /users
 | View leaderboard (Bintang + Poin AHA) | Yes | Yes | Yes | Yes |
 | Submit Bintang/Penalti/Poin AHA | Yes | Yes (any in branch) | Yes (any in branch) | Self only (pending) |
 | Approve employee self-submissions | Yes | Yes | Own team only | No |
-| Challenge a submission | Yes | Yes | Yes | Yes |
+| Challenge a Penalti | Yes | No | Yes (Penalti only) | No |
 | Appeal a Penalti | No | No | No | Own penalties only |
 | Resolve challenges/appeals | Yes | Yes | No | No |
 | Revoke points | Yes | Yes | No | No |
@@ -1422,9 +1467,9 @@ PATCH  /points/:id/approve           (leader: own team self-subs; hr/admin: any)
 PATCH  /points/:id/reject            (leader: own team self-subs; hr/admin: any)
 PATCH  /points/:id/revoke            (hr/admin only, with reason)
 
-# Challenges (any Leader/Employee can file)
+# Challenges (Leaders only, Penalti only)
 GET    /points/:id/challenges
-POST   /points/:id/challenges        { reason } (file a challenge)
+POST   /points/:id/challenges        { reason } (Leader files a challenge on Penalti)
 PATCH  /challenges/:id/resolve       { status, resolution_note } (hr only — upheld or overturned)
 
 # Appeals (Penalti only — affected employee)
@@ -1509,25 +1554,27 @@ GET    /api/health                   (no auth — Cloud Run readiness probe; che
 
 ### Three-Layer Approach
 
-#### Layer 1 — UI Strings (next-intl)
+#### Layer 1 — UI Strings (Paraglide JS)
 
-JSON translation files per locale:
+Paraglide JS message files per locale:
 
 ```
-src/messages/
-  ├── en.json    # English (default fallback)
-  ├── id.json    # Bahasa Indonesia
-  └── th.json    # Thai
+src/paraglide/
+  ├── messages/
+  │   ├── en.json    # English (default fallback)
+  │   ├── id.json    # Bahasa Indonesia
+  │   └── th.json    # Thai
+  └── runtime.js     # Generated — compile-time typed message functions
 ```
 
-ICU message format for pluralization, interpolation:
+Typed message functions (compile-time, ~2KB bundle):
 
-```json
-{
-  "dashboard.totalPoints": "Total Points",
-  "points.status.pending": "Pending",
-  "points.period": "Period: Q{quarter} {year}"
-}
+```typescript
+import * as m from "@/paraglide/messages"
+
+m.dashboard_totalPoints()    // "Total Points"
+m.points_status_pending()    // "Pending"
+m.points_period({ quarter: 1, year: 2026 }) // "Period: Q1 2026"
 ```
 
 #### Layer 2 — Database Content (translation tables)
@@ -1541,18 +1588,26 @@ Use built-in `Intl` API (zero-dependency):
 - `Intl.DateTimeFormat(locale)` for dates
 - `Intl.NumberFormat(locale)` for numbers
 
+#### Locale Routing
+
+**Cookie-based** (no URL prefix like `/en/dashboard`). Internal tool — SEO is irrelevant.
+
+- Paraglide middleware reads locale from cookie on each request
+- Cookie is set from `users.locale_pref` on login and updated when user changes language
+- No locale segment in route paths — simpler route definitions
+
 #### Locale Resolution Order
 
-1. User preference in DB (`users.locale_pref`)
-2. Browser `Accept-Language` header
+1. Cookie value (set from `users.locale_pref` on login)
+2. Browser `Accept-Language` header (first visit before login)
 3. Branch default locale
 4. Fallback: `en`
 
 #### Adding New Languages
 
-1. Add a new JSON file in `src/messages/` (e.g., `ja.json`)
+1. Add a new JSON file in `src/paraglide/messages/` (e.g., `ja.json`)
 2. Add translation rows in `_translations` tables
-3. Add locale to next-intl config
+3. Add locale to Paraglide config in `project.inlang/settings.json`
 4. Done — no code changes needed
 
 #### RTL Preparedness
@@ -1649,6 +1704,44 @@ terraform {  # OpenTofu uses the same HCL syntax and block names
 }
 ```
 
+### Local Development
+
+```yaml
+# docker-compose.yml
+services:
+  db:
+    image: postgres:18
+    ports: ["5432:5432"]
+    environment:
+      POSTGRES_DB: coms_aha_heroes_dev
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:
+```
+
+- `bun run dev` starts TanStack Start dev server (Vite) on `localhost:3000`
+- `docker compose up -d` starts local PostgreSQL
+- `bun run db:migrate` runs Drizzle migrations against local DB
+- `bun run db:seed` populates dev data (see Seed Data Strategy below)
+
+### Seed Data Strategy
+
+```
+src/db/seed/
+├── base.ts          # Branches, point_categories, system_settings (all environments)
+├── dev.ts           # Fake users (all 4 roles), sample points, challenges, rewards
+└── index.ts         # Entry point — runs base + env-specific seed
+```
+
+| Environment | Seed Script | Data |
+|-------------|------------|------|
+| **dev** | `base.ts` + `dev.ts` | 2 branches, 4 teams, 20 users (admin/hr/leader/employee), 50 sample points, 5 rewards |
+| **staging** | `base.ts` + `dev.ts` | Same as dev (safe to test with fake data) |
+| **production** | `base.ts` only | 2 branches (ID, TH), 3 point_categories, system_settings defaults. Users created by HR via UI. |
+
 ### Environment Strategy
 
 ```
@@ -1659,7 +1752,7 @@ Cloud SQL Instance: coms-aha-heroes-db
 
 | Environment | Database | Cloud Run | URL | Purpose |
 |------------|----------|-----------|-----|---------|
-| `dev` | Local Docker PostgreSQL | `pnpm dev` | localhost:3000 | Local development |
+| `dev` | Local Docker PostgreSQL | `bun run dev` | localhost:3000 | Local development |
 | `staging` | Cloud SQL → `coms_aha_heroes_staging` | Cloud Run revision (0% traffic, tagged "staging") | `staging---coms-aha-heroes-app-xxxxx.run.app` | Test new features safely — only accessible via tagged URL |
 | `production` | Cloud SQL → `coms_aha_heroes_production` | Cloud Run revision (100% traffic) | `coms-aha-heroes-app-xxxxx.run.app` | Live users |
 
@@ -1724,12 +1817,12 @@ Runs on every PR. **All checks must pass before merge is allowed.**
 PR opened / updated
   │
   ├── 1. Checkout code
-  ├── 2. Setup Node.js + pnpm (with cache)
-  ├── 3. Install dependencies (pnpm install --frozen-lockfile)
+  ├── 2. Setup Node.js + bun (with cache)
+  ├── 3. Install dependencies (bun install --frozen-lockfile)
   ├── 4. Lint (ESLint + Prettier)
   ├── 5. Type check (tsc --noEmit)
   ├── 6. Unit tests + integration tests
-  ├── 7. Build (next build) — catches build errors early
+  ├── 7. Build (vinxi build) — catches build errors early
   └── 8. Post results as PR comment
 
   ❌ If ANY step fails → PR cannot be merged (branch protection)
@@ -1778,7 +1871,7 @@ Merge to main (infra/ files)
 ```
 Every Monday (cron)
   │
-  ├── 1. Dependency audit (pnpm audit)
+  ├── 1. Dependency audit (bun audit)
   ├── 2. Security scan
   └── 3. Report via email/Slack
 ```
@@ -1854,7 +1947,7 @@ All changes merge via PR → CI runs → review → merge → auto-deploy to sta
 
 | Week | Deliverables |
 |------|-------------|
-| 1 | Project setup, OpenTofu infra provisioning, Cloud SQL + Drizzle schema (all tables including teams, rewards, system_settings), CI/CD pipeline, PWA manifest + service worker |
+| 1 | Project setup (TanStack Start + Hono + Drizzle + docker-compose), **integration spike** (auth + one protected route + Hono API + Paraglide locale switch — validates stack compatibility), OpenTofu infra provisioning, Cloud SQL + Drizzle schema (all tables), CI/CD pipeline, PWA manifest + service worker, seed scripts (base + dev) |
 | 2 | Better Auth integration (email/password), RBAC middleware for 4 roles (admin/hr/leader/employee), branch guard, team middleware, RLS policies for all tables |
 | 3 | Users CRUD, Teams CRUD, Point Categories setup (4 types seeded), Achievement Points submission (immediate-active for leader/hr, pending for employee self-submit) |
 | 4 | Leader approval of self-submissions, basic leaderboard (Bintang + Poin AHA, filterable by team), mobile-responsive layout with bottom navigation, deploy to Cloud Run staging |
@@ -1945,6 +2038,11 @@ All changes merge via PR → CI runs → review → merge → auto-deploy to sta
 | 45 | PWA tooling | Manual (static manifest + Workbox post-build) | vite-plugin-pwa, Serwist | vite-plugin-pwa incompatible with TanStack Start production builds (issue #4988); manual approach is reliable for minimal PWA needs (A2HS + offline indicator) |
 | 46 | Build tooling | Vite (bundled with TanStack Start) | Turbopack (Next.js) | Vite is TanStack Start's bundler; Tailwind via `@tailwindcss/vite`; mature plugin ecosystem |
 | 47 | Challengeable submissions | Penalti only, by Leaders only | Any submission by anyone | Bintang is positive recognition — no reason to dispute. Poin AHA is direct points — same. Only Penalti (negative) warrants a challenge by a Leader. Penalized employees use Appeal instead. Enforced via RLS policy on challenges table |
+| 48 | Locale routing strategy | Cookie-based (no URL prefix) | URL prefix (`/id/dashboard`, `/en/dashboard`) | Internal tool with ~100 users — SEO irrelevant; cookie-based is simpler (no locale segment in every route definition); Paraglide middleware reads `locale_pref` from session → sets cookie → serves correct messages. User switches language via profile dropdown, stored in `users.locale_pref`. |
+| 49 | `system_settings` change auditing | Log to `audit_logs` + confirmation modal | No auditing, simple save | Changing impact values retroactively affects all balances. `PATCH /settings/:key` writes old/new values to `audit_logs` (action: `SETTING_CHANGED`). Admin UI shows confirmation modal: "This will affect N employees' Poin AHA balances. Continue?" where N is count of users with relevant active points. |
+| 50 | Charting library | Recharts v2 | Chart.js, Nivo, Victory | React-native composable API, lightweight, works well with Tailwind. Needed for Reports Dashboard (line/bar/pie/donut charts). |
+| 51 | Notification delivery | Polling (TanStack Query, 30s interval) | SSE, WebSocket | Simplest approach for ~100 users. Unread count query is indexed. SSE/WebSocket adds infra complexity with no user-perceptible benefit at this scale. |
+| 52 | Orphaned upload cleanup | Accept orphans (Phase 1); lifecycle rule later | Immediate cleanup job | Storage cost negligible at this scale (~$0.02/GB/month). Add Cloud Storage lifecycle rule via OpenTofu if uploads exceed 1GB. |
 
 ---
 
@@ -1954,13 +2052,18 @@ All changes merge via PR → CI runs → review → merge → auto-deploy to sta
 
 | # | Question | Context |
 |---|----------|---------|
-| 1 | What happens to pending submissions when a Leader leaves? | Self-submissions awaiting Leader approval become orphaned. **Proposed:** escalate to HR automatically (HR already has branch-wide approval permissions). |
-| 2 | How are `system_settings` changes audited? | Changing `bintang_point_impact` retroactively recalculates all balances. Must log old/new values to `audit_logs`. Consider UI confirmation showing number of affected employees before applying. |
+| — | *No open questions* | All questions resolved — see Decision Log and Recently Resolved below |
 
 ### Recently Resolved
 
 | Question | Decision | Date |
 |----------|----------|------|
+| How are `system_settings` changes audited? | **Log to `audit_logs`** — `PATCH /settings/:key` writes old/new values (action: `SETTING_CHANGED`); admin UI shows confirmation modal with affected employee count (Decision #49) | 2026-03-27 |
+| Locale routing strategy | **Cookie-based, no URL prefix** — internal tool, SEO irrelevant; Paraglide reads `locale_pref` from session (Decision #48) | 2026-03-27 |
+| Charting library | **Recharts v2** — React-native, composable, lightweight (Decision #50) | 2026-03-27 |
+| Notification delivery mechanism | **Polling (30s via TanStack Query)** — simplest for ~100 users (Decision #51) | 2026-03-27 |
+| Orphaned upload cleanup | **Accept orphans in Phase 1** — add lifecycle rule later if storage exceeds 1GB (Decision #52) | 2026-03-27 |
+| What happens to pending submissions when a Leader leaves? | **Escalate to HR** — HR already has branch-wide approval permissions; simplest to implement (Decision #34) | 2026-03-27 |
 | File upload architecture | **Signed URLs** — 5MB max, JPEG/PNG/WebP, private bucket, 15-min read URLs, client-side resize to 1920px | 2026-03-25 |
 | Session timeout | **7-day sliding window** — refresh daily on activity, re-auth after 7 days inactive | 2026-03-25 |
 | Employee team change | **Points stay with employee** — points are user-scoped, not team-scoped; no data migration needed on team change | 2026-03-25 |

@@ -4,10 +4,12 @@ node_modules/
 # Environment
 .env
 .env.*
+!.env.example
 
 # Build output
 dist/
 .output/
+.nitro/
 
 # OS
 .DS_Store
@@ -21,15 +23,20 @@ Thumbs.db
 
 # Claude / AI tooling
 .claude/
-.claude-flow/
-.swarm/
-.mcp.json
+.gemini/
+.omc/
+CLAUDE.md
+GEMINI.md
 
 # Design files (local only)
 my-designs/
 
 # Package manager
 package-lock.json
+pnpm-lock.yaml
+
+# Generated
+src/routeTree.gen.ts
 
 # Logs
 *.log
