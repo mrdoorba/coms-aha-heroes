@@ -8,6 +8,27 @@
       "when": 1774582172149,
       "tag": "0000_lively_dracula",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1774585029392,
+      "tag": "0001_loud_tomorrow_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1774585100000,
+      "tag": "0002_triggers",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1774585200000,
+      "tag": "0003_rls_policies",
+      "breakpoints": true
     }
   ]
 }
