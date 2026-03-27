@@ -13,6 +13,9 @@ import { uploadsRoute } from './routes/uploads'
 import { leaderboardRoute } from './routes/leaderboard'
 import { notificationsRoute } from './routes/notifications'
 import { dashboardRoute } from './routes/dashboard'
+import { challengesRoute } from './routes/challenges'
+import { appealsRoute } from './routes/appeals'
+import { commentsRoute } from './routes/comments'
 import { errorHandler } from './middleware/error-handler'
 
 const app = new Hono().basePath('/api')
@@ -44,6 +47,9 @@ app.route('/v1/uploads', uploadsRoute)
 app.route('/v1/leaderboard', leaderboardRoute)
 app.route('/v1/notifications', notificationsRoute)
 app.route('/v1/dashboard', dashboardRoute)
+app.route('/v1', challengesRoute)
+app.route('/v1', appealsRoute)
+app.route('/v1/comments', commentsRoute)
 
 export type AppType = typeof app
 
