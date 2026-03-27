@@ -39,6 +39,9 @@ pnpm-lock.yaml
 src/routeTree.gen.ts
 src/paraglide/
 
+# Uploads (local dev)
+uploads/
+
 # Logs
 *.log
 npm-debug.log*

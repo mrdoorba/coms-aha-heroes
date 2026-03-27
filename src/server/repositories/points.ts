@@ -37,8 +37,26 @@ export async function listPoints(opts: ListPointsOpts, tx?: DbClient) {
 
   const [rows, [{ total }]] = await Promise.all([
     db
-      .select()
+      .select({
+        id: achievementPoints.id,
+        userId: achievementPoints.userId,
+        categoryId: achievementPoints.categoryId,
+        points: achievementPoints.points,
+        reason: achievementPoints.reason,
+        relatedStaff: achievementPoints.relatedStaff,
+        screenshotUrl: achievementPoints.screenshotUrl,
+        kittaComponent: achievementPoints.kittaComponent,
+        status: achievementPoints.status,
+        submittedBy: achievementPoints.submittedBy,
+        createdAt: achievementPoints.createdAt,
+        categoryCode: pointCategories.code,
+        categoryName: pointCategories.defaultName,
+        userName: users.name,
+        userEmail: users.email,
+      })
       .from(achievementPoints)
+      .innerJoin(pointCategories, eq(achievementPoints.categoryId, pointCategories.id))
+      .innerJoin(users, eq(achievementPoints.userId, users.id))
       .where(where)
       .orderBy(desc(achievementPoints.createdAt))
       .limit(opts.limit)
@@ -68,7 +86,7 @@ export async function getPointWithDetails(id: string, tx?: DbClient) {
     .select({
       point: achievementPoints,
       category: pointCategories,
-      user: { id: users.id, name: users.name, email: users.email },
+      user: { id: users.id, name: users.name, email: users.email, teamId: users.teamId },
     })
     .from(achievementPoints)
     .innerJoin(pointCategories, eq(achievementPoints.categoryId, pointCategories.id))
