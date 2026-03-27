@@ -8,8 +8,15 @@ import { rlsMiddleware } from './middleware/rls'
 import { usersRoute } from './routes/users'
 import { teamsRoute } from './routes/teams'
 import { categoriesRoute } from './routes/categories'
+import { pointsRoute } from './routes/points'
+import { uploadsRoute } from './routes/uploads'
+import { leaderboardRoute } from './routes/leaderboard'
+import { notificationsRoute } from './routes/notifications'
+import { dashboardRoute } from './routes/dashboard'
+import { errorHandler } from './middleware/error-handler'
 
 const app = new Hono().basePath('/api')
+app.onError(errorHandler)
 
 app.use('*', logger())
 app.use(
@@ -32,7 +39,11 @@ app.use('/v1/*', rlsMiddleware)
 app.route('/v1/users', usersRoute)
 app.route('/v1/teams', teamsRoute)
 app.route('/v1/categories', categoriesRoute)
-// app.route('/v1', pointsRoute)
+app.route('/v1/points', pointsRoute)
+app.route('/v1/uploads', uploadsRoute)
+app.route('/v1/leaderboard', leaderboardRoute)
+app.route('/v1/notifications', notificationsRoute)
+app.route('/v1/dashboard', dashboardRoute)
 
 export type AppType = typeof app
 

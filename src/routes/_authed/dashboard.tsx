@@ -1,38 +1,118 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { signOut } from '~/lib/auth-client'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { Star, Award, AlertTriangle, Clock, ChevronRight } from 'lucide-react'
+import { SummaryCard } from '~/components/dashboard/summary-card'
+import { RecentActivity } from '~/components/dashboard/recent-activity'
+import { QuickActions } from '~/components/dashboard/quick-actions'
+import { MiniLeaderboard } from '~/components/dashboard/mini-leaderboard'
+import { getDashboardSummaryFn, getDashboardActivityFn } from '~/server/functions/dashboard'
+import { getLeaderboardFn } from '~/server/functions/leaderboard'
 
 export const Route = createFileRoute('/_authed/dashboard')({
+  loader: async () => {
+    const [summary, activity, leaderboard] = await Promise.all([
+      getDashboardSummaryFn(),
+      getDashboardActivityFn(),
+      getLeaderboardFn({ data: { type: 'poin_aha', page: 1, limit: 5 } }),
+    ])
+    return { summary, activity, leaderboard }
+  },
   component: DashboardPage,
 })
 
 function DashboardPage() {
-  const navigate = useNavigate()
+  const { summary, activity, leaderboard } = Route.useLoaderData()
   const { session } = Route.useRouteContext()
 
-  async function handleSignOut() {
-    await signOut()
-    navigate({ to: '/login' })
-  }
+  const role = session?.appUser?.role ?? 'employee'
+  const name = session?.user?.name ?? ''
+  const currentUserId = session?.appUser?.id ?? ''
+
+  type RawEntry = { rank: number; name: string; avatarUrl: string | null; score: number; userId: string }
+  const leaderboardEntries = ((leaderboard.entries ?? []) as RawEntry[]).map((e) => ({
+    rank: e.rank,
+    name: e.name,
+    avatarUrl: e.avatarUrl,
+    score: e.score,
+    userId: e.userId,
+  }))
+
+  const showPendingBanner =
+    (role === 'hr' || role === 'admin') && summary.pendingCount > 0
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50">
-      <div className="rounded-xl bg-white p-8 text-center shadow-lg">
-        <h1 className="text-2xl font-bold text-[#1D388B]">
-          Welcome, {session.user.name}
-        </h1>
-        <p className="mt-2 text-gray-500">{session.user.email}</p>
-        {session.appUser && (
-          <span className="mt-3 inline-block rounded-full bg-[#325FEC] px-3 py-1 text-xs font-medium text-white">
-            {session.appUser.role}
+    <div className="mx-auto max-w-2xl space-y-5 px-4 pb-24 pt-6 md:pb-8">
+      {/* Greeting */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-[#1D388B]">Welcome back, {name}</h1>
+          <span className="mt-1 inline-block rounded-full bg-[#325FEC] px-2.5 py-0.5 text-[11px] font-semibold capitalize text-white">
+            {role}
           </span>
-        )}
-        <div className="mt-6">
-          <button
-            onClick={handleSignOut}
-            className="rounded-md bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
-          >
-            Sign Out
-          </button>
+        </div>
+      </div>
+
+      {/* Pending approvals banner */}
+      {showPendingBanner && (
+        <Link
+          to="/points"
+          className="flex items-center justify-between rounded-xl bg-[#F4C144]/10 px-4 py-3 text-sm font-medium text-[#1D388B] ring-1 ring-[#F4C144]/40 hover:bg-[#F4C144]/20 transition-colors"
+        >
+          <span>
+            <Clock className="mr-1.5 inline h-4 w-4 text-[#F4C144]" />
+            {summary.pendingCount} pending approval{summary.pendingCount !== 1 ? 's' : ''} need your review
+          </span>
+          <ChevronRight className="h-4 w-4 shrink-0" />
+        </Link>
+      )}
+
+      {/* Summary cards — 2x2 on mobile, 4-col on desktop */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <SummaryCard
+          title="Bintang sAHAbat"
+          value={summary.bintangCount}
+          icon={<Star className="h-5 w-5" />}
+          iconBg="bg-[#F4C144]/15"
+          iconColor="text-[#F4C144]"
+        />
+        <SummaryCard
+          title="Poin AHA Balance"
+          value={summary.poinAhaBalance}
+          icon={<Award className="h-5 w-5" />}
+          iconBg="bg-[#325FEC]/10"
+          iconColor="text-[#325FEC]"
+        />
+        <SummaryCard
+          title="Penalti Points"
+          value={summary.penaltiCount}
+          icon={<AlertTriangle className="h-5 w-5" />}
+          iconBg="bg-[#6D50B8]/10"
+          iconColor="text-[#6D50B8]"
+        />
+        <SummaryCard
+          title="Pending Actions"
+          value={summary.pendingCount}
+          icon={<Clock className="h-5 w-5" />}
+          iconBg="bg-[#F4C144]/15"
+          iconColor="text-[#F4C144]"
+        />
+      </div>
+
+      {/* Quick Actions — desktop only (mobile has FAB) */}
+      <div>
+        <QuickActions role={role} />
+      </div>
+
+      {/* Two-column layout on desktop */}
+      <div className="flex flex-col gap-5 md:flex-row md:items-start">
+        {/* Recent Activity */}
+        <div className="flex-1 min-w-0">
+          <h2 className="mb-3 text-sm font-semibold text-[#1D388B]">Recent Activity</h2>
+          <RecentActivity items={activity} />
+        </div>
+
+        {/* Mini Leaderboard */}
+        <div className="w-full md:w-64 shrink-0">
+          <MiniLeaderboard entries={leaderboardEntries} currentUserId={currentUserId} />
         </div>
       </div>
     </div>
