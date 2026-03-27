@@ -24,3 +24,27 @@ export {
   type ListPointsInput,
   type ApproveRejectInput,
 } from './points'
+export {
+  fileChallengeSchema,
+  resolveChallengeSchema,
+  listChallengesSchema,
+  type FileChallengeInput,
+  type ResolveChallengeInput,
+  type ListChallengesInput,
+} from './challenges'
+export {
+  fileAppealSchema,
+  resolveAppealSchema,
+  listAppealsSchema,
+  type FileAppealInput,
+  type ResolveAppealInput,
+  type ListAppealsInput,
+} from './appeals'
+export {
+  createCommentSchema,
+  updateCommentSchema,
+  listCommentsSchema,
+  type CreateCommentInput,
+  type UpdateCommentInput,
+  type ListCommentsInput,
+} from './comments'
