@@ -11,6 +11,7 @@ import type {
   ListRedemptionsInput,
   ResolveRedemptionInput,
 } from '~/shared/schemas/redemptions'
+import type { BulkRedemptionActionInput, BulkResult, BulkResultItem } from '~/shared/schemas/bulk'
 
 type ServiceContext = {
   readonly actor: AuthUser
@@ -186,6 +187,33 @@ export async function rejectRedemption(
   )
 
   return updated
+}
+
+export async function bulkResolveRedemptions(
+  input: BulkRedemptionActionInput,
+  ctx: ServiceContext,
+): Promise<BulkResult> {
+  if (ctx.actor.role !== 'hr' && ctx.actor.role !== 'admin') {
+    throw new InsufficientRoleError()
+  }
+
+  const results: BulkResultItem[] = []
+
+  for (const id of input.ids) {
+    try {
+      if (input.action === 'approve') {
+        await approveRedemption(id, ctx)
+      } else {
+        await rejectRedemption(id, { rejectionReason: input.rejectionReason }, ctx)
+      }
+      results.push({ id, success: true })
+    } catch (err) {
+      results.push({ id, success: false, error: err instanceof Error ? err.message : 'Unknown error' })
+    }
+  }
+
+  const succeeded = results.filter((r) => r.success).length
+  return { processed: input.ids.length, succeeded, failed: input.ids.length - succeeded, results }
 }
 
 // Domain errors

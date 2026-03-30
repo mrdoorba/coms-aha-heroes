@@ -5,6 +5,7 @@ import {
   listRedemptionsSchema,
   resolveRedemptionSchema,
 } from '~/shared/schemas/redemptions'
+import { bulkRedemptionActionSchema } from '~/shared/schemas/bulk'
 import * as redemptionsService from '../services/redemptions'
 import type { AuthUser } from '../middleware/auth'
 import type { DbClient } from '../repositories/base'
@@ -66,6 +67,27 @@ export const redemptionsRoute = new Hono<Env>()
             error: { code: 'INSUFFICIENT_BALANCE', message: err.message },
           },
           422,
+        )
+      }
+      throw err
+    }
+  })
+
+  // POST /bulk — bulk approve/reject redemptions (HR/Admin only)
+  .post('/bulk', zValidator('json', bulkRedemptionActionSchema), async (c) => {
+    const input = c.req.valid('json')
+    const actor = c.get('authUser')
+    const tx = c.get('tx')
+    const ipAddress = c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip')
+
+    try {
+      const result = await redemptionsService.bulkResolveRedemptions(input, { actor, tx, ipAddress })
+      return c.json<ApiResponse<typeof result>>({ success: true, data: result, error: null })
+    } catch (err) {
+      if (err instanceof redemptionsService.InsufficientRoleError) {
+        return c.json<ApiError>(
+          { success: false, data: null, error: { code: 'FORBIDDEN', message: err.message } },
+          403,
         )
       }
       throw err

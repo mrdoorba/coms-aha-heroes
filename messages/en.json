@@ -58,6 +58,7 @@
 
   "common_save": "Save",
   "common_cancel": "Cancel",
+  "common_confirm": "Confirm",
   "common_delete": "Delete",
   "common_edit": "Edit",
   "common_search": "Search",
@@ -338,5 +339,17 @@
   "kitta_I": "Initiative",
   "kitta_T1": "Rule Compliance",
   "kitta_T2": "Teamwork",
-  "kitta_A": "Attendance Quality"
+  "kitta_A": "Attendance Quality",
+
+  "bulk_selected_count": "{count} selected",
+  "bulk_approve_selected": "Approve selected",
+  "bulk_reject_selected": "Reject selected",
+  "bulk_archive_selected": "Archive selected",
+  "bulk_activate_selected": "Activate selected",
+  "bulk_deselect_all": "Deselect all",
+  "bulk_select_all": "Select all",
+  "bulk_confirm_title": "Confirm bulk action",
+  "bulk_confirm_message": "Are you sure you want to {action} {count} items?",
+  "bulk_result_summary": "{succeeded} succeeded, {failed} failed",
+  "bulk_rejection_reason_label": "Rejection reason"
 }

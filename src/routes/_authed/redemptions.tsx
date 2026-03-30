@@ -16,7 +16,11 @@ import {
   listRedemptionsFn,
   approveRedemptionFn,
   rejectRedemptionFn,
+  bulkResolveRedemptionsFn,
 } from '~/server/functions/redemptions'
+import { useBulkSelection } from '~/hooks/use-bulk-selection'
+import { BulkCheckbox } from '~/components/bulk/bulk-checkbox'
+import { BulkActionBar } from '~/components/bulk/bulk-action-bar'
 
 type RedemptionRow = {
   id: string
@@ -125,6 +129,7 @@ function RedemptionsPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [rejectionReason, setRejectionReason] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const bulk = useBulkSelection()
 
   async function loadTab(tab: Tab) {
     setIsLoading(true)
@@ -142,7 +147,26 @@ function RedemptionsPage() {
 
   function handleTabChange(tab: Tab) {
     setActiveTab(tab)
+    bulk.clearSelection()
     loadTab(tab)
+  }
+
+  async function handleBulkAction(action: 'approve' | 'reject', rejectionReason?: string) {
+    setIsSubmitting(true)
+    try {
+      await bulkResolveRedemptionsFn({
+        data: {
+          ids: [...bulk.selectedIds],
+          action,
+          rejectionReason,
+        },
+      })
+      bulk.clearSelection()
+      await router.invalidate()
+      await loadTab(activeTab)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   async function handleApprove(id: string) {
@@ -213,6 +237,15 @@ function RedemptionsPage() {
       </div>
 
       {/* Card list */}
+      {activeTab === 'pending' && isHrOrAdmin && redemptions.length > 0 && !isLoading && (
+        <div className="flex items-center gap-2 px-1">
+          <BulkCheckbox
+            checked={bulk.isAllSelected(redemptions.filter((r) => r.status === 'pending').map((r) => r.id))}
+            onChange={() => bulk.toggleAll(redemptions.filter((r) => r.status === 'pending').map((r) => r.id))}
+          />
+          <span className="text-xs text-muted-foreground">{m.bulk_select_all()}</span>
+        </div>
+      )}
       <div className="space-y-3">
         {isLoading ? (
           Array.from({ length: 4 }).map((_, i) => (
@@ -230,8 +263,21 @@ function RedemptionsPage() {
           redemptions.map((item) => (
             <div
               key={item.id}
-              className="flex items-start gap-3 rounded-xl border border-border bg-white px-4 py-3"
+              className={cn(
+                'flex items-start gap-3 rounded-xl border bg-white px-4 py-3',
+                activeTab === 'pending' && bulk.selectedIds.has(item.id)
+                  ? 'border-[#325FEC] bg-blue-50/30'
+                  : 'border-border',
+              )}
             >
+              {activeTab === 'pending' && isHrOrAdmin && item.status === 'pending' && (
+                <div className="shrink-0 pt-1">
+                  <BulkCheckbox
+                    checked={bulk.selectedIds.has(item.id)}
+                    onChange={() => bulk.toggleId(item.id)}
+                  />
+                </div>
+              )}
               {/* Thumbnail */}
               <div className="shrink-0 h-12 w-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
                 {item.rewardImageUrl ? (
@@ -309,6 +355,26 @@ function RedemptionsPage() {
           ))
         )}
       </div>
+
+      {activeTab === 'pending' && isHrOrAdmin && (
+        <BulkActionBar
+          selectedCount={bulk.selectedCount}
+          actions={[
+            {
+              label: m.bulk_approve_selected(),
+              variant: 'default' as const,
+              onClick: () => handleBulkAction('approve'),
+            },
+            {
+              label: m.bulk_reject_selected(),
+              variant: 'destructive' as const,
+              onClick: () => handleBulkAction('reject'),
+              requiresReason: true,
+            },
+          ]}
+          onClear={bulk.clearSelection}
+        />
+      )}
 
       {/* Reject dialog */}
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
