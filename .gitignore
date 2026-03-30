@@ -27,6 +27,7 @@ Thumbs.db
 .omc/
 CLAUDE.md
 GEMINI.md
+.playwright-cli/
 
 # Design files (local only)
 my-designs/
@@ -38,6 +39,7 @@ pnpm-lock.yaml
 # Generated
 src/routeTree.gen.ts
 src/paraglide/
+.tanstack/
 
 # Uploads (local dev)
 uploads/
