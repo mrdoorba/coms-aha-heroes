@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { cn } from '~/lib/utils'
+import * as m from '~/paraglide/messages'
 
 export type ActivityItem = {
   id: string
@@ -54,7 +55,7 @@ export function RecentActivity({ items }: RecentActivityProps) {
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-10 text-center">
-        <p className="text-sm text-muted-foreground">No recent activity</p>
+        <p className="text-sm text-muted-foreground">{m.activity_empty()}</p>
       </div>
     )
   }
@@ -83,11 +84,11 @@ export function RecentActivity({ items }: RecentActivityProps) {
             <div className="flex-1 min-w-0">
               <p className="text-sm leading-snug">
                 <span className="font-medium">{item.userName}</span>
-                {' received '}
+                {' '}{m.activity_received()}{' '}
                 <span className={cn('inline-block rounded px-1 text-xs font-semibold', getCategoryColor(item.categoryCode))}>
                   {item.categoryName}
                 </span>
-                {' from '}
+                {' '}{m.activity_from()}{' '}
                 <span className="font-medium">{item.submitterName}</span>
               </p>
               <div className="mt-1 flex items-center gap-2">

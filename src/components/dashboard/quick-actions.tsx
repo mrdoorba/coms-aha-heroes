@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Star, Award, AlertTriangle, Plus, X } from 'lucide-react'
 import { cn } from '~/lib/utils'
+import * as m from '~/paraglide/messages'
 
 type QuickActionsProps = {
   role: string
@@ -14,37 +15,33 @@ type ActionItem = {
   colorClass: string
 }
 
-function buildActions(role: string): ActionItem[] {
-  const base: ActionItem[] = [
+export function QuickActions({ role }: QuickActionsProps) {
+  const [open, setOpen] = useState(false)
+
+  const actions: ActionItem[] = [
     {
-      label: 'Give Bintang',
+      label: m.quick_action_bintang(),
       to: '/points/new/bintang',
       icon: <Star className="h-4 w-4" />,
       colorClass: 'bg-[#F4C144] text-white hover:bg-[#e0ae38]',
     },
     {
-      label: 'Give Poin AHA',
+      label: m.quick_action_poin_aha(),
       to: '/points/new/poin-aha',
       icon: <Award className="h-4 w-4" />,
       colorClass: 'bg-[#325FEC] text-white hover:bg-[#2a4fd0]',
     },
+    ...(role === 'leader' || role === 'hr' || role === 'admin'
+      ? [
+          {
+            label: m.quick_action_penalti(),
+            to: '/points/new/penalti',
+            icon: <AlertTriangle className="h-4 w-4" />,
+            colorClass: 'bg-[#6D50B8] text-white hover:bg-[#5d43a0]',
+          } satisfies ActionItem,
+        ]
+      : []),
   ]
-
-  if (role === 'leader' || role === 'hr' || role === 'admin') {
-    base.push({
-      label: 'Give Penalti',
-      to: '/points/new/penalti',
-      icon: <AlertTriangle className="h-4 w-4" />,
-      colorClass: 'bg-[#6D50B8] text-white hover:bg-[#5d43a0]',
-    })
-  }
-
-  return base
-}
-
-export function QuickActions({ role }: QuickActionsProps) {
-  const [open, setOpen] = useState(false)
-  const actions = buildActions(role)
 
   return (
     <>
@@ -69,7 +66,7 @@ export function QuickActions({ role }: QuickActionsProps) {
           type="button"
           onClick={() => setOpen((v) => !v)}
           className="flex h-13 w-13 items-center justify-center rounded-full bg-[#325FEC] text-white shadow-xl transition-transform active:scale-95"
-          aria-label="Quick actions"
+          aria-label={m.quick_actions_label()}
         >
           {open ? <X className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
         </button>

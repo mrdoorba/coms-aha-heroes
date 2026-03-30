@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Star, Award, AlertTriangle, Clock, ChevronRight } from 'lucide-react'
+import * as m from '~/paraglide/messages'
 import { SummaryCard } from '~/components/dashboard/summary-card'
 import { RecentActivity } from '~/components/dashboard/recent-activity'
 import { QuickActions } from '~/components/dashboard/quick-actions'
@@ -44,7 +45,7 @@ function DashboardPage() {
       {/* Greeting */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-[#1D388B]">Welcome back, {name}</h1>
+          <h1 className="text-xl font-bold text-[#1D388B]">{m.dashboard_welcome({ name })}</h1>
           <span className="mt-1 inline-block rounded-full bg-[#325FEC] px-2.5 py-0.5 text-[11px] font-semibold capitalize text-white">
             {role}
           </span>
@@ -59,7 +60,7 @@ function DashboardPage() {
         >
           <span>
             <Clock className="mr-1.5 inline h-4 w-4 text-[#F4C144]" />
-            {summary.pendingCount} pending approval{summary.pendingCount !== 1 ? 's' : ''} need your review
+            {m.dashboard_pending_review({ count: String(summary.pendingCount) })}
           </span>
           <ChevronRight className="h-4 w-4 shrink-0" />
         </Link>
@@ -68,28 +69,28 @@ function DashboardPage() {
       {/* Summary cards — 2x2 on mobile, 4-col on desktop */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <SummaryCard
-          title="Bintang sAHAbat"
+          title={m.dashboard_bintang_count()}
           value={summary.bintangCount}
           icon={<Star className="h-5 w-5" />}
           iconBg="bg-[#F4C144]/15"
           iconColor="text-[#F4C144]"
         />
         <SummaryCard
-          title="Poin AHA Balance"
+          title={m.dashboard_poin_aha_balance()}
           value={summary.poinAhaBalance}
           icon={<Award className="h-5 w-5" />}
           iconBg="bg-[#325FEC]/10"
           iconColor="text-[#325FEC]"
         />
         <SummaryCard
-          title="Penalti Points"
+          title={m.dashboard_penalti_points()}
           value={summary.penaltiCount}
           icon={<AlertTriangle className="h-5 w-5" />}
           iconBg="bg-[#6D50B8]/10"
           iconColor="text-[#6D50B8]"
         />
         <SummaryCard
-          title="Pending Actions"
+          title={m.dashboard_pending_actions()}
           value={summary.pendingCount}
           icon={<Clock className="h-5 w-5" />}
           iconBg="bg-[#F4C144]/15"
@@ -106,7 +107,7 @@ function DashboardPage() {
       <div className="flex flex-col gap-5 md:flex-row md:items-start">
         {/* Recent Activity */}
         <div className="flex-1 min-w-0">
-          <h2 className="mb-3 text-sm font-semibold text-[#1D388B]">Recent Activity</h2>
+          <h2 className="mb-3 text-sm font-semibold text-[#1D388B]">{m.dashboard_recent_activity()}</h2>
           <RecentActivity items={activity} />
         </div>
 
