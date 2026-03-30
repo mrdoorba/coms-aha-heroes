@@ -1,7 +1,10 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { signIn } from '~/lib/auth-client'
+import { getLocale, setLocale } from '~/paraglide/runtime.js'
+
+const LANGUAGES = ['id', 'en', 'th'] as const
 
 export const Route = createFileRoute('/login')({
   component: LoginPage,
@@ -98,7 +101,40 @@ function LoginPage() {
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
+
+          <div className="text-center">
+            <Link
+              to="/forgot-password"
+              className="text-sm text-gray-500 hover:text-[#325FEC]"
+            >
+              Forgot password?
+            </Link>
+          </div>
         </form>
+
+        <div className="mt-6 flex items-center justify-center gap-1">
+          {LANGUAGES.map((lang, i) => {
+            const isActive = getLocale() === lang
+            return (
+              <span key={lang} className="flex items-center">
+                {i > 0 && <span className="mx-1 text-gray-300">|</span>}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!isActive) setLocale(lang)
+                  }}
+                  className={`px-1 text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'text-[#325FEC]'
+                      : 'text-gray-400 hover:text-gray-600'
+                  }`}
+                >
+                  {lang.toUpperCase()}
+                </button>
+              </span>
+            )
+          })}
+        </div>
       </div>
     </div>
   )

@@ -190,7 +190,7 @@ function NotificationsPage() {
             <button
               key={notification.id}
               type="button"
-              className="block w-full text-left"
+              className="card-hover block w-full text-left"
               onClick={() => handleItemClick(notification)}
             >
               <div

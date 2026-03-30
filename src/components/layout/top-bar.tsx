@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { Bell, User } from 'lucide-react'
 import { cn } from '~/lib/utils'
 
@@ -27,8 +28,8 @@ export function TopBar({ user, unreadCount, className }: TopBarProps) {
       </span>
 
       <div className="flex items-center gap-3">
-        <button
-          type="button"
+        <Link
+          to="/notifications"
           className="relative flex h-11 w-11 items-center justify-center rounded-full text-white/80 hover:text-white"
           aria-label="Notifications"
         >
@@ -38,9 +39,12 @@ export function TopBar({ user, unreadCount, className }: TopBarProps) {
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}
-        </button>
+        </Link>
 
-        <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-white/20 text-xs font-bold text-white">
+        <Link
+          to="/profile"
+          className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-white/20 text-xs font-bold text-white"
+        >
           {user.avatarUrl ? (
             <img
               src={user.avatarUrl}
@@ -50,7 +54,7 @@ export function TopBar({ user, unreadCount, className }: TopBarProps) {
           ) : (
             <span>{initials || <User className="h-4 w-4" />}</span>
           )}
-        </div>
+        </Link>
       </div>
     </header>
   )

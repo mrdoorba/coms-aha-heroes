@@ -66,7 +66,7 @@ export function RecentActivity({ items }: RecentActivityProps) {
           <Link
             to="/points/$id"
             params={{ id: item.id }}
-            className="flex items-start gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:bg-muted/50"
+            className="card-hover flex items-start gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:bg-muted/50"
           >
             {/* Avatar */}
             <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted">
