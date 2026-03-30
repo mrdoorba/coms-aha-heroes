@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState, useMemo } from 'react'
 import { changePasswordFn } from '~/server/functions/auth'
+import * as m from '~/paraglide/messages'
 
 export const Route = createFileRoute('/change-password')({
   component: ChangePasswordPage,
@@ -8,10 +9,9 @@ export const Route = createFileRoute('/change-password')({
 
 function getPasswordStrength(password: string): {
   score: 0 | 1 | 2 | 3 | 4
-  label: string
   color: string
 } {
-  if (!password) return { score: 0, label: '', color: 'bg-gray-200' }
+  if (!password) return { score: 0, color: 'bg-gray-200' }
 
   let score = 0
   if (password.length >= 8) score++
@@ -19,15 +19,22 @@ function getPasswordStrength(password: string): {
   if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score++
   if (/[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password)) score++
 
-  const levels = [
-    { label: 'Weak', color: 'bg-red-500' },
-    { label: 'Fair', color: 'bg-orange-500' },
-    { label: 'Good', color: 'bg-yellow-500' },
-    { label: 'Strong', color: 'bg-green-500' },
+  const colors = [
+    'bg-red-500',
+    'bg-orange-500',
+    'bg-yellow-500',
+    'bg-green-500',
   ] as const
 
-  const level = levels[Math.min(score, 4) - 1] ?? levels[0]
-  return { score: score as 0 | 1 | 2 | 3 | 4, label: level.label, color: level.color }
+  const color = colors[Math.min(score, 4) - 1] ?? colors[0]
+  return { score: score as 0 | 1 | 2 | 3 | 4, color }
+}
+
+function getStrengthLabel(score: number): string {
+  if (score <= 1) return m.password_strength_weak()
+  if (score === 2) return m.password_strength_fair()
+  if (score === 3) return m.password_strength_good()
+  return m.password_strength_strong()
 }
 
 function ChangePasswordPage() {
@@ -46,7 +53,7 @@ function ChangePasswordPage() {
     setError('')
 
     if (newPassword !== confirmPassword) {
-      setError('Passwords do not match')
+      setError(m.change_password_mismatch())
       return
     }
 
@@ -56,7 +63,7 @@ function ChangePasswordPage() {
       await changePasswordFn({ data: { currentPassword, newPassword } })
       navigate({ to: '/dashboard' })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Password change failed')
+      setError(err instanceof Error ? err.message : m.change_password_failed())
       setLoading(false)
     }
   }
@@ -65,10 +72,10 @@ function ChangePasswordPage() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#1D388B] to-[#0F0E7F]">
       <div className="w-full max-w-sm rounded-xl bg-white p-8 shadow-lg">
         <h1 className="text-center font-manrope text-xl font-bold text-[#1D388B]">
-          Change Password
+          {m.change_password_title()}
         </h1>
         <p className="mt-1 text-center text-sm text-gray-500">
-          Please set a new password to continue
+          {m.change_password_subtitle()}
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
@@ -82,7 +89,7 @@ function ChangePasswordPage() {
               htmlFor="currentPassword"
               className="block text-sm font-medium text-gray-700"
             >
-              Current Password
+              {m.change_password_current()}
             </label>
             <input
               id="currentPassword"
@@ -98,7 +105,7 @@ function ChangePasswordPage() {
               htmlFor="newPassword"
               className="block text-sm font-medium text-gray-700"
             >
-              New Password
+              {m.change_password_new()}
             </label>
             <input
               id="newPassword"
@@ -119,7 +126,7 @@ function ChangePasswordPage() {
                     />
                   ))}
                 </div>
-                <p className="mt-1 text-xs text-gray-500">{strength.label}</p>
+                <p className="mt-1 text-xs text-gray-500">{getStrengthLabel(strength.score)}</p>
               </div>
             )}
           </div>
@@ -128,7 +135,7 @@ function ChangePasswordPage() {
               htmlFor="confirmPassword"
               className="block text-sm font-medium text-gray-700"
             >
-              Confirm Password
+              {m.change_password_confirm()}
             </label>
             <input
               id="confirmPassword"
@@ -143,7 +150,7 @@ function ChangePasswordPage() {
               }`}
             />
             {!passwordsMatch && (
-              <p className="mt-1 text-xs text-red-600">Passwords do not match</p>
+              <p className="mt-1 text-xs text-red-600">{m.change_password_mismatch()}</p>
             )}
           </div>
           <button
@@ -151,7 +158,7 @@ function ChangePasswordPage() {
             disabled={loading || !passwordsMatch}
             className="w-full rounded-md bg-[#325FEC] px-4 py-2 text-sm font-medium text-white hover:bg-[#2850d0] disabled:opacity-50"
           >
-            {loading ? 'Changing...' : 'Change Password'}
+            {loading ? m.change_password_changing() : m.change_password_title()}
           </button>
         </form>
       </div>
