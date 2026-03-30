@@ -1,19 +1,25 @@
 import { Link } from '@tanstack/react-router'
 import { LayoutDashboard, Award, Trophy, User } from 'lucide-react'
 import { cn } from '~/lib/utils'
+import * as m from '~/paraglide/messages'
 
 const navItems = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/points', icon: Award, label: 'Points' },
-  { to: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
-  { to: '/profile', icon: User, label: 'Profile' },
+  { to: '/dashboard', icon: LayoutDashboard },
+  { to: '/points', icon: Award },
+  { to: '/leaderboard', icon: Trophy },
+  { to: '/profile', icon: User },
 ] as const
+
+function getNavLabels() {
+  return [m.nav_dashboard(), m.nav_points(), m.nav_leaderboard(), m.nav_profile()]
+}
 
 interface BottomNavProps {
   className?: string
 }
 
 export function BottomNav({ className }: BottomNavProps) {
+  const labels = getNavLabels()
   return (
     <nav
       className={cn(
@@ -21,7 +27,7 @@ export function BottomNav({ className }: BottomNavProps) {
         className,
       )}
     >
-      {navItems.map(({ to, icon: Icon, label }) => (
+      {navItems.map(({ to, icon: Icon }, index) => (
         <Link
           key={to}
           to={to}
@@ -29,7 +35,7 @@ export function BottomNav({ className }: BottomNavProps) {
           activeProps={{ className: 'text-primary' }}
         >
           <Icon className="h-5 w-5" />
-          <span className="text-[10px] font-medium leading-none">{label}</span>
+          <span className="text-[10px] font-medium leading-none">{labels[index]}</span>
         </Link>
       ))}
     </nav>
