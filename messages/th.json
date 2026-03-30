@@ -9,6 +9,8 @@
   "login_button": "เข้าสู่ระบบ",
   "login_signing_in": "กำลังเข้าสู่ระบบ...",
   "login_forgot_password": "ลืมรหัสผ่าน?",
+  "login_or": "หรือ",
+  "login_google": "เข้าสู่ระบบด้วย Google",
   "login_failed": "เข้าสู่ระบบล้มเหลว",
   "login_show_password": "แสดงรหัสผ่าน",
   "login_hide_password": "ซ่อนรหัสผ่าน",
