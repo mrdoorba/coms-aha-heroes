@@ -58,6 +58,7 @@
 
   "common_save": "Simpan",
   "common_cancel": "Batal",
+  "common_confirm": "Konfirmasi",
   "common_delete": "Hapus",
   "common_edit": "Edit",
   "common_search": "Cari",
@@ -338,5 +339,17 @@
   "kitta_I": "Inisiatif",
   "kitta_T1": "Taat Aturan",
   "kitta_T2": "Teamwork",
-  "kitta_A": "Kualitas Absensi"
+  "kitta_A": "Kualitas Absensi",
+
+  "bulk_selected_count": "{count} dipilih",
+  "bulk_approve_selected": "Setujui yang dipilih",
+  "bulk_reject_selected": "Tolak yang dipilih",
+  "bulk_archive_selected": "Arsipkan yang dipilih",
+  "bulk_activate_selected": "Aktifkan yang dipilih",
+  "bulk_deselect_all": "Batalkan semua pilihan",
+  "bulk_select_all": "Pilih semua",
+  "bulk_confirm_title": "Konfirmasi tindakan massal",
+  "bulk_confirm_message": "Apakah Anda yakin ingin {action} {count} item?",
+  "bulk_result_summary": "{succeeded} berhasil, {failed} gagal",
+  "bulk_rejection_reason_label": "Alasan penolakan"
 }

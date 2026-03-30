@@ -58,6 +58,7 @@
 
   "common_save": "บันทึก",
   "common_cancel": "ยกเลิก",
+  "common_confirm": "ยืนยัน",
   "common_delete": "ลบ",
   "common_edit": "แก้ไข",
   "common_search": "ค้นหา",
@@ -338,5 +339,17 @@
   "kitta_I": "ความคิดริเริ่ม",
   "kitta_T1": "การปฏิบัติตามกฎ",
   "kitta_T2": "การทำงานเป็นทีม",
-  "kitta_A": "คุณภาพการเข้างาน"
+  "kitta_A": "คุณภาพการเข้างาน",
+
+  "bulk_selected_count": "เลือกแล้ว {count} รายการ",
+  "bulk_approve_selected": "อนุมัติที่เลือก",
+  "bulk_reject_selected": "ปฏิเสธที่เลือก",
+  "bulk_archive_selected": "เก็บถาวรที่เลือก",
+  "bulk_activate_selected": "เปิดใช้งานที่เลือก",
+  "bulk_deselect_all": "ยกเลิกการเลือกทั้งหมด",
+  "bulk_select_all": "เลือกทั้งหมด",
+  "bulk_confirm_title": "ยืนยันการดำเนินการจำนวนมาก",
+  "bulk_confirm_message": "คุณแน่ใจหรือไม่ว่าต้องการ {action} {count} รายการ?",
+  "bulk_result_summary": "สำเร็จ {succeeded}, ล้มเหลว {failed}",
+  "bulk_rejection_reason_label": "เหตุผลในการปฏิเสธ"
 }

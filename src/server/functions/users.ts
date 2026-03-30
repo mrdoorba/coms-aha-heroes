@@ -150,6 +150,24 @@ export const archiveUserFn = createServerFn({ method: 'POST' })
     return result.data
   })
 
+export const bulkToggleUsersFn = createServerFn({ method: 'POST' })
+  .inputValidator((data: { ids: string[]; action: 'archive' | 'activate' }) => data)
+  .handler(async ({ data }) => {
+    const request = getRequest()
+    const response = await fetch(`${getBaseUrl(request)}/api/v1/users/bulk`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: request.headers.get('cookie') ?? '',
+      },
+      body: JSON.stringify(data),
+    })
+
+    const result = await response.json()
+    if (!response.ok) throw new Error(result.error?.message ?? 'Failed to bulk update users')
+    return result.data
+  })
+
 function getBaseUrl(request: Request): string {
   const url = new URL(request.url)
   return `${url.protocol}//${url.host}`

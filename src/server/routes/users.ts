@@ -6,6 +6,7 @@ import {
   updateUserSchema,
   listUsersSchema,
 } from '~/shared/schemas/users'
+import { bulkUserActionSchema } from '~/shared/schemas/bulk'
 import * as usersService from '../services/users'
 import type { AuthUser } from '../middleware/auth'
 import type { DbClient } from '../repositories/base'
@@ -21,6 +22,17 @@ type Env = {
 export const usersRoute = new Hono<Env>()
   // All user routes require admin or hr
   .use('/*', rbacMiddleware(['admin', 'hr']))
+
+  // POST /bulk — bulk archive/activate users (Admin/HR only)
+  .post('/bulk', zValidator('json', bulkUserActionSchema), async (c) => {
+    const input = c.req.valid('json')
+    const actor = c.get('authUser')
+    const tx = c.get('tx')
+    const ipAddress = c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip')
+
+    const result = await usersService.bulkToggleUsers(input, { actor, tx, ipAddress })
+    return c.json<ApiResponse<typeof result>>({ success: true, data: result, error: null })
+  })
 
   // GET /users — list with filtering + pagination
   .get('/', zValidator('query', listUsersSchema), async (c) => {

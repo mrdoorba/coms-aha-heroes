@@ -8,6 +8,7 @@ import type {
   UpdateUserInput,
   ListUsersInput,
 } from '~/shared/schemas/users'
+import type { BulkUserActionInput, BulkResult, BulkResultItem } from '~/shared/schemas/bulk'
 
 type ServiceContext = {
   readonly actor: AuthUser
@@ -159,6 +160,56 @@ export async function archiveUser(id: string, ctx: ServiceContext) {
   return archived
 }
 
+export async function activateUser(id: string, ctx: ServiceContext) {
+  if (id === ctx.actor.id) {
+    throw new CannotModifySelfError()
+  }
+
+  const existing = await usersRepo.getUserById(id, ctx.tx)
+  if (!existing) throw new UserNotFoundError(id)
+  if (existing.isActive) throw new UserAlreadyActiveError(id)
+
+  const activated = await usersRepo.activateUser(id, ctx.tx)
+
+  await writeAuditLog(
+    {
+      actor: ctx.actor,
+      action: 'USER_ACTIVATED',
+      entityType: 'users',
+      entityId: id,
+      oldValue: { isActive: false },
+      newValue: { isActive: true },
+      ipAddress: ctx.ipAddress,
+    },
+    ctx.tx,
+  )
+
+  return activated
+}
+
+export async function bulkToggleUsers(
+  input: BulkUserActionInput,
+  ctx: ServiceContext,
+): Promise<BulkResult> {
+  const results: BulkResultItem[] = []
+
+  for (const id of input.ids) {
+    try {
+      if (input.action === 'archive') {
+        await archiveUser(id, ctx)
+      } else {
+        await activateUser(id, ctx)
+      }
+      results.push({ id, success: true })
+    } catch (err) {
+      results.push({ id, success: false, error: err instanceof Error ? err.message : 'Unknown error' })
+    }
+  }
+
+  const succeeded = results.filter((r) => r.success).length
+  return { processed: input.ids.length, succeeded, failed: input.ids.length - succeeded, results }
+}
+
 // Domain errors
 export class UserNotFoundError extends Error {
   constructor(id: string) {
@@ -185,5 +236,19 @@ export class UserAlreadyArchivedError extends Error {
   constructor(id: string) {
     super(`User already archived: ${id}`)
     this.name = 'UserAlreadyArchivedError'
+  }
+}
+
+export class CannotModifySelfError extends Error {
+  constructor() {
+    super('Cannot modify your own account')
+    this.name = 'CannotModifySelfError'
+  }
+}
+
+export class UserAlreadyActiveError extends Error {
+  constructor(id: string) {
+    super(`User is already active: ${id}`)
+    this.name = 'UserAlreadyActiveError'
   }
 }

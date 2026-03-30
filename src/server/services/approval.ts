@@ -4,6 +4,7 @@ import { createNotification } from './notifications'
 import type { AuthUser } from '../middleware/auth'
 import type { DbClient } from '../repositories/base'
 import type { ApproveRejectInput } from '~/shared/schemas/points'
+import type { BulkPointActionInput, BulkResult, BulkResultItem } from '~/shared/schemas/bulk'
 
 type ServiceContext = {
   readonly actor: AuthUser
@@ -208,6 +209,29 @@ function assertCanApproveReject(
       )
     }
   }
+}
+
+export async function bulkResolvePoints(
+  input: BulkPointActionInput,
+  ctx: ServiceContext,
+): Promise<BulkResult> {
+  const results: BulkResultItem[] = []
+
+  for (const id of input.ids) {
+    try {
+      if (input.action === 'approve') {
+        await approvePoint(id, { reason: input.reason }, ctx)
+      } else {
+        await rejectPoint(id, { reason: input.reason }, ctx)
+      }
+      results.push({ id, success: true })
+    } catch (err) {
+      results.push({ id, success: false, error: err instanceof Error ? err.message : 'Unknown error' })
+    }
+  }
+
+  const succeeded = results.filter((r) => r.success).length
+  return { processed: input.ids.length, succeeded, failed: input.ids.length - succeeded, results }
 }
 
 // Domain errors

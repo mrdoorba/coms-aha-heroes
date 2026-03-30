@@ -21,6 +21,10 @@ import {
 import { listPointsFn } from '~/server/functions/points'
 import { POINT_STATUSES } from '~/shared/constants'
 import type { PointCategoryCode, PointStatus, UserRole } from '~/shared/constants'
+import { useBulkSelection } from '~/hooks/use-bulk-selection'
+import { BulkCheckbox } from '~/components/bulk/bulk-checkbox'
+import { BulkActionBar } from '~/components/bulk/bulk-action-bar'
+import { bulkResolvePointsFn } from '~/server/functions/approval'
 
 type PointRow = {
   id: string
@@ -55,6 +59,8 @@ function PointsPage() {
   const initialData = Route.useLoaderData()
   const { session } = Route.useRouteContext()
   const userRole = (session?.appUser?.role ?? 'employee') as UserRole
+
+  const bulk = useBulkSelection()
 
   const [points, setPoints] = useState<PointRow[]>(initialData.points as PointRow[])
   const [meta, setMeta] = useState(initialData.meta)
@@ -93,6 +99,7 @@ function PointsPage() {
   function handleTabChange(tab: PointCategoryCode | 'ALL') {
     setActiveTab(tab)
     setPage(1)
+    bulk.clearSelection()
     fetchPoints({ category: tab, pg: 1 })
   }
 
@@ -100,7 +107,20 @@ function PointsPage() {
     const status = !val || val === 'all' ? '' : val
     setStatusFilter(status)
     setPage(1)
+    bulk.clearSelection()
     fetchPoints({ status, pg: 1 })
+  }
+
+  async function handleBulkAction(action: 'approve' | 'reject', reason?: string) {
+    try {
+      await bulkResolvePointsFn({
+        data: { ids: [...bulk.selectedIds], action, reason },
+      })
+      bulk.clearSelection()
+      fetchPoints({ pg: page })
+    } catch {
+      // error handled by server function
+    }
   }
 
   function handlePageChange(newPage: number) {
@@ -168,20 +188,72 @@ function PointsPage() {
             <p className="text-muted-foreground">{m.points_empty()}</p>
           </div>
         ) : (
-          points.map((point) => (
-            <PointCard
-              key={point.id}
-              id={point.id}
-              categoryCode={point.categoryCode}
-              userName={point.userName}
-              reason={point.reason}
-              points={point.points}
-              status={point.status}
-              createdAt={point.createdAt}
-            />
-          ))
+          <>
+            {userRole !== 'employee' && (() => {
+              const pendingIds = points.filter((p) => p.status === 'pending').map((p) => p.id)
+              if (pendingIds.length === 0) return null
+              return (
+                <div className="flex items-center gap-2 px-1 pb-1">
+                  <BulkCheckbox
+                    checked={bulk.isAllSelected(pendingIds)}
+                    indeterminate={bulk.selectedCount > 0 && !bulk.isAllSelected(pendingIds)}
+                    onChange={() => bulk.toggleAll(pendingIds)}
+                  />
+                  <span className="text-sm text-muted-foreground">{m.bulk_select_all()}</span>
+                </div>
+              )
+            })()}
+            {points.map((point) => (
+              <div
+                key={point.id}
+                className={`flex items-start gap-2 rounded-xl transition-colors ${
+                  bulk.selectedIds.has(point.id) ? 'ring-2 ring-[#325FEC]' : ''
+                }`}
+              >
+                {userRole !== 'employee' && point.status === 'pending' && (
+                  <div className="flex items-center pt-5 pl-1">
+                    <BulkCheckbox
+                      checked={bulk.selectedIds.has(point.id)}
+                      onChange={() => bulk.toggleId(point.id)}
+                    />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <PointCard
+                    id={point.id}
+                    categoryCode={point.categoryCode}
+                    userName={point.userName}
+                    reason={point.reason}
+                    points={point.points}
+                    status={point.status}
+                    createdAt={point.createdAt}
+                  />
+                </div>
+              </div>
+            ))}
+          </>
         )}
       </div>
+
+      {userRole !== 'employee' && (
+        <BulkActionBar
+          selectedCount={bulk.selectedCount}
+          actions={[
+            {
+              label: m.bulk_approve_selected(),
+              variant: 'default' as const,
+              onClick: () => handleBulkAction('approve'),
+            },
+            {
+              label: m.bulk_reject_selected(),
+              variant: 'destructive' as const,
+              onClick: () => handleBulkAction('reject'),
+              requiresReason: true,
+            },
+          ]}
+          onClear={bulk.clearSelection}
+        />
+      )}
 
       {/* Pagination */}
       {totalPages > 1 && (

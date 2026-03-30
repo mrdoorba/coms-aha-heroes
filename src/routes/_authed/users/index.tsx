@@ -35,7 +35,11 @@ import {
   createUserFn,
   updateUserFn,
   archiveUserFn,
+  bulkToggleUsersFn,
 } from '~/server/functions/users'
+import { useBulkSelection } from '~/hooks/use-bulk-selection'
+import { BulkCheckbox } from '~/components/bulk/bulk-checkbox'
+import { BulkActionBar } from '~/components/bulk/bulk-action-bar'
 import { USER_ROLES, ROLE_LABELS } from '~/shared/constants'
 import type { UserRole } from '~/shared/constants'
 import type { CreateUserInput, UpdateUserInput } from '~/shared/schemas/users'
@@ -83,6 +87,8 @@ function UsersPage() {
   const [archiveOpen, setArchiveOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState<UserRow | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const bulk = useBulkSelection()
 
   async function fetchUsers(params?: {
     page?: number
@@ -173,9 +179,35 @@ function UsersPage() {
     }
   }
 
+  async function handleBulkAction(action: 'archive' | 'activate') {
+    try {
+      await bulkToggleUsersFn({ data: { ids: [...bulk.selectedIds], action } })
+      bulk.clearSelection()
+      await fetchUsers()
+    } catch (err) {
+      // error handled by server function
+    }
+  }
+
   const teamMap = new Map(lookupData.teams.map((t) => [t.id, t.name]))
 
   const columns = [
+    columnHelper.display({
+      id: 'select',
+      header: () => (
+        <BulkCheckbox
+          checked={bulk.isAllSelected(users.map((u) => u.id))}
+          onChange={() => bulk.toggleAll(users.map((u) => u.id))}
+        />
+      ),
+      cell: ({ row }) => (
+        <BulkCheckbox
+          checked={bulk.selectedIds.has(row.original.id)}
+          onChange={() => bulk.toggleId(row.original.id)}
+        />
+      ),
+      size: 40,
+    }),
     columnHelper.display({
       id: 'avatar',
       header: '',
@@ -391,6 +423,23 @@ function UsersPage() {
           </div>
         )}
       </div>
+
+      <BulkActionBar
+        selectedCount={bulk.selectedCount}
+        actions={[
+          {
+            label: m.bulk_archive_selected(),
+            variant: 'destructive' as const,
+            onClick: () => handleBulkAction('archive'),
+          },
+          {
+            label: m.bulk_activate_selected(),
+            variant: 'default' as const,
+            onClick: () => handleBulkAction('activate'),
+          },
+        ]}
+        onClear={bulk.clearSelection}
+      />
 
       {/* Dialogs */}
       <CreateUserDialog

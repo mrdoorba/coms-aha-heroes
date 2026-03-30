@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { submitPointSchema, listPointsSchema, approveRejectSchema } from '~/shared/schemas/points'
+import { bulkPointActionSchema } from '~/shared/schemas/bulk'
 import * as pointsService from '../services/points'
 import * as approvalService from '../services/approval'
 import type { AuthUser } from '../middleware/auth'
@@ -70,6 +71,17 @@ export const pointsRoute = new Hono<Env>()
       }
       throw err
     }
+  })
+
+  // POST /bulk — bulk approve/reject points (HR/Admin/Leader)
+  .post('/bulk', zValidator('json', bulkPointActionSchema), async (c) => {
+    const input = c.req.valid('json')
+    const actor = c.get('authUser')
+    const tx = c.get('tx')
+    const ipAddress = c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip')
+
+    const result = await approvalService.bulkResolvePoints(input, { actor, tx, ipAddress })
+    return c.json<ApiResponse<typeof result>>({ success: true, data: result, error: null })
   })
 
   // GET /points — paginated list with filters

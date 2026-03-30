@@ -88,3 +88,13 @@ export async function archiveUser(id: string, tx?: DbClient) {
     .returning()
   return archived ?? null
 }
+
+export async function activateUser(id: string, tx?: DbClient) {
+  const db = getDb(tx)
+  const [activated] = await db
+    .update(users)
+    .set({ isActive: true, archivedAt: null })
+    .where(eq(users.id, id))
+    .returning()
+  return activated ?? null
+}
