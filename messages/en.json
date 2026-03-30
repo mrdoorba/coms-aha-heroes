@@ -9,6 +9,8 @@
   "login_button": "Sign In",
   "login_signing_in": "Signing in...",
   "login_forgot_password": "Forgot password?",
+  "login_or": "or",
+  "login_google": "Sign in with Google",
   "login_failed": "Login failed",
   "login_show_password": "Show password",
   "login_hide_password": "Hide password",

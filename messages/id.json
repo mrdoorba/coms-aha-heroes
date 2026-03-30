@@ -9,6 +9,8 @@
   "login_button": "Masuk",
   "login_signing_in": "Sedang masuk...",
   "login_forgot_password": "Lupa kata sandi?",
+  "login_or": "atau",
+  "login_google": "Masuk dengan Google",
   "login_failed": "Gagal masuk",
   "login_show_password": "Tampilkan kata sandi",
   "login_hide_password": "Sembunyikan kata sandi",
