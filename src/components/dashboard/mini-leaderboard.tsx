@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { ChevronRight } from 'lucide-react'
 import { cn } from '~/lib/utils'
+import * as m from '~/paraglide/messages'
 
 type LeaderboardEntry = {
   rank: number
@@ -34,18 +35,18 @@ export function MiniLeaderboard({ entries, currentUserId }: MiniLeaderboardProps
   return (
     <div className="rounded-xl border border-border bg-card p-4">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-[#1D388B]">Top Poin AHA</h3>
+        <h3 className="text-sm font-semibold text-[#1D388B]">{m.mini_leaderboard_title()}</h3>
         <Link
           to="/leaderboard"
           className="flex items-center gap-0.5 text-xs text-[#325FEC] hover:underline"
         >
-          View All
+          {m.mini_leaderboard_view_all()}
           <ChevronRight className="h-3 w-3" />
         </Link>
       </div>
 
       {entries.length === 0 ? (
-        <p className="py-4 text-center text-sm text-muted-foreground">No data yet</p>
+        <p className="py-4 text-center text-sm text-muted-foreground">{m.common_no_data()}</p>
       ) : (
         <ul className="space-y-2">
           {entries.map((entry) => {
@@ -74,7 +75,7 @@ export function MiniLeaderboard({ entries, currentUserId }: MiniLeaderboardProps
                   {entry.name}
                   {isCurrentUser && (
                     <span className="ml-1 rounded-full bg-[#325FEC] px-1.5 py-0.5 text-[9px] font-bold text-white">
-                      You
+                      {m.mini_leaderboard_you()}
                     </span>
                   )}
                 </span>
