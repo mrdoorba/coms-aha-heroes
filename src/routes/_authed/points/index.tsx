@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Plus, Filter } from 'lucide-react'
+import * as m from '~/paraglide/messages'
 import { Button } from '~/components/ui/button'
 import {
   Select,
@@ -43,14 +44,14 @@ export const Route = createFileRoute('/_authed/points/')({
   component: PointsPage,
 })
 
-const tabs: Array<{ label: string; value: PointCategoryCode | 'ALL' }> = [
-  { label: 'All', value: 'ALL' },
-  { label: 'Bintang', value: 'BINTANG' },
-  { label: 'Penalti', value: 'PENALTI' },
-  { label: 'Poin AHA', value: 'POIN_AHA' },
-]
-
 function PointsPage() {
+  const tabs: Array<{ label: string; value: PointCategoryCode | 'ALL' }> = [
+    { label: m.points_tab_all(), value: 'ALL' },
+    { label: m.points_tab_bintang(), value: 'BINTANG' },
+    { label: m.points_tab_penalti(), value: 'PENALTI' },
+    { label: m.points_tab_poin_aha(), value: 'POIN_AHA' },
+  ]
+
   const initialData = Route.useLoaderData()
   const { session } = Route.useRouteContext()
   const userRole = (session?.appUser?.role ?? 'employee') as UserRole
@@ -112,7 +113,7 @@ function PointsPage() {
   return (
     <div className="space-y-4 p-4 max-w-3xl mx-auto">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-[#1D388B]">Points</h1>
+        <h1 className="text-xl font-bold text-[#1D388B]">{m.nav_points()}</h1>
       </div>
 
       {/* Tabs */}
@@ -141,7 +142,7 @@ function PointsPage() {
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="all">{m.points_all_status()}</SelectItem>
             {POINT_STATUSES.map((s) => (
               <SelectItem key={s} value={s}>
                 {s.charAt(0).toUpperCase() + s.slice(1)}
@@ -164,7 +165,7 @@ function PointsPage() {
           </div>
         ) : points.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <p className="text-muted-foreground">No points recorded yet</p>
+            <p className="text-muted-foreground">{m.points_empty()}</p>
           </div>
         ) : (
           points.map((point) => (
@@ -191,10 +192,10 @@ function PointsPage() {
             disabled={page <= 1}
             onClick={() => handlePageChange(page - 1)}
           >
-            Previous
+            {m.common_previous()}
           </Button>
           <span className="text-sm text-muted-foreground">
-            Page {page} of {totalPages}
+            {m.common_page_of({ page: String(page), total: String(totalPages) })}
           </span>
           <Button
             variant="outline"
@@ -202,7 +203,7 @@ function PointsPage() {
             disabled={page >= totalPages}
             onClick={() => handlePageChange(page + 1)}
           >
-            Next
+            {m.common_next()}
           </Button>
         </div>
       )}
@@ -220,7 +221,7 @@ function PointsPage() {
       <Dialog open={showTypeSelector} onOpenChange={setShowTypeSelector}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Submit Points</DialogTitle>
+            <DialogTitle>{m.points_submit()}</DialogTitle>
           </DialogHeader>
           <PointTypeSelector
             userRole={userRole}

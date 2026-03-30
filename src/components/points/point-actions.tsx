@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { Button } from '~/components/ui/button'
+import * as m from '~/paraglide/messages'
 import { ChallengeDialog } from './challenge-dialog'
 import { AppealDialog } from './appeal-dialog'
 import { ResolveDialog } from './resolve-dialog'
@@ -48,7 +49,7 @@ export function PointActions({ point }: PointActionsProps) {
           pointId={point.id} 
           trigger={
             <Button className="w-full bg-[#6D50B8] hover:bg-purple-700 rounded-xl py-6 text-base font-semibold shadow-lg shadow-purple-200">
-              Challenge This Penalti
+              {m.point_action_challenge()}
             </Button>
           }
         />
@@ -59,7 +60,7 @@ export function PointActions({ point }: PointActionsProps) {
           pointId={point.id} 
           trigger={
             <Button className="w-full bg-[#325FEC] hover:bg-blue-700 rounded-xl py-6 text-base font-semibold shadow-lg shadow-blue-200">
-              Appeal This Penalti
+              {m.point_action_appeal()}
             </Button>
           }
         />

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Award } from 'lucide-react'
+import * as m from '~/paraglide/messages'
 import { Button } from '~/components/ui/button'
 import { Label } from '~/components/ui/label'
 import { EmployeeSelector } from '~/components/points/employee-selector'
@@ -36,8 +37,8 @@ function PoinAhaForm() {
     e.preventDefault()
     setError(null)
 
-    if (!userId) return setError('Please select an employee')
-    if (!reason.trim()) return setError('Please describe the activity')
+    if (!userId) return setError(m.form_error_select_employee())
+    if (!reason.trim()) return setError(m.poin_aha_form_error_describe())
 
     setIsSubmitting(true)
     try {
@@ -53,7 +54,7 @@ function PoinAhaForm() {
       })
       navigate({ to: '/points' })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Submission failed')
+      setError(err instanceof Error ? err.message : m.form_error_submission_failed())
     } finally {
       setIsSubmitting(false)
     }
@@ -65,12 +66,12 @@ function PoinAhaForm() {
         <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-blue-50">
           <Award className="h-5 w-5 text-blue-500" />
         </div>
-        <h1 className="text-xl font-bold text-[#1D388B]">Give Poin AHA</h1>
+        <h1 className="text-xl font-bold text-[#1D388B]">{m.poin_aha_form_title()}</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label>Nama Staff</Label>
+          <Label>{m.form_staff_name()}</Label>
           <EmployeeSelector
             employees={employees}
             value={userId}
@@ -80,11 +81,11 @@ function PoinAhaForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="reason">Kegiatan</Label>
+          <Label htmlFor="reason">{m.poin_aha_form_activity()}</Label>
           <textarea
             id="reason"
             className="flex min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            placeholder="[siapa] berpartisipasi dalam [apa]"
+            placeholder={m.poin_aha_form_activity_placeholder()}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             maxLength={1000}
@@ -92,7 +93,7 @@ function PoinAhaForm() {
         </div>
 
         <div className="space-y-2">
-          <Label>Level: {level} = {level} Poin AHA</Label>
+          <Label>{m.poin_aha_form_level({ level: String(level) })}</Label>
           <input
             type="range"
             min={1}
@@ -109,11 +110,11 @@ function PoinAhaForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="relatedStaff">Related Staff (optional)</Label>
+          <Label htmlFor="relatedStaff">{m.form_related_staff()}</Label>
           <input
             id="relatedStaff"
             className="flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            placeholder="Names of related staff"
+            placeholder={m.form_related_staff_placeholder()}
             value={relatedStaff}
             onChange={(e) => setRelatedStaff(e.target.value)}
             maxLength={500}
@@ -121,7 +122,7 @@ function PoinAhaForm() {
         </div>
 
         <div className="space-y-2">
-          <Label>Screenshot (optional)</Label>
+          <Label>{m.form_screenshot_optional()}</Label>
           <FileUpload
             value={screenshotUrl}
             onChange={setScreenshotUrl}
@@ -130,7 +131,7 @@ function PoinAhaForm() {
 
         {isSelfSubmission && userRole === 'employee' && (
           <p className="text-sm text-muted-foreground bg-blue-50 border border-blue-200 rounded-lg p-3">
-            Your submission will be pending Leader approval
+            {m.form_pending_approval()}
           </p>
         )}
 
@@ -143,7 +144,7 @@ function PoinAhaForm() {
           disabled={isSubmitting}
           className="w-full bg-[#325FEC] text-white hover:bg-[#1D388B] font-semibold"
         >
-          {isSubmitting ? 'Submitting...' : 'Submit Poin AHA'}
+          {isSubmitting ? m.common_submitting() : m.poin_aha_form_submit()}
         </Button>
       </form>
     </div>

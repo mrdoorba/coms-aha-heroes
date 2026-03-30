@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
+import * as m from '~/paraglide/messages'
 import { ArrowLeft, User } from 'lucide-react'
 import { Button } from '~/components/ui/button'
 import { CategoryIcon } from '~/components/points/category-icon'
@@ -42,7 +43,7 @@ function PointDetailPage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
-        <h1 className="text-lg font-bold text-[#1D388B]">Point Detail</h1>
+        <h1 className="text-lg font-bold text-[#1D388B]">{m.point_detail_title()}</h1>
       </div>
 
       <div className="p-4 space-y-6">
@@ -81,8 +82,8 @@ function PointDetailPage() {
                 <User className="h-5 w-5 text-primary" />
               </div>
               <div className="min-w-0">
-                <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Recipient</p>
-                <p className="text-sm font-semibold truncate">{point.user?.name ?? 'Unknown'}</p>
+                <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{m.point_detail_recipient()}</p>
+                <p className="text-sm font-semibold truncate">{point.user?.name ?? m.common_unknown()}</p>
                 <p className="text-xs text-muted-foreground truncate">{point.user?.email}</p>
               </div>
             </div>
@@ -94,7 +95,7 @@ function PointDetailPage() {
                   <User className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Submitted by</p>
+                  <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{m.point_detail_submitted_by()}</p>
                   <p className="text-sm font-semibold truncate">{point.submitter.name}</p>
                   <p className="text-xs text-muted-foreground uppercase">{point.submitter.role}</p>
                 </div>
@@ -104,14 +105,14 @@ function PointDetailPage() {
 
           {/* Reason */}
           <div className="space-y-1">
-            <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Reason</p>
+            <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{m.point_detail_reason()}</p>
             <p className="text-sm leading-relaxed text-foreground/90 font-medium">{point.reason}</p>
           </div>
 
           {/* KITTA (Penalti only) */}
           {categoryCode === 'PENALTI' && point.kittaComponent && (
             <div className="rounded-xl border border-purple-100 bg-purple-50/50 p-3">
-              <p className="text-[10px] uppercase tracking-wider font-bold text-purple-600 mb-1">KITTA Category</p>
+              <p className="text-[10px] uppercase tracking-wider font-bold text-purple-600 mb-1">{m.point_detail_kitta_category()}</p>
               <p className="text-sm font-semibold text-purple-900">
                 {point.kittaComponent} — {KITTA_LABELS[point.kittaComponent as KittaCode]}
               </p>
@@ -121,7 +122,7 @@ function PointDetailPage() {
           {/* Related staff */}
           {point.relatedStaff && (
             <div className="space-y-1">
-              <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Related Staff</p>
+              <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{m.point_detail_related_staff()}</p>
               <p className="text-sm font-medium">{point.relatedStaff}</p>
             </div>
           )}
@@ -129,11 +130,11 @@ function PointDetailPage() {
           {/* Screenshot */}
           {point.screenshotUrl && (
             <div className="space-y-2">
-              <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Evidence</p>
+              <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{m.point_detail_evidence()}</p>
               <div className="relative aspect-video rounded-xl overflow-hidden border border-border group">
                 <img
                   src={point.screenshotUrl}
-                  alt="Evidence screenshot"
+                  alt={m.point_detail_evidence()}
                   className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
                 />
               </div>

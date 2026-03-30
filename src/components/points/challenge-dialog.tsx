@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as m from '~/paraglide/messages'
 import {
   Dialog,
   DialogContent,
@@ -32,12 +33,12 @@ export function ChallengeDialog({ pointId, trigger }: ChallengeDialogProps) {
     setIsSubmitting(true)
     try {
       await fileChallengeFn({ data: { pointId, reason } })
-      toast.success('Challenge submitted successfully')
+      toast.success(m.challenge_success())
       setOpen(false)
       setReason('')
       router.invalidate()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to submit challenge')
+      toast.error(error instanceof Error ? error.message : m.challenge_failed())
     } finally {
       setIsSubmitting(false)
     }
@@ -48,17 +49,17 @@ export function ChallengeDialog({ pointId, trigger }: ChallengeDialogProps) {
       <DialogTrigger render={trigger ?? <Button variant="outline" className="text-[#6D50B8] border-[#6D50B8] hover:bg-purple-50">Challenge</Button>} />
       <DialogContent className="sm:max-w-[425px] rounded-[20px]">
         <DialogHeader>
-          <DialogTitle className="text-[#1D388B]">Challenge Point</DialogTitle>
+          <DialogTitle className="text-[#1D388B]">{m.challenge_title()}</DialogTitle>
           <DialogDescription>
-            This challenge will be reviewed by HR. Please provide a clear reason why this point should be reviewed.
+            {m.challenge_description()}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="reason">Reason for Challenge</Label>
+            <Label htmlFor="reason">{m.challenge_reason_label()}</Label>
             <Textarea
               id="reason"
-              placeholder="Explain why you are challenging this point..."
+              placeholder={m.challenge_reason_placeholder()}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               className="min-h-[120px] rounded-xl"
@@ -66,7 +67,7 @@ export function ChallengeDialog({ pointId, trigger }: ChallengeDialogProps) {
           </div>
           <div className="p-3 rounded-lg bg-blue-50 border border-blue-100">
             <p className="text-xs text-blue-700 leading-relaxed">
-              <strong>Note:</strong> Challenging a point will temporarily freeze it until HR completes the review.
+              <strong>Note:</strong> {m.challenge_note()}
             </p>
           </div>
         </div>
@@ -77,7 +78,7 @@ export function ChallengeDialog({ pointId, trigger }: ChallengeDialogProps) {
             disabled={isSubmitting || !reason.trim()}
             className="w-full bg-[#325FEC] hover:bg-blue-700 rounded-xl"
           >
-            {isSubmitting ? 'Submitting...' : 'Submit Challenge'}
+            {isSubmitting ? m.common_submitting() : m.challenge_submit()}
           </Button>
         </DialogFooter>
       </DialogContent>

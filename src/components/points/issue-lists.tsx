@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as m from '~/paraglide/messages'
 import { Badge } from '~/components/ui/badge'
 import { ResolveDialog } from './resolve-dialog'
 import { useSession } from '~/lib/auth-client'
@@ -30,7 +31,7 @@ export function ChallengesList({ pointId }: IssueListsProps) {
     <div className="space-y-4">
       <h3 className="text-sm font-semibold text-[#1D388B] flex items-center gap-2">
         <span className="w-1.5 h-1.5 rounded-full bg-[#6D50B8]" />
-        Challenges
+        {m.issue_challenges()}
       </h3>
       <div className="space-y-3">
         {challenges.map((challenge: any) => (
@@ -67,14 +68,14 @@ export function ChallengesList({ pointId }: IssueListsProps) {
               <div className="p-3 rounded-lg bg-[#325FEC]/5 border border-[#325FEC]/10 space-y-1">
                 <div className="flex items-center gap-1.5 text-[#325FEC] text-[10px] font-bold uppercase tracking-wider">
                   {challenge.status === 'upheld' ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
-                  Resolution: {challenge.status}
+                  {m.issue_resolution()}: {challenge.status}
                 </div>
                 <p className="text-xs text-foreground leading-relaxed">
                   {challenge.resolutionNote}
                 </p>
                 <div className="text-[10px] text-muted-foreground pt-1 flex items-center gap-1">
                   <Clock className="h-2.5 w-2.5" />
-                  Resolved on {new Date(challenge.resolvedAt).toLocaleDateString('id-ID')}
+                  {m.issue_resolved_on({ date: new Date(challenge.resolvedAt).toLocaleDateString('id-ID') })}
                 </div>
               </div>
             )}
@@ -103,7 +104,7 @@ export function AppealsList({ pointId }: IssueListsProps) {
     <div className="space-y-4">
       <h3 className="text-sm font-semibold text-[#1D388B] flex items-center gap-2">
         <span className="w-1.5 h-1.5 rounded-full bg-[#F4C144]" />
-        Appeals
+        {m.issue_appeals()}
       </h3>
       <div className="space-y-3">
         {appeals.map((appeal: any) => (
@@ -133,14 +134,14 @@ export function AppealsList({ pointId }: IssueListsProps) {
               <div className="p-3 rounded-lg bg-[#325FEC]/5 border border-[#325FEC]/10 space-y-1">
                 <div className="flex items-center gap-1.5 text-[#325FEC] text-[10px] font-bold uppercase tracking-wider">
                   {appeal.status === 'upheld' ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
-                  Resolution: {appeal.status}
+                  {m.issue_resolution()}: {appeal.status}
                 </div>
                 <p className="text-xs text-foreground leading-relaxed">
                   {appeal.resolutionNote}
                 </p>
                 <div className="text-[10px] text-muted-foreground pt-1 flex items-center gap-1">
                   <Clock className="h-2.5 w-2.5" />
-                  Resolved on {new Date(appeal.resolvedAt).toLocaleDateString('id-ID')}
+                  {m.issue_resolved_on({ date: new Date(appeal.resolvedAt).toLocaleDateString('id-ID') })}
                 </div>
               </div>
             )}
