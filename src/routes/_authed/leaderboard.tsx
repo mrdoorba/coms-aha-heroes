@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { Trophy, Star, Users } from 'lucide-react'
+import * as m from '~/paraglide/messages'
 import {
   Select,
   SelectContent,
@@ -41,15 +42,15 @@ export const Route = createFileRoute('/_authed/leaderboard')({
   component: LeaderboardPage,
 })
 
-const tabs: Array<{ label: string; value: LeaderboardType; icon: React.ReactNode }> = [
-  { label: 'Bintang sAHAbat', value: 'bintang', icon: <Star className="h-4 w-4" /> },
-  { label: 'Poin AHA', value: 'poin_aha', icon: <Trophy className="h-4 w-4" /> },
-]
-
 function LeaderboardPage() {
   const initialData = Route.useLoaderData()
   const { session } = Route.useRouteContext()
   const currentUserId = session?.appUser?.id ?? ''
+
+  const tabs: Array<{ label: string; value: LeaderboardType; icon: React.ReactNode }> = [
+    { label: m.points_bintang(), value: 'bintang', icon: <Star className="h-4 w-4" /> },
+    { label: m.points_poin_aha(), value: 'poin_aha', icon: <Trophy className="h-4 w-4" /> },
+  ]
 
   const [activeType, setActiveType] = useState<LeaderboardType>('bintang')
   const [teamId, setTeamId] = useState<string>('')
@@ -93,7 +94,7 @@ function LeaderboardPage() {
 
   const top3 = entries.filter((e) => e.rank <= 3)
   const rest = entries.filter((e) => e.rank > 3)
-  const scoreLabel = activeType === 'bintang' ? 'Bintang' : 'Poin AHA'
+  const scoreLabel = activeType === 'bintang' ? m.points_bintang() : m.points_poin_aha()
 
   const tabActiveColor = activeType === 'bintang' ? '#F4C144' : '#325FEC'
 
@@ -101,7 +102,7 @@ function LeaderboardPage() {
     <div className="max-w-2xl mx-auto space-y-4 pb-8">
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-6">
-        <h1 className="text-xl font-bold text-[#1D388B]">Leaderboard</h1>
+        <h1 className="text-xl font-bold text-[#1D388B]">{m.nav_leaderboard()}</h1>
         {teams.length > 0 && (
           <Select value={teamId || 'all'} onValueChange={handleTeamChange}>
             <SelectTrigger className="w-36 h-9 text-sm">
@@ -109,7 +110,7 @@ function LeaderboardPage() {
               <SelectValue placeholder="All Teams" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Teams</SelectItem>
+              <SelectItem value="all">{m.leaderboard_all_teams()}</SelectItem>
               {teams.map((team) => (
                 <SelectItem key={team.id} value={team.id}>
                   {team.name}
@@ -152,7 +153,7 @@ function LeaderboardPage() {
       ) : entries.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center px-4">
           <Trophy className="h-12 w-12 text-muted-foreground/40 mb-3" />
-          <p className="text-muted-foreground">No data yet</p>
+          <p className="text-muted-foreground">{m.common_no_data()}</p>
         </div>
       ) : (
         <>
