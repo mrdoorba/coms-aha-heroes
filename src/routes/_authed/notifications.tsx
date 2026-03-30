@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import * as m from '~/paraglide/messages'
 import {
   Award,
   Clock,
@@ -45,11 +46,11 @@ function formatRelativeTime(date: Date): string {
   const diffHour = Math.floor(diffMin / 60)
   const diffDay = Math.floor(diffHour / 24)
 
-  if (diffSec < 60) return 'just now'
-  if (diffMin < 60) return `${diffMin} minute${diffMin === 1 ? '' : 's'} ago`
-  if (diffHour < 24) return `${diffHour} hour${diffHour === 1 ? '' : 's'} ago`
-  if (diffDay === 1) return 'yesterday'
-  if (diffDay < 7) return `${diffDay} days ago`
+  if (diffSec < 60) return m.time_just_now()
+  if (diffMin < 60) return m.time_minutes_ago({ count: String(diffMin) })
+  if (diffHour < 24) return m.time_hours_ago({ count: String(diffHour) })
+  if (diffDay === 1) return m.time_yesterday()
+  if (diffDay < 7) return m.time_days_ago({ count: String(diffDay) })
   return date.toLocaleDateString()
 }
 
@@ -159,14 +160,14 @@ function NotificationsPage() {
   return (
     <div className="space-y-4 p-4 max-w-3xl mx-auto">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-[#1D388B]">Notifications</h1>
+        <h1 className="text-xl font-bold text-[#1D388B]">{m.nav_notifications()}</h1>
         <Button
           variant="ghost"
           size="sm"
           className="text-sm text-muted-foreground hover:text-foreground"
           onClick={handleMarkAllRead}
         >
-          Mark all read
+          {m.notifications_mark_all_read()}
         </Button>
       </div>
 
@@ -183,7 +184,7 @@ function NotificationsPage() {
         ) : notificationsList.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
             <Bell className="h-10 w-10 text-muted-foreground/40" />
-            <p className="text-muted-foreground">No notifications yet</p>
+            <p className="text-muted-foreground">{m.notifications_empty()}</p>
           </div>
         ) : (
           notificationsList.map((notification) => (
@@ -230,10 +231,10 @@ function NotificationsPage() {
             disabled={page <= 1 || isLoading}
             onClick={() => loadPage(page - 1)}
           >
-            Previous
+            {m.common_previous()}
           </Button>
           <span className="text-sm text-muted-foreground">
-            Page {page} of {totalPages}
+            {m.common_page_of({ page: String(page), total: String(totalPages) })}
           </span>
           <Button
             variant="outline"
@@ -241,7 +242,7 @@ function NotificationsPage() {
             disabled={page >= totalPages || isLoading}
             onClick={() => loadPage(page + 1)}
           >
-            Next
+            {m.common_next()}
           </Button>
         </div>
       )}

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute, useRouter, Link } from '@tanstack/react-router'
+import * as m from '~/paraglide/messages'
 import {
   User,
   Star,
@@ -125,7 +126,7 @@ function ProfilePage() {
           <button
             type="button"
             className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-[#325FEC] text-white shadow-sm hover:bg-[#1D388B]"
-            aria-label="Edit avatar"
+            aria-label={m.profile_edit_avatar()}
           >
             <Camera className="h-3.5 w-3.5" />
           </button>
@@ -143,16 +144,16 @@ function ProfilePage() {
         {/* Info grid */}
         <div className="mt-4 grid w-full grid-cols-2 gap-3">
           {user.department && (
-            <InfoItem icon={Building2} label="Department" value={user.department} />
+            <InfoItem icon={Building2} label={m.profile_department()} value={user.department} />
           )}
           {user.position && (
-            <InfoItem icon={Briefcase} label="Position" value={user.position} />
+            <InfoItem icon={Briefcase} label={m.profile_position()} value={user.position} />
           )}
           {user.teamName && (
-            <InfoItem icon={Users} label="Team" value={user.teamName} />
+            <InfoItem icon={Users} label={m.profile_team()} value={user.teamName} />
           )}
           {user.branchName && (
-            <InfoItem icon={MapPin} label="Branch" value={user.branchName} />
+            <InfoItem icon={MapPin} label={m.profile_branch()} value={user.branchName} />
           )}
         </div>
       </div>
@@ -160,21 +161,21 @@ function ProfilePage() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
         <StatCard
-          label="Bintang"
+          label={m.points_bintang()}
           value={stats.bintangCount}
           icon={<Star className="h-5 w-5" />}
           iconBg="bg-[#F4C144]/15"
           iconColor="text-[#F4C144]"
         />
         <StatCard
-          label="Poin AHA"
+          label={m.points_poin_aha()}
           value={stats.directPoinAha - stats.redeemedTotal}
           icon={<Award className="h-5 w-5" />}
           iconBg="bg-[#325FEC]/10"
           iconColor="text-[#325FEC]"
         />
         <StatCard
-          label="Penalti"
+          label={m.points_penalti()}
           value={stats.penaltiPointsSum}
           icon={<AlertTriangle className="h-5 w-5" />}
           iconBg="bg-[#6D50B8]/10"
@@ -186,7 +187,7 @@ function ProfilePage() {
       {(activity as ActivityItem[]).length > 0 && (
         <div className="rounded-xl border border-border bg-white p-4 shadow-[0_2px_8px_rgba(29,56,139,0.08)]">
           <h2 className="mb-3 text-sm font-semibold text-[#1D388B]">
-            Recent Points
+            {m.profile_recent_points()}
           </h2>
           <div className="space-y-2">
             {(activity as ActivityItem[]).map((item) => (
@@ -218,13 +219,13 @@ function ProfilePage() {
           className="flex w-full items-center gap-3 rounded-xl border border-border bg-white px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/50 transition-colors shadow-[0_2px_8px_rgba(29,56,139,0.08)]"
         >
           <KeyRound className="h-4 w-4 text-muted-foreground" />
-          Change Password
+          {m.change_password_title()}
         </Link>
 
         <div className="flex items-center gap-3 rounded-xl border border-border bg-white px-4 py-3 shadow-[0_2px_8px_rgba(29,56,139,0.08)]">
           <Globe className="h-4 w-4 text-muted-foreground" />
           <span className="flex-1 text-sm font-medium text-foreground">
-            Language
+            {m.profile_language()}
           </span>
           <div className="flex rounded-md border border-border">
             {LANGUAGES.map((lang) => {
@@ -256,7 +257,7 @@ function ProfilePage() {
           onClick={handleLogout}
         >
           <LogOut className="h-4 w-4" />
-          {loggingOut ? 'Logging out...' : 'Logout'}
+          {loggingOut ? m.profile_logging_out() : m.profile_logout()}
         </Button>
       </div>
     </div>
