@@ -6,6 +6,7 @@ import {
   timestamp,
   text,
   index,
+  uniqueIndex,
   type AnyPgColumn,
 } from 'drizzle-orm/pg-core'
 import { userRoleEnum } from './enums'
@@ -22,7 +23,7 @@ export const users = pgTable(
     teamId: uuid('team_id').references((): AnyPgColumn => teams.id),
     email: varchar('email', { length: 255 }).notNull().unique(),
     name: varchar('name', { length: 255 }).notNull(),
-    employeeId: varchar('employee_id', { length: 50 }),
+    attendanceName: varchar('attendance_name', { length: 50 }),
     role: userRoleEnum('role').notNull().default('employee'),
     department: varchar('department', { length: 100 }),
     position: varchar('position', { length: 100 }),
@@ -38,5 +39,22 @@ export const users = pgTable(
     index('idx_users_branch').on(t.branchId),
     index('idx_users_team').on(t.teamId),
     index('idx_users_email').on(t.email),
+    index('idx_users_attendance_name').on(t.attendanceName),
+  ],
+)
+
+export const userEmails = pgTable(
+  'user_emails',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    email: varchar('email', { length: 255 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('idx_user_emails_email').on(t.email),
+    index('idx_user_emails_user_id').on(t.userId),
   ],
 )
