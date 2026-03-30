@@ -6,6 +6,7 @@ import { RewardCard } from '~/components/rewards/reward-card'
 import { CreateRewardDialog } from '~/components/rewards/create-reward-dialog'
 import { listRewardsFn, createRewardFn, updateRewardFn } from '~/server/functions/rewards'
 import type { UserRole } from '~/shared/constants'
+import * as m from '~/paraglide/messages'
 
 type Reward = {
   id: string
@@ -97,7 +98,7 @@ function RewardsCatalogPage() {
     <div className="max-w-2xl mx-auto p-4 space-y-5 pb-24 md:pb-8">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-[#1D388B]">Rewards Catalog</h1>
+        <h1 className="text-xl font-bold text-[#1D388B]">{m.rewards_catalog_title()}</h1>
         {isAdmin && (
           <Button
             size="sm"
@@ -105,14 +106,14 @@ function RewardsCatalogPage() {
             onClick={openCreate}
           >
             <Plus className="h-4 w-4" />
-            Add Reward
+            {m.rewards_add()}
           </Button>
         )}
       </div>
 
       {/* Balance bar */}
       <div className="rounded-xl bg-[#325FEC] px-4 py-3 flex items-center justify-between">
-        <span className="text-sm font-medium text-white/80">Your Poin AHA</span>
+        <span className="text-sm font-medium text-white/80">{m.rewards_your_balance()}</span>
         <span className="text-lg font-bold text-white">0</span>
       </div>
 
@@ -122,11 +123,11 @@ function RewardsCatalogPage() {
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
             <Gift className="h-8 w-8 text-muted-foreground" />
           </div>
-          <p className="font-medium text-foreground">No rewards available</p>
+          <p className="font-medium text-foreground">{m.rewards_empty()}</p>
           <p className="text-sm text-muted-foreground">
             {isAdmin
-              ? 'Add the first reward using the button above.'
-              : 'Check back later for available rewards.'}
+              ? m.rewards_empty_admin()
+              : m.rewards_empty_user()}
           </p>
         </div>
       ) : (

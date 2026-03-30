@@ -6,6 +6,7 @@ import { Label } from '~/components/ui/label'
 import { Textarea } from '~/components/ui/textarea'
 import { getRewardByIdFn } from '~/server/functions/rewards'
 import { requestRedemptionFn } from '~/server/functions/redemptions'
+import * as m from '~/paraglide/messages'
 
 export const Route = createFileRoute('/_authed/rewards/$id/redeem')({
   loader: async ({ params }) => {
@@ -38,7 +39,7 @@ function RedeemPage() {
       })
       router.navigate({ to: '/rewards' })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to request redemption.')
+      setError(err instanceof Error ? err.message : m.redeem_failed())
     } finally {
       setIsSubmitting(false)
     }
@@ -53,7 +54,7 @@ function RedeemPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
-        <h1 className="text-xl font-bold text-[#1D388B]">Redeem Reward</h1>
+        <h1 className="text-xl font-bold text-[#1D388B]">{m.redeem_title()}</h1>
       </div>
 
       {/* Reward card */}
@@ -84,7 +85,7 @@ function RedeemPage() {
 
       {/* Balance info */}
       <div className="rounded-xl bg-[#325FEC] px-4 py-3 flex items-center justify-between">
-        <span className="text-sm font-medium text-white/80">Your Poin AHA</span>
+        <span className="text-sm font-medium text-white/80">{m.rewards_your_balance()}</span>
         <span className="text-lg font-bold text-white">{currentBalance}</span>
       </div>
 
@@ -93,7 +94,7 @@ function RedeemPage() {
         <div className="flex items-start gap-2 rounded-xl border border-[#F4C144]/40 bg-[#F4C144]/10 px-4 py-3">
           <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-[#b58a00]" />
           <p className="text-sm text-[#b58a00] font-medium">
-            You need {(reward.pointCost as number) - currentBalance} more Poin AHA to redeem this reward.
+            {m.redeem_insufficient({ count: String((reward.pointCost as number) - currentBalance) })}
           </p>
         </div>
       )}
@@ -101,10 +102,10 @@ function RedeemPage() {
       {/* Redemption form */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5">
-          <Label htmlFor="redeem-notes">Keterangan / Notes (optional)</Label>
+          <Label htmlFor="redeem-notes">{m.redeem_notes_label()}</Label>
           <Textarea
             id="redeem-notes"
-            placeholder="Add any notes for this redemption request…"
+            placeholder={m.redeem_notes_placeholder()}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={4}
@@ -123,10 +124,10 @@ function RedeemPage() {
           {isSubmitting ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              Submitting…
+              {m.common_submitting()}
             </>
           ) : (
-            'Request Redemption'
+            m.redeem_submit()
           )}
         </Button>
       </form>

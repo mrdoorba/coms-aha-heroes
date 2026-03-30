@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
+import * as m from '~/paraglide/messages'
 import { Gift } from 'lucide-react'
 import { Button } from '~/components/ui/button'
 import { Badge } from '~/components/ui/badge'
@@ -36,20 +37,23 @@ type Tab = 'mine' | 'pending'
 
 const redemptionStatusConfig: Record<
   'pending' | 'approved' | 'rejected',
-  { label: string; className: string }
+  { className: string }
 > = {
   pending: {
-    label: 'Pending',
     className: 'bg-yellow-100 text-yellow-700 border-yellow-200',
   },
   approved: {
-    label: 'Approved',
     className: 'bg-green-100 text-green-700 border-green-200',
   },
   rejected: {
-    label: 'Rejected',
     className: 'bg-red-100 text-red-700 border-red-200',
   },
+}
+
+function redemptionStatusLabel(status: 'pending' | 'approved' | 'rejected'): string {
+  if (status === 'approved') return m.status_approved()
+  if (status === 'rejected') return m.status_rejected()
+  return m.status_pending()
 }
 
 function RedemptionStatusBadge({
@@ -65,7 +69,7 @@ function RedemptionStatusBadge({
       variant="outline"
       className={cn('text-xs font-medium', config.className, className)}
     >
-      {config.label}
+      {redemptionStatusLabel(status)}
     </Badge>
   )
 }
@@ -176,7 +180,7 @@ function RedemptionsPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
-      <h1 className="text-xl font-bold text-[#1D388B]">Redemptions</h1>
+      <h1 className="text-xl font-bold text-[#1D388B]">{m.redemptions_title()}</h1>
 
       {/* Tab bar */}
       <div className="flex gap-2 border-b border-border">
@@ -190,7 +194,7 @@ function RedemptionsPage() {
           )}
           onClick={() => handleTabChange('mine')}
         >
-          My Requests
+          {m.redemptions_my_requests()}
         </button>
         {isHrOrAdmin && (
           <button
@@ -203,7 +207,7 @@ function RedemptionsPage() {
             )}
             onClick={() => handleTabChange('pending')}
           >
-            Pending Approval
+            {m.redemptions_pending_approval()}
           </button>
         )}
       </div>
@@ -220,7 +224,7 @@ function RedemptionsPage() {
         ) : redemptions.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
             <Gift className="h-10 w-10 text-muted-foreground/40" />
-            <p className="text-muted-foreground">No redemptions yet</p>
+            <p className="text-muted-foreground">{m.redemptions_empty()}</p>
           </div>
         ) : (
           redemptions.map((item) => (
@@ -252,13 +256,13 @@ function RedemptionsPage() {
 
                 {activeTab === 'pending' && (
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Requested by{' '}
+                    {m.redemptions_requested_by()}{' '}
                     <span className="font-medium text-foreground">{item.userName}</span>
                   </p>
                 )}
 
                 <p className="text-xs font-medium text-[#325FEC] mt-0.5">
-                  {item.pointsSpent} Poin AHA
+                  {item.pointsSpent} {m.points_poin_aha()}
                 </p>
 
                 <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -267,7 +271,7 @@ function RedemptionsPage() {
                   </span>
                   {item.approverName && item.status !== 'pending' && (
                     <span className="text-xs text-muted-foreground">
-                      · {item.status === 'approved' ? 'Approved' : 'Rejected'} by{' '}
+                      · {item.status === 'approved' ? m.redemptions_approved_by() : m.redemptions_rejected_by()}{' '}
                       <span className="font-medium text-foreground">{item.approverName}</span>
                     </span>
                   )}
@@ -287,7 +291,7 @@ function RedemptionsPage() {
                       disabled={isSubmitting}
                       onClick={() => handleApprove(item.id)}
                     >
-                      Approve
+                      {m.common_approve()}
                     </Button>
                     <Button
                       size="sm"
@@ -296,7 +300,7 @@ function RedemptionsPage() {
                       disabled={isSubmitting}
                       onClick={() => openRejectDialog(item.id)}
                     >
-                      Reject
+                      {m.common_reject()}
                     </Button>
                   </div>
                 )}
@@ -310,17 +314,17 @@ function RedemptionsPage() {
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Reject Redemption</DialogTitle>
+            <DialogTitle>{m.redemptions_reject_title()}</DialogTitle>
           </DialogHeader>
           <div className="space-y-2 py-2">
             <label className="text-sm font-medium text-foreground" htmlFor="rejection-reason">
-              Reason (optional)
+              {m.redemptions_reject_reason_label()}
             </label>
             <textarea
               id="rejection-reason"
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#325FEC] resize-none"
               rows={3}
-              placeholder="Enter rejection reason..."
+              placeholder={m.redemptions_reject_placeholder()}
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
             />
@@ -332,7 +336,7 @@ function RedemptionsPage() {
               disabled={isSubmitting}
               onClick={() => setRejectDialogOpen(false)}
             >
-              Cancel
+              {m.common_cancel()}
             </Button>
             <Button
               size="sm"
@@ -340,7 +344,7 @@ function RedemptionsPage() {
               disabled={isSubmitting}
               onClick={handleRejectConfirm}
             >
-              {isSubmitting ? 'Rejecting...' : 'Confirm Reject'}
+              {isSubmitting ? m.redemptions_rejecting() : m.redemptions_confirm_reject()}
             </Button>
           </DialogFooter>
         </DialogContent>
