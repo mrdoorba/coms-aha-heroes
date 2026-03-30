@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { ArrowLeft, Mail } from 'lucide-react'
+import * as m from '~/paraglide/messages'
 
 export const Route = createFileRoute('/forgot-password')({
   component: ForgotPasswordPage,
@@ -27,13 +28,13 @@ function ForgotPasswordPage() {
       if (!res.ok) {
         const body = await res.json().catch(() => null)
         throw new Error(
-          (body as { message?: string })?.message ?? 'Failed to send reset link',
+          (body as { message?: string })?.message ?? m.forgot_password_failed(),
         )
       }
 
       setSubmitted(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
+      setError(err instanceof Error ? err.message : m.common_something_wrong())
     } finally {
       setLoading(false)
     }
@@ -46,7 +47,7 @@ function ForgotPasswordPage() {
           AHA HEROES
         </h1>
         <p className="mt-1 text-center text-sm text-gray-500">
-          Reset your password
+          {m.forgot_password_subtitle()}
         </p>
 
         {submitted ? (
@@ -54,10 +55,10 @@ function ForgotPasswordPage() {
             <div className="flex flex-col items-center gap-3 rounded-lg bg-green-50 p-4 text-center">
               <Mail className="h-8 w-8 text-green-600" />
               <p className="text-sm font-medium text-green-800">
-                If an account with that email exists, we&apos;ve sent a reset link.
+                {m.forgot_password_sent_title()}
               </p>
               <p className="text-xs text-green-600">
-                Check your inbox and follow the instructions.
+                {m.forgot_password_sent_body()}
               </p>
             </div>
             <Link
@@ -65,7 +66,7 @@ function ForgotPasswordPage() {
               className="flex w-full items-center justify-center gap-1.5 rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Login
+              {m.forgot_password_back_to_login()}
             </Link>
           </div>
         ) : (
@@ -81,7 +82,7 @@ function ForgotPasswordPage() {
                 htmlFor="reset-email"
                 className="block text-sm font-medium text-gray-700"
               >
-                Email
+                {m.login_email()}
               </label>
               <input
                 id="reset-email"
@@ -99,7 +100,7 @@ function ForgotPasswordPage() {
               disabled={loading}
               className="w-full rounded-md bg-[#325FEC] px-4 py-2 text-sm font-medium text-white hover:bg-[#2850d0] disabled:opacity-50"
             >
-              {loading ? 'Sending...' : 'Send Reset Link'}
+              {loading ? m.forgot_password_sending() : m.forgot_password_send_button()}
             </button>
 
             <Link
@@ -107,7 +108,7 @@ function ForgotPasswordPage() {
               className="flex items-center justify-center gap-1.5 text-sm text-gray-500 hover:text-gray-700"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              Back to Login
+              {m.forgot_password_back_to_login()}
             </Link>
           </form>
         )}

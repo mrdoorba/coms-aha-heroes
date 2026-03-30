@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { signIn } from '~/lib/auth-client'
 import { setLocale } from '~/paraglide/runtime.js'
+import * as m from '~/paraglide/messages'
 
 const LANGUAGES = ['id', 'en', 'th'] as const
 const LOCALE_COOKIE = 'PARAGLIDE_LOCALE'
@@ -39,7 +40,7 @@ function LoginPage() {
     const { error: signInError } = await signIn.email({ email, password })
 
     if (signInError) {
-      setError(signInError.message ?? 'Login failed')
+      setError(signInError.message ?? m.login_failed())
       setLoading(false)
       return
     }
@@ -54,7 +55,7 @@ function LoginPage() {
           AHA HEROES
         </h1>
         <p className="mt-1 text-center text-sm text-gray-500">
-          Sign in to continue
+          {m.login_subtitle()}
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
@@ -68,7 +69,7 @@ function LoginPage() {
               htmlFor="email"
               className="block text-sm font-medium text-gray-700"
             >
-              Email
+              {m.login_email()}
             </label>
             <input
               id="email"
@@ -85,7 +86,7 @@ function LoginPage() {
               htmlFor="password"
               className="block text-sm font-medium text-gray-700"
             >
-              Password
+              {m.login_password()}
             </label>
             <div className="relative mt-1">
               <input
@@ -101,7 +102,7 @@ function LoginPage() {
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
                 className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-label={showPassword ? m.login_hide_password() : m.login_show_password()}
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -112,7 +113,7 @@ function LoginPage() {
             disabled={loading}
             className="w-full rounded-md bg-[#325FEC] px-4 py-2 text-sm font-medium text-white hover:bg-[#2850d0] disabled:opacity-50"
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? m.login_signing_in() : m.login_button()}
           </button>
 
           <div className="text-center">
@@ -120,7 +121,7 @@ function LoginPage() {
               to="/forgot-password"
               className="text-sm text-gray-500 hover:text-[#325FEC]"
             >
-              Forgot password?
+              {m.login_forgot_password()}
             </Link>
           </div>
         </form>
