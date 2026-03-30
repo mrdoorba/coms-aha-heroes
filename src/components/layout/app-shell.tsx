@@ -3,6 +3,7 @@ import { TopBar } from './top-bar'
 import { BottomNav } from './bottom-nav'
 import { Sidebar } from './sidebar'
 import { Header } from './header'
+import { PullToRefresh } from '~/components/ui/pull-to-refresh'
 
 interface AppShellProps {
   user: { name: string; role: string; avatarUrl: string | null }
@@ -28,9 +29,11 @@ export function AppShell({ user, unreadCount, children }: AppShellProps) {
         style={{ marginLeft: `var(--sidebar-width, 0px)` }}
       >
         <Header user={user} unreadCount={unreadCount} className="hidden md:flex" />
-        <main className="pt-14 pb-16 md:pt-0 md:pb-0 px-4 md:px-6 max-w-screen-xl mx-auto">
-          {children}
-        </main>
+        <PullToRefresh>
+          <main className="page-transition pt-14 pb-16 md:pt-0 md:pb-0 px-4 md:px-6 max-w-screen-xl mx-auto">
+            {children}
+          </main>
+        </PullToRefresh>
       </div>
 
       <BottomNav className="md:hidden" />

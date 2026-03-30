@@ -9,6 +9,9 @@ import {
   useRouter,
 } from '@tanstack/react-router'
 import { FileQuestion, AlertTriangle } from 'lucide-react'
+import { PwaInstallBanner } from '~/components/pwa/install-banner'
+import { OfflineIndicator } from '~/components/pwa/offline-indicator'
+import { Toaster } from '~/components/ui/sonner'
 import appCss from '~/styles/globals.css?url'
 import { getLocale } from '~/paraglide/runtime.js'
 import { Button, buttonVariants } from '~/components/ui/button'
@@ -60,7 +63,10 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
         <HeadContent />
       </head>
       <body className="min-h-screen bg-white font-sans text-gray-900 antialiased">
+        <OfflineIndicator />
+        <PwaInstallBanner />
         {children}
+        <Toaster />
         <Scripts />
         <script
           dangerouslySetInnerHTML={{

@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { Loader2 } from 'lucide-react'
 import { getSessionFn } from '~/server/functions/auth'
+import { getUnreadCountFn } from '~/server/functions/notifications'
 import { AppShell } from '~/components/layout/app-shell'
 
 export const Route = createFileRoute('/_authed')({
@@ -18,14 +19,18 @@ export const Route = createFileRoute('/_authed')({
       throw redirect({ to: '/change-password' })
     }
 
-    return { session }
+    const { count: unreadCount } = await getUnreadCountFn().catch(() => ({
+      count: 0,
+    }))
+
+    return { session, unreadCount }
   },
   component: AuthedLayout,
   pendingComponent: AuthedPending,
 })
 
 function AuthedLayout() {
-  const { session } = Route.useRouteContext()
+  const { session, unreadCount } = Route.useRouteContext()
 
   const user = {
     name: session.user.name,
@@ -34,10 +39,7 @@ function AuthedLayout() {
   }
 
   return (
-    <AppShell
-      user={user}
-      unreadCount={0} // will be wired to /v1/notifications/unread-count via TanStack Query in a future step
-    >
+    <AppShell user={user} unreadCount={unreadCount ?? 0}>
       <Outlet />
     </AppShell>
   )
