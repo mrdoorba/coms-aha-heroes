@@ -7,7 +7,7 @@ export {
 export { userRoleEnum, pointStatusEnum, redemptionStatusEnum } from './enums'
 export { branches } from './branches'
 export { teams } from './teams'
-export { users } from './users'
+export { users, userEmails } from './users'
 export { systemSettings } from './system-settings'
 export { pointCategories, pointCategoryTranslations } from './point-categories'
 export { achievementPoints } from './achievement-points'
