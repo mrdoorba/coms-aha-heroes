@@ -1,16 +1,21 @@
 import { Link } from '@tanstack/react-router'
-import { LayoutDashboard, Award, Trophy, Users, Building2, User, ChevronsLeft, ChevronsRight } from 'lucide-react'
+import { LayoutDashboard, Award, Trophy, Gift, ShoppingCart, Users, Building2, Settings, FileText, BarChart3, User, ChevronsLeft, ChevronsRight } from 'lucide-react'
 import { cn } from '~/lib/utils'
 
 const mainNavItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/points', icon: Award, label: 'Points' },
   { to: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
+  { to: '/rewards', icon: Gift, label: 'Rewards' },
+  { to: '/redemptions', icon: ShoppingCart, label: 'Redemptions' },
 ] as const
 
 const adminNavItems = [
   { to: '/users', icon: Users, label: 'Users' },
   { to: '/teams', icon: Building2, label: 'Teams' },
+  { to: '/reports', icon: BarChart3, label: 'Reports' },
+  { to: '/admin/audit-log', icon: FileText, label: 'Audit Log' },
+  { to: '/settings', icon: Settings, label: 'Settings' },
 ] as const
 
 interface SidebarProps {
