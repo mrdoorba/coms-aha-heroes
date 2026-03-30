@@ -3,6 +3,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { Bell, User, ChevronDown, Search, KeyRound, LogOut } from 'lucide-react'
 import { cn } from '~/lib/utils'
 import { getLocale, setLocale } from '~/paraglide/runtime.js'
+import * as m from '~/paraglide/messages'
 import { signOut } from '~/lib/auth-client'
 import {
   DropdownMenu,
@@ -52,7 +53,7 @@ export function Header({ user, unreadCount, className }: HeaderProps) {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search points, users..."
+          placeholder={m.header_search_placeholder()}
           className="h-9 w-full rounded-lg border border-border bg-muted/50 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-[#325FEC] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#325FEC]"
         />
       </form>
@@ -118,14 +119,14 @@ export function Header({ user, unreadCount, className }: HeaderProps) {
               onClick={() => navigate({ to: '/profile' })}
             >
               <User className="h-4 w-4" />
-              Profile
+              {m.nav_profile()}
             </DropdownMenuItem>
             <DropdownMenuItem
               className="flex items-center gap-2"
               onClick={() => navigate({ to: '/change-password' })}
             >
               <KeyRound className="h-4 w-4" />
-              Change Password
+              {m.change_password_title()}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -137,7 +138,7 @@ export function Header({ user, unreadCount, className }: HeaderProps) {
               }}
             >
               <LogOut className="h-4 w-4" />
-              Logout
+              {m.common_logout()}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

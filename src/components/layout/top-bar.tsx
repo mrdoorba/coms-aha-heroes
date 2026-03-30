@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { Bell, User } from 'lucide-react'
 import { cn } from '~/lib/utils'
+import * as m from '~/paraglide/messages'
 
 interface TopBarProps {
   user: { name: string; avatarUrl: string | null }
@@ -31,7 +32,7 @@ export function TopBar({ user, unreadCount, className }: TopBarProps) {
         <Link
           to="/notifications"
           className="relative flex h-11 w-11 items-center justify-center rounded-full text-white/80 hover:text-white"
-          aria-label="Notifications"
+          aria-label={m.nav_notifications()}
         >
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (

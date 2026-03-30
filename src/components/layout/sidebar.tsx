@@ -1,22 +1,31 @@
 import { Link } from '@tanstack/react-router'
 import { LayoutDashboard, Award, Trophy, Gift, ShoppingCart, Users, Building2, Settings, FileText, BarChart3, User, ChevronsLeft, ChevronsRight } from 'lucide-react'
 import { cn } from '~/lib/utils'
+import * as m from '~/paraglide/messages'
 
 const mainNavItems = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/points', icon: Award, label: 'Points' },
-  { to: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
-  { to: '/rewards', icon: Gift, label: 'Rewards' },
-  { to: '/redemptions', icon: ShoppingCart, label: 'Redemptions' },
+  { to: '/dashboard', icon: LayoutDashboard },
+  { to: '/points', icon: Award },
+  { to: '/leaderboard', icon: Trophy },
+  { to: '/rewards', icon: Gift },
+  { to: '/redemptions', icon: ShoppingCart },
 ] as const
 
 const adminNavItems = [
-  { to: '/users', icon: Users, label: 'Users' },
-  { to: '/teams', icon: Building2, label: 'Teams' },
-  { to: '/reports', icon: BarChart3, label: 'Reports' },
-  { to: '/admin/audit-log', icon: FileText, label: 'Audit Log' },
-  { to: '/settings', icon: Settings, label: 'Settings' },
+  { to: '/users', icon: Users },
+  { to: '/teams', icon: Building2 },
+  { to: '/reports', icon: BarChart3 },
+  { to: '/admin/audit-log', icon: FileText },
+  { to: '/settings', icon: Settings },
 ] as const
+
+function getMainNavLabels() {
+  return [m.nav_dashboard(), m.nav_points(), m.nav_leaderboard(), m.nav_rewards(), m.nav_redemptions()]
+}
+
+function getAdminNavLabels() {
+  return [m.nav_users(), m.nav_teams(), m.nav_reports(), m.nav_audit_log(), m.nav_settings()]
+}
 
 interface SidebarProps {
   user: { name: string; role: string; avatarUrl: string | null }
@@ -27,6 +36,8 @@ interface SidebarProps {
 
 export function Sidebar({ user, collapsed, onToggleCollapse, className }: SidebarProps) {
   const isAdminOrHr = user.role === 'admin' || user.role === 'hr'
+  const mainLabels = getMainNavLabels()
+  const adminLabels = getAdminNavLabels()
 
   const initials = user.name
     .split(' ')
@@ -56,14 +67,14 @@ export function Sidebar({ user, collapsed, onToggleCollapse, className }: Sideba
             'flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground',
             collapsed && 'mx-auto',
           )}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={collapsed ? m.sidebar_expand() : m.sidebar_collapse()}
         >
           {collapsed ? <ChevronsRight className="h-4 w-4" /> : <ChevronsLeft className="h-4 w-4" />}
         </button>
       </div>
 
       <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
-        {mainNavItems.map(({ to, icon: Icon, label }) => (
+        {mainNavItems.map(({ to, icon: Icon }, index) => (
           <Link
             key={to}
             to={to}
@@ -72,10 +83,10 @@ export function Sidebar({ user, collapsed, onToggleCollapse, className }: Sideba
               collapsed && 'justify-center px-0',
             )}
             activeProps={{ className: 'bg-primary/10 text-primary' }}
-            title={collapsed ? label : undefined}
+            title={collapsed ? mainLabels[index] : undefined}
           >
             <Icon className="h-5 w-5 shrink-0" />
-            {!collapsed && label}
+            {!collapsed && mainLabels[index]}
           </Link>
         ))}
 
@@ -84,12 +95,12 @@ export function Sidebar({ user, collapsed, onToggleCollapse, className }: Sideba
             {!collapsed && (
               <div className="pt-4 pb-1 px-3">
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  Admin
+                  {m.nav_admin()}
                 </span>
               </div>
             )}
             {collapsed && <div className="my-2 border-t border-border" />}
-            {adminNavItems.map(({ to, icon: Icon, label }) => (
+            {adminNavItems.map(({ to, icon: Icon }, index) => (
               <Link
                 key={to}
                 to={to}
@@ -98,10 +109,10 @@ export function Sidebar({ user, collapsed, onToggleCollapse, className }: Sideba
                   collapsed && 'justify-center px-0',
                 )}
                 activeProps={{ className: 'bg-primary/10 text-primary' }}
-                title={collapsed ? label : undefined}
+                title={collapsed ? adminLabels[index] : undefined}
               >
                 <Icon className="h-5 w-5 shrink-0" />
-                {!collapsed && label}
+                {!collapsed && adminLabels[index]}
               </Link>
             ))}
           </>
