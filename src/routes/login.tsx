@@ -2,9 +2,16 @@ import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { signIn } from '~/lib/auth-client'
-import { getLocale, setLocale } from '~/paraglide/runtime.js'
+import { setLocale } from '~/paraglide/runtime.js'
 
 const LANGUAGES = ['id', 'en', 'th'] as const
+const LOCALE_COOKIE = 'PARAGLIDE_LOCALE'
+
+function getClientLocale(): string {
+  if (typeof document === 'undefined') return 'id'
+  const match = document.cookie.match(new RegExp(`${LOCALE_COOKIE}=([^;]+)`))
+  return match?.[1] ?? 'id'
+}
 
 export const Route = createFileRoute('/login')({
   component: LoginPage,
@@ -17,6 +24,12 @@ function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [currentLocale, setCurrentLocale] = useState('id')
+
+  // Sync locale from cookie on client only to avoid hydration mismatch
+  useState(() => {
+    setCurrentLocale(getClientLocale())
+  })
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -114,7 +127,7 @@ function LoginPage() {
 
         <div className="mt-6 flex items-center justify-center gap-1">
           {LANGUAGES.map((lang, i) => {
-            const isActive = getLocale() === lang
+            const isActive = currentLocale === lang
             return (
               <span key={lang} className="flex items-center">
                 {i > 0 && <span className="mx-1 text-gray-300">|</span>}
