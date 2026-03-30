@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
+import * as m from '~/paraglide/messages'
 import { Shield, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
@@ -33,15 +34,7 @@ type Meta = {
   totalPages: number
 }
 
-const ACTION_GROUPS = [
-  { label: 'All', value: '' },
-  { label: 'Points', value: 'POINT_' },
-  { label: 'Challenges', value: 'CHALLENGE_' },
-  { label: 'Appeals', value: 'APPEAL_' },
-  { label: 'Redemptions', value: 'REDEMPTION_' },
-  { label: 'Users', value: 'USER_' },
-  { label: 'Teams', value: 'TEAM_' },
-]
+const ACTION_GROUP_VALUES = ['', 'POINT_', 'CHALLENGE_', 'APPEAL_', 'REDEMPTION_', 'USER_', 'TEAM_'] as const
 
 function getActionBadgeClass(action: string): string {
   if (action.startsWith('POINT_SUBMITTED') || action.startsWith('POINT_APPROVED')) {
@@ -86,7 +79,7 @@ function DetailsCell({ details }: { details: Record<string, unknown> | null }) {
         onClick={() => setOpen((v) => !v)}
         className="text-xs text-[#325FEC] underline underline-offset-2 hover:text-[#1D388B] transition-colors"
       >
-        {open ? 'Hide' : 'Show'}
+        {open ? m.audit_hide() : m.audit_show()}
       </button>
       {open && (
         <pre className="mt-1 max-w-xs overflow-auto rounded bg-muted px-2 py-1 text-[10px] leading-relaxed text-muted-foreground whitespace-pre-wrap break-all">
@@ -148,8 +141,8 @@ function AuditLogPage() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center px-4">
         <Shield className="h-12 w-12 text-muted-foreground/40 mb-3" />
-        <h2 className="text-lg font-semibold text-[#1D388B]">Access Denied</h2>
-        <p className="text-sm text-muted-foreground mt-1">You do not have permission to view this page.</p>
+        <h2 className="text-lg font-semibold text-[#1D388B]">{m.common_access_denied()}</h2>
+        <p className="text-sm text-muted-foreground mt-1">{m.common_no_permission()}</p>
       </div>
     )
   }
@@ -213,8 +206,8 @@ function AuditLogPage() {
           <Shield className="h-5 w-5 text-[#1D388B]" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-[#1D388B]">Audit Log</h1>
-          <p className="text-xs text-muted-foreground">System activity and changes</p>
+          <h1 className="text-xl font-bold text-[#1D388B]">{m.audit_title()}</h1>
+          <p className="text-xs text-muted-foreground">{m.audit_subtitle()}</p>
         </div>
       </div>
 
@@ -222,20 +215,29 @@ function AuditLogPage() {
       <div className="rounded-xl border border-border bg-card p-4 space-y-4">
         {/* Action group pills */}
         <div className="flex flex-wrap gap-2">
-          {ACTION_GROUPS.map((g) => (
-            <button
-              key={g.value}
-              type="button"
-              onClick={() => handleActionGroup(g.value)}
-              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors border ${
-                actionGroup === g.value
-                  ? 'bg-[#325FEC] text-white border-[#325FEC]'
-                  : 'bg-muted text-muted-foreground border-transparent hover:border-[#325FEC]/40 hover:text-[#325FEC]'
-              }`}
-            >
-              {g.label}
-            </button>
-          ))}
+          {ACTION_GROUP_VALUES.map((val) => {
+            const label = val === '' ? m.audit_group_all()
+              : val === 'POINT_' ? m.audit_group_points()
+              : val === 'CHALLENGE_' ? m.audit_group_challenges()
+              : val === 'APPEAL_' ? m.audit_group_appeals()
+              : val === 'REDEMPTION_' ? m.audit_group_redemptions()
+              : val === 'USER_' ? m.audit_group_users()
+              : m.audit_group_teams()
+            return (
+              <button
+                key={val}
+                type="button"
+                onClick={() => handleActionGroup(val)}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors border ${
+                  actionGroup === val
+                    ? 'bg-[#325FEC] text-white border-[#325FEC]'
+                    : 'bg-muted text-muted-foreground border-transparent hover:border-[#325FEC]/40 hover:text-[#325FEC]'
+                }`}
+              >
+                {label}
+              </button>
+            )
+          })}
         </div>
 
         {/* Secondary filters */}
@@ -243,14 +245,14 @@ function AuditLogPage() {
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
             <Input
-              placeholder="Actor name/ID"
+              placeholder={m.audit_actor_placeholder()}
               value={actor}
               onChange={(e) => setActor(e.target.value)}
               className="h-9 pl-8 text-sm"
             />
           </div>
           <Input
-            placeholder="Entity type"
+            placeholder={m.audit_entity_type_placeholder()}
             value={entityType}
             onChange={(e) => setEntityType(e.target.value)}
             className="h-9 text-sm"
@@ -278,7 +280,7 @@ function AuditLogPage() {
             disabled={isLoading}
             className="bg-[#325FEC] hover:bg-[#1D388B] text-white h-9 px-5"
           >
-            {isLoading ? 'Loading…' : 'Apply Filters'}
+            {isLoading ? m.common_loading() : m.audit_apply_filters()}
           </Button>
         </div>
       </div>
@@ -293,7 +295,7 @@ function AuditLogPage() {
       ) : logs.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <Shield className="h-10 w-10 text-muted-foreground/30 mb-3" />
-          <p className="text-muted-foreground text-sm">No audit logs found</p>
+          <p className="text-muted-foreground text-sm">{m.audit_empty()}</p>
         </div>
       ) : (
         <>
@@ -302,12 +304,12 @@ function AuditLogPage() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50">
-                  <TableHead className="text-xs font-semibold text-muted-foreground w-36">Timestamp</TableHead>
-                  <TableHead className="text-xs font-semibold text-muted-foreground">Actor</TableHead>
-                  <TableHead className="text-xs font-semibold text-muted-foreground">Action</TableHead>
-                  <TableHead className="text-xs font-semibold text-muted-foreground">Entity Type</TableHead>
-                  <TableHead className="text-xs font-semibold text-muted-foreground">Entity ID</TableHead>
-                  <TableHead className="text-xs font-semibold text-muted-foreground">Details</TableHead>
+                  <TableHead className="text-xs font-semibold text-muted-foreground w-36">{m.audit_col_timestamp()}</TableHead>
+                  <TableHead className="text-xs font-semibold text-muted-foreground">{m.audit_col_actor()}</TableHead>
+                  <TableHead className="text-xs font-semibold text-muted-foreground">{m.audit_col_action()}</TableHead>
+                  <TableHead className="text-xs font-semibold text-muted-foreground">{m.audit_col_entity_type()}</TableHead>
+                  <TableHead className="text-xs font-semibold text-muted-foreground">{m.audit_col_entity_id()}</TableHead>
+                  <TableHead className="text-xs font-semibold text-muted-foreground">{m.audit_col_details()}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -378,7 +380,7 @@ function AuditLogPage() {
 
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
-                      <p className="text-muted-foreground mb-0.5">Actor</p>
+                      <p className="text-muted-foreground mb-0.5">{m.audit_col_actor()}</p>
                       <p className="font-medium text-foreground">{log.actorName ?? log.actorId ?? '—'}</p>
                       {log.actorRole && (
                         <Badge
@@ -390,7 +392,7 @@ function AuditLogPage() {
                       )}
                     </div>
                     <div>
-                      <p className="text-muted-foreground mb-0.5">Entity</p>
+                      <p className="text-muted-foreground mb-0.5">{m.audit_entity_label()}</p>
                       <p className="font-medium text-foreground">{log.entityType ?? '—'}</p>
                       <p className="font-mono text-muted-foreground text-[10px] truncate">{log.entityId ?? '—'}</p>
                     </div>
@@ -405,7 +407,7 @@ function AuditLogPage() {
           {/* Pagination */}
           <div className="flex items-center justify-between pt-2">
             <p className="text-xs text-muted-foreground">
-              Page {meta.page} of {meta.totalPages} &middot; {meta.total} total
+              {m.common_page_of({ page: String(meta.page), total: String(meta.totalPages) })} &middot; {m.audit_total({ total: String(meta.total) })}
             </p>
             <div className="flex items-center gap-2">
               <Button
@@ -416,7 +418,7 @@ function AuditLogPage() {
                 className="h-8 px-3"
               >
                 <ChevronLeft className="h-3.5 w-3.5 mr-1" />
-                Previous
+                {m.common_previous()}
               </Button>
               <Button
                 variant="outline"
@@ -425,7 +427,7 @@ function AuditLogPage() {
                 onClick={() => handlePageChange(page + 1)}
                 className="h-8 px-3"
               >
-                Next
+                {m.common_next()}
                 <ChevronRight className="h-3.5 w-3.5 ml-1" />
               </Button>
             </div>

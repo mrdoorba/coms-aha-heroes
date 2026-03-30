@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
+import * as m from '~/paraglide/messages'
 import {
   useReactTable,
   getCoreRowModel,
@@ -185,7 +186,7 @@ function UsersPage() {
       ),
     }),
     columnHelper.accessor('name', {
-      header: 'Name',
+      header: () => m.users_col_name(),
       cell: (info) => (
         <div>
           <div className="font-medium text-gray-900">{info.getValue()}</div>
@@ -194,11 +195,11 @@ function UsersPage() {
       ),
     }),
     columnHelper.accessor('role', {
-      header: 'Role',
+      header: () => m.users_col_role(),
       cell: (info) => <UserRoleBadge role={info.getValue()} />,
     }),
     columnHelper.accessor('teamId', {
-      header: 'Team',
+      header: () => m.users_col_team(),
       cell: (info) => {
         const tid = info.getValue()
         return (
@@ -209,13 +210,13 @@ function UsersPage() {
       },
     }),
     columnHelper.accessor('department', {
-      header: 'Department',
+      header: () => m.users_col_department(),
       cell: (info) => (
         <span className="text-gray-600">{info.getValue() ?? '-'}</span>
       ),
     }),
     columnHelper.accessor('isActive', {
-      header: 'Status',
+      header: () => m.users_col_status(),
       cell: (info) => (
         <span
           className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -224,7 +225,7 @@ function UsersPage() {
               : 'bg-red-100 text-red-700'
           }`}
         >
-          {info.getValue() ? 'Active' : 'Archived'}
+          {info.getValue() ? m.status_active() : m.status_archived()}
         </span>
       ),
     }),
@@ -273,14 +274,14 @@ function UsersPage() {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#1D388B]">Users</h1>
+          <h1 className="text-2xl font-bold text-[#1D388B]">{m.nav_users()}</h1>
           <p className="mt-1 text-sm text-gray-500">
-            {meta.total} user{meta.total !== 1 ? 's' : ''} total
+            {m.users_total({ count: String(meta.total) })}
           </p>
         </div>
         <Button onClick={() => setCreateOpen(true)}>
           <Plus className="size-4" data-icon="inline-start" />
-          Add User
+          {m.users_add()}
         </Button>
       </div>
 
@@ -289,7 +290,7 @@ function UsersPage() {
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
           <Input
-            placeholder="Search by name..."
+            placeholder={m.users_search_placeholder()}
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-9"
@@ -297,10 +298,10 @@ function UsersPage() {
         </div>
         <Select value={roleFilter || 'all'} onValueChange={handleRoleChange}>
           <SelectTrigger className="w-full sm:w-36">
-            <SelectValue placeholder="All Roles" />
+            <SelectValue placeholder={m.users_all_roles()} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Roles</SelectItem>
+            <SelectItem value="all">{m.users_all_roles()}</SelectItem>
             {USER_ROLES.map((role) => (
               <SelectItem key={role} value={role}>
                 {ROLE_LABELS[role]}
@@ -310,12 +311,12 @@ function UsersPage() {
         </Select>
         <Select value={activeFilter || 'all'} onValueChange={handleActiveChange}>
           <SelectTrigger className="w-full sm:w-36">
-            <SelectValue placeholder="All Status" />
+            <SelectValue placeholder={m.users_all_status()} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="true">Active</SelectItem>
-            <SelectItem value="false">Archived</SelectItem>
+            <SelectItem value="all">{m.users_all_status()}</SelectItem>
+            <SelectItem value="true">{m.status_active()}</SelectItem>
+            <SelectItem value="false">{m.status_archived()}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -340,13 +341,13 @@ function UsersPage() {
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={columns.length} className="py-8 text-center text-gray-500">
-                  Loading...
+                  {m.common_loading()}
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={columns.length} className="py-8 text-center text-gray-500">
-                  No users found
+                  {m.users_empty()}
                 </TableCell>
               </TableRow>
             ) : (
@@ -367,7 +368,7 @@ function UsersPage() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between border-t px-4 py-3">
             <p className="text-sm text-gray-500">
-              Page {page} of {totalPages}
+              {m.common_page_of({ page: String(page), total: String(totalPages) })}
             </p>
             <div className="flex items-center gap-1">
               <Button

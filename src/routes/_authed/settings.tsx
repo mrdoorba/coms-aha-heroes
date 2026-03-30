@@ -1,4 +1,5 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
+import * as m from '~/paraglide/messages'
 import { useState } from 'react'
 import { Settings, AlertTriangle, Save, Globe, Tag } from 'lucide-react'
 import { listSettingsFn, updateSettingFn } from '~/server/functions/settings'
@@ -52,9 +53,9 @@ function SettingsPage() {
       <div className="mx-auto max-w-2xl p-4 pt-10 text-center">
         <div className="rounded-xl border border-red-200 bg-red-50 p-8">
           <Settings className="mx-auto mb-3 h-10 w-10 text-red-400" />
-          <h2 className="text-lg font-semibold text-red-700">Access Denied</h2>
+          <h2 className="text-lg font-semibold text-red-700">{m.common_access_denied()}</h2>
           <p className="mt-1 text-sm text-red-500">
-            Only administrators can access this page.
+            {m.settings_admin_only()}
           </p>
         </div>
       </div>
@@ -118,19 +119,19 @@ function SettingsForm({
       {/* Header */}
       <div className="flex items-center gap-2">
         <Settings className="h-6 w-6 text-[#1D388B]" />
-        <h1 className="text-xl font-bold text-[#1D388B]">Admin Settings</h1>
+        <h1 className="text-xl font-bold text-[#1D388B]">{m.settings_title()}</h1>
       </div>
 
       {/* Section 1: Point Impact Values */}
       <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
         <h2 className="mb-4 text-sm font-semibold text-[#1D388B]">
-          Point Impact Values
+          {m.settings_point_impact()}
         </h2>
 
         <div className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="bintang-impact" className="text-sm font-medium">
-              Bintang impact on Poin AHA
+              {m.settings_bintang_impact()}
             </Label>
             <Input
               id="bintang-impact"
@@ -144,7 +145,7 @@ function SettingsForm({
 
           <div className="space-y-1.5">
             <Label htmlFor="penalti-impact" className="text-sm font-medium">
-              Penalti impact on Poin AHA
+              {m.settings_penalti_impact()}
             </Label>
             <Input
               id="penalti-impact"
@@ -160,7 +161,7 @@ function SettingsForm({
           <div className="flex items-start gap-2 rounded-xl bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-yellow-500" />
             <span>
-              Changing these values retroactively affects all historical balances.
+              {m.settings_impact_warning()}
             </span>
           </div>
 
@@ -169,7 +170,7 @@ function SettingsForm({
             <p className="text-sm text-red-600">{saveError}</p>
           )}
           {saveSuccess && (
-            <p className="text-sm text-green-600">Settings saved successfully.</p>
+            <p className="text-sm text-green-600">{m.settings_saved()}</p>
           )}
 
           <Button
@@ -178,7 +179,7 @@ function SettingsForm({
             className="w-full rounded-xl bg-[#325FEC] text-white hover:bg-[#1D388B]"
           >
             <Save className="mr-1.5 h-4 w-4" />
-            {saving ? 'Saving…' : 'Save'}
+            {saving ? m.settings_saving() : m.common_save()}
           </Button>
         </div>
       </div>
@@ -188,7 +189,7 @@ function SettingsForm({
         <div className="mb-4 flex items-center gap-2">
           <Globe className="h-4 w-4 text-[#1D388B]" />
           <h2 className="text-sm font-semibold text-[#1D388B]">
-            Branch Management
+            {m.settings_branch_management()}
           </h2>
         </div>
 
@@ -212,7 +213,7 @@ function SettingsForm({
         <div className="mb-4 flex items-center gap-2">
           <Tag className="h-4 w-4 text-[#1D388B]" />
           <h2 className="text-sm font-semibold text-[#1D388B]">
-            Point Categories
+            {m.settings_point_categories()}
           </h2>
         </div>
 
@@ -230,7 +231,7 @@ function SettingsForm({
                     : 'bg-gray-200 text-gray-500'
                 }`}
               >
-                {cat.active ? 'Active' : 'Inactive'}
+                {cat.active ? m.status_active() : m.status_inactive()}
               </span>
             </li>
           ))}

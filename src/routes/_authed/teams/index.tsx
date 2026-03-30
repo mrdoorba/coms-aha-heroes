@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
+import * as m from '~/paraglide/messages'
 import {
   Search,
   Plus,
@@ -159,14 +160,14 @@ function TeamsPage() {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#1D388B]">Teams</h1>
+          <h1 className="text-2xl font-bold text-[#1D388B]">{m.nav_teams()}</h1>
           <p className="mt-1 text-sm text-gray-500">
-            {meta.total} team{meta.total !== 1 ? 's' : ''} total
+            {m.teams_total({ count: String(meta.total) })}
           </p>
         </div>
         <Button onClick={() => setCreateOpen(true)}>
           <Plus className="size-4" data-icon="inline-start" />
-          Create Team
+          {m.teams_create()}
         </Button>
       </div>
 
@@ -175,7 +176,7 @@ function TeamsPage() {
         <div className="relative max-w-sm">
           <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
           <Input
-            placeholder="Search teams..."
+            placeholder={m.teams_search_placeholder()}
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-9"
@@ -185,9 +186,9 @@ function TeamsPage() {
 
       {/* Team Cards */}
       {isLoading ? (
-        <div className="py-12 text-center text-gray-500">Loading...</div>
+        <div className="py-12 text-center text-gray-500">{m.common_loading()}</div>
       ) : teams.length === 0 ? (
-        <div className="py-12 text-center text-gray-500">No teams found</div>
+        <div className="py-12 text-center text-gray-500">{m.teams_empty()}</div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {teams.map((team) => (
@@ -215,8 +216,8 @@ function TeamsPage() {
                   <Crown className="size-4 text-[#F4C144]" />
                   <span className="text-gray-600">
                     {team.leaderId
-                      ? userMap.get(team.leaderId) ?? 'Unknown'
-                      : 'No leader assigned'}
+                      ? userMap.get(team.leaderId) ?? m.common_unknown()
+                      : m.teams_no_leader()}
                   </span>
                 </div>
 
@@ -224,7 +225,7 @@ function TeamsPage() {
                 <div className="flex items-center gap-2 text-sm">
                   <Users className="size-4 text-[#325FEC]" />
                   <span className="text-gray-600">
-                    {team.memberCount} member{team.memberCount !== 1 ? 's' : ''}
+                    {m.teams_members({ count: String(team.memberCount) })}
                   </span>
                 </div>
 
@@ -235,7 +236,7 @@ function TeamsPage() {
                   className="w-full justify-between text-xs text-gray-500"
                   onClick={() => handleToggleMembers(team.id)}
                 >
-                  {expandedTeamId === team.id ? 'Hide members' : 'View members'}
+                  {expandedTeamId === team.id ? m.teams_hide_members() : m.teams_view_members()}
                   {expandedTeamId === team.id ? (
                     <ChevronUp className="size-3.5" />
                   ) : (
@@ -248,7 +249,7 @@ function TeamsPage() {
                   <div className="border-t pt-2">
                     {loadingMembers ? (
                       <p className="py-2 text-center text-xs text-gray-400">
-                        Loading members...
+                        {m.teams_loading_members()}
                       </p>
                     ) : (
                       <TeamMembersList members={expandedMembers} />
@@ -265,7 +266,7 @@ function TeamsPage() {
       {totalPages > 1 && (
         <div className="mt-6 flex items-center justify-between">
           <p className="text-sm text-gray-500">
-            Page {page} of {totalPages}
+            {m.common_page_of({ page: String(page), total: String(totalPages) })}
           </p>
           <div className="flex items-center gap-1">
             <Button

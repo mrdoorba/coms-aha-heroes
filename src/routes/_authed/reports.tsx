@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
+import * as m from '~/paraglide/messages'
 import { BarChart3, FileText, Star, AlertTriangle, Award, ShieldOff } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { SummaryCard } from '~/components/dashboard/summary-card'
@@ -108,9 +109,9 @@ function ReportsPage() {
     return (
       <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
         <ShieldOff className="mb-4 h-12 w-12 text-muted-foreground/40" />
-        <h2 className="text-lg font-semibold text-[#1D388B]">Access Denied</h2>
+        <h2 className="text-lg font-semibold text-[#1D388B]">{m.common_access_denied()}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          You do not have permission to view this page.
+          {m.common_no_permission()}
         </p>
       </div>
     )
@@ -160,8 +161,8 @@ function ReportsPage() {
           <BarChart3 className="h-5 w-5 text-[#325FEC]" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-[#1D388B]">Reports</h1>
-          <p className="text-xs text-muted-foreground">Analytics & submission overview</p>
+          <h1 className="text-xl font-bold text-[#1D388B]">{m.reports_title()}</h1>
+          <p className="text-xs text-muted-foreground">{m.reports_subtitle()}</p>
         </div>
       </div>
 
@@ -169,7 +170,7 @@ function ReportsPage() {
       <Card>
         <CardContent className="flex flex-wrap items-center gap-3 p-4">
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-muted-foreground">Start Date</label>
+            <label className="text-xs font-medium text-muted-foreground">{m.reports_start_date()}</label>
             <input
               type="date"
               value={startDate}
@@ -179,7 +180,7 @@ function ReportsPage() {
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-muted-foreground">End Date</label>
+            <label className="text-xs font-medium text-muted-foreground">{m.reports_end_date()}</label>
             <input
               type="date"
               value={endDate}
@@ -190,7 +191,7 @@ function ReportsPage() {
           </div>
           {isLoading && (
             <span className="self-end pb-1 text-xs text-muted-foreground animate-pulse">
-              Loading…
+              {m.common_loading()}
             </span>
           )}
         </CardContent>
@@ -199,28 +200,28 @@ function ReportsPage() {
       {/* Summary cards */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <SummaryCard
-          title="Total Submissions"
+          title={m.reports_total_submissions()}
           value={reports.totalSubmissions}
           icon={<FileText className="h-5 w-5" />}
           iconBg="bg-[#759EEE]/15"
           iconColor="text-[#759EEE]"
         />
         <SummaryCard
-          title="Bintang sAHAbat"
+          title={m.points_bintang()}
           value={bintangCount}
           icon={<Star className="h-5 w-5" />}
           iconBg="bg-[#F4C144]/15"
           iconColor="text-[#F4C144]"
         />
         <SummaryCard
-          title="Penalti"
+          title={m.points_penalti()}
           value={penaltiCount}
           icon={<AlertTriangle className="h-5 w-5" />}
           iconBg="bg-[#6D50B8]/10"
           iconColor="text-[#6D50B8]"
         />
         <SummaryCard
-          title="Poin AHA"
+          title={m.points_poin_aha()}
           value={poinAhaCount}
           icon={<Award className="h-5 w-5" />}
           iconBg="bg-[#325FEC]/10"
@@ -232,12 +233,12 @@ function ReportsPage() {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold text-[#1D388B]">
-            Submissions by Category
+            {m.reports_by_category()}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 p-4 pt-0">
           {byCategory.length === 0 ? (
-            <p className="py-4 text-center text-sm text-muted-foreground">No data</p>
+            <p className="py-4 text-center text-sm text-muted-foreground">{m.common_no_data()}</p>
           ) : (
             byCategory.map((cat) => {
               const color = categoryColor(cat.name)
@@ -269,12 +270,12 @@ function ReportsPage() {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold text-[#1D388B]">
-            Top Teams by Points
+            {m.reports_top_teams()}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 p-4 pt-0">
           {byTeam.length === 0 ? (
-            <p className="py-4 text-center text-sm text-muted-foreground">No data</p>
+            <p className="py-4 text-center text-sm text-muted-foreground">{m.common_no_data()}</p>
           ) : (
             byTeam.map((team) => (
               <HorizontalBar
@@ -293,12 +294,12 @@ function ReportsPage() {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold text-[#1D388B]">
-            Submissions Over Time
+            {m.reports_over_time()}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4 pt-0">
           {overTime.length === 0 ? (
-            <p className="py-4 text-center text-sm text-muted-foreground">No data</p>
+            <p className="py-4 text-center text-sm text-muted-foreground">{m.common_no_data()}</p>
           ) : (
             <div className="overflow-x-auto">
               <div className="flex items-end gap-1.5 min-w-0" style={{ minWidth: `${overTime.length * 36}px` }}>
