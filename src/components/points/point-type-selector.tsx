@@ -2,17 +2,16 @@ import { Link } from '@tanstack/react-router'
 import { Star, AlertTriangle, Award } from 'lucide-react'
 import { cn } from '~/lib/utils'
 import type { UserRole } from '~/shared/constants'
+import * as m from '~/paraglide/messages'
 
 type PointTypeSelectorProps = {
   readonly userRole: UserRole
   readonly className?: string
 }
 
-const pointTypes = [
+const pointTypeBases = [
   {
     code: 'bintang' as const,
-    label: 'Bintang sAHAbat',
-    description: 'Recognize a colleague',
     icon: Star,
     color: 'text-yellow-500',
     bg: 'bg-yellow-50 hover:bg-yellow-100',
@@ -22,8 +21,6 @@ const pointTypes = [
   },
   {
     code: 'penalti' as const,
-    label: 'Penalti',
-    description: 'Record a violation',
     icon: AlertTriangle,
     color: 'text-purple-500',
     bg: 'bg-purple-50 hover:bg-purple-100',
@@ -33,8 +30,6 @@ const pointTypes = [
   },
   {
     code: 'poin-aha' as const,
-    label: 'Poin AHA',
-    description: 'Award activity points',
     icon: Award,
     color: 'text-blue-500',
     bg: 'bg-blue-50 hover:bg-blue-100',
@@ -45,6 +40,12 @@ const pointTypes = [
 ]
 
 export function PointTypeSelector({ userRole, className }: PointTypeSelectorProps) {
+  const pointTypes = [
+    { ...pointTypeBases[0], label: m.points_bintang(), description: m.point_type_bintang_desc() },
+    { ...pointTypeBases[1], label: m.points_penalti(), description: m.point_type_penalti_desc() },
+    { ...pointTypeBases[2], label: m.points_poin_aha(), description: m.point_type_poin_aha_desc() },
+  ]
+
   const available = pointTypes.filter((t) =>
     (t.roles as readonly string[]).includes(userRole),
   )

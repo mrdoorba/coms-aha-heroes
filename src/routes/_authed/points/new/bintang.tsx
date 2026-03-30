@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Star } from 'lucide-react'
+import * as m from '~/paraglide/messages'
 import { Button } from '~/components/ui/button'
 import { Label } from '~/components/ui/label'
 import { EmployeeSelector } from '~/components/points/employee-selector'
@@ -35,9 +36,9 @@ function BintangForm() {
     e.preventDefault()
     setError(null)
 
-    if (!userId) return setError('Please select an employee')
-    if (!reason.trim()) return setError('Please provide a reason')
-    if (!screenshotUrl) return setError('Screenshot is required')
+    if (!userId) return setError(m.form_error_select_employee())
+    if (!reason.trim()) return setError(m.form_error_provide_reason())
+    if (!screenshotUrl) return setError(m.form_error_screenshot_required())
 
     setIsSubmitting(true)
     try {
@@ -53,7 +54,7 @@ function BintangForm() {
       })
       navigate({ to: '/points' })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Submission failed')
+      setError(err instanceof Error ? err.message : m.form_error_submission_failed())
     } finally {
       setIsSubmitting(false)
     }
@@ -65,12 +66,12 @@ function BintangForm() {
         <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-yellow-50">
           <Star className="h-5 w-5 text-yellow-500" />
         </div>
-        <h1 className="text-xl font-bold text-[#1D388B]">Give Bintang sAHAbat</h1>
+        <h1 className="text-xl font-bold text-[#1D388B]">{m.bintang_form_title()}</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label>Nama Staff</Label>
+          <Label>{m.form_staff_name()}</Label>
           <EmployeeSelector
             employees={employees}
             value={userId}
@@ -80,11 +81,11 @@ function BintangForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="reason">Perbuatan</Label>
+          <Label htmlFor="reason">{m.bintang_form_action()}</Label>
           <textarea
             id="reason"
             className="flex min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            placeholder="[siapa] berkontribusi dalam [apa]"
+            placeholder={m.bintang_form_action_placeholder()}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             maxLength={1000}
@@ -92,11 +93,11 @@ function BintangForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="relatedStaff">Related Staff (optional)</Label>
+          <Label htmlFor="relatedStaff">{m.form_related_staff()}</Label>
           <input
             id="relatedStaff"
             className="flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            placeholder="Names of related staff"
+            placeholder={m.form_related_staff_placeholder()}
             value={relatedStaff}
             onChange={(e) => setRelatedStaff(e.target.value)}
             maxLength={500}
@@ -104,7 +105,7 @@ function BintangForm() {
         </div>
 
         <div className="space-y-2">
-          <Label>Screenshot (required)</Label>
+          <Label>{m.form_screenshot_required()}</Label>
           <FileUpload
             value={screenshotUrl}
             onChange={setScreenshotUrl}
@@ -114,7 +115,7 @@ function BintangForm() {
 
         {isSelfSubmission && userRole === 'employee' && (
           <p className="text-sm text-muted-foreground bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-            Your submission will be pending Leader approval
+            {m.form_pending_approval()}
           </p>
         )}
 
@@ -127,7 +128,7 @@ function BintangForm() {
           disabled={isSubmitting}
           className="w-full bg-[#F4C144] text-[#1D388B] hover:bg-[#e5b33a] font-semibold"
         >
-          {isSubmitting ? 'Submitting...' : 'Submit Bintang'}
+          {isSubmitting ? m.common_submitting() : m.bintang_form_submit()}
         </Button>
       </form>
     </div>

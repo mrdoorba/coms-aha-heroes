@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as m from '~/paraglide/messages'
 import {
   Dialog,
   DialogContent,
@@ -33,12 +34,12 @@ export function AppealDialog({ pointId, trigger }: AppealDialogProps) {
     setIsSubmitting(true)
     try {
       await fileAppealFn({ data: { pointId, reason } })
-      toast.success('Appeal submitted successfully')
+      toast.success(m.appeal_success())
       setOpen(false)
       setReason('')
       router.invalidate()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to submit appeal')
+      toast.error(error instanceof Error ? error.message : m.appeal_failed())
     } finally {
       setIsSubmitting(false)
     }
@@ -49,23 +50,23 @@ export function AppealDialog({ pointId, trigger }: AppealDialogProps) {
       <DialogTrigger render={trigger ?? <Button variant="outline" className="text-[#325FEC] border-[#325FEC] hover:bg-blue-50">Appeal</Button>} />
       <DialogContent className="sm:max-w-[425px] rounded-[20px]">
         <DialogHeader>
-          <DialogTitle className="text-[#1D388B]">Appeal Penalti</DialogTitle>
+          <DialogTitle className="text-[#1D388B]">{m.appeal_title()}</DialogTitle>
           <DialogDescription>
-            Submit an appeal if you believe this penalty was incorrectly issued.
+            {m.appeal_description()}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="flex gap-3 p-3 rounded-lg bg-yellow-50 border border-yellow-200">
             <AlertCircle className="h-5 w-5 text-yellow-600 shrink-0" />
             <p className="text-xs text-yellow-700 leading-relaxed">
-              <strong>Point Frozen:</strong> Filing an appeal will freeze these points. They will not count towards your total until HR makes a final decision.
+              <strong>Point Frozen:</strong> {m.appeal_frozen_note()}
             </p>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="appeal-reason">Reason for Appeal</Label>
+            <Label htmlFor="appeal-reason">{m.appeal_reason_label()}</Label>
             <Textarea
               id="appeal-reason"
-              placeholder="Provide evidence or explanation for your appeal..."
+              placeholder={m.appeal_reason_placeholder()}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               className="min-h-[120px] rounded-xl"
@@ -79,7 +80,7 @@ export function AppealDialog({ pointId, trigger }: AppealDialogProps) {
             disabled={isSubmitting || !reason.trim()}
             className="w-full bg-[#325FEC] hover:bg-blue-700 rounded-xl"
           >
-            {isSubmitting ? 'Submitting...' : 'Submit Appeal'}
+            {isSubmitting ? m.common_submitting() : m.appeal_submit()}
           </Button>
         </DialogFooter>
       </DialogContent>
