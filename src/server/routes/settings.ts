@@ -1,63 +1,41 @@
-import { Hono } from 'hono'
-import { zValidator } from '@hono/zod-validator'
+import { Elysia } from 'elysia'
 import { updateSettingSchema } from '~/shared/schemas/settings'
 import * as settingsService from '../services/settings'
 import type { AuthUser } from '../middleware/auth'
 import type { DbClient } from '../repositories/base'
-import type { ApiResponse, ApiError } from '~/shared/types/api'
 
-type Env = {
-  Variables: {
-    authUser: AuthUser
-    tx: DbClient
-  }
-}
+type Ctx = { authUser: AuthUser; tx: DbClient }
 
-export const settingsRoute = new Hono<Env>()
+export const settingsRoute = new Elysia({ prefix: '/settings' })
 
   // GET / — list all settings (admin only)
-  .get('/', async (c) => {
-    const actor = c.get('authUser')
-    const tx = c.get('tx')
+  .get('/', async ({ set, ...c }) => {
+    const { authUser: actor, tx } = c as unknown as Ctx
 
     try {
       const data = await settingsService.listSettings({ actor, tx })
-      return c.json<ApiResponse<typeof data>>({
-        success: true,
-        data,
-        error: null,
-      })
+      return { success: true, data, error: null }
     } catch (err) {
       if (err instanceof settingsService.InsufficientRoleError) {
-        return c.json<ApiError>(
-          { success: false, data: null, error: { code: 'FORBIDDEN', message: err.message } },
-          403,
-        )
+        set.status = 403
+        return { success: false, data: null, error: { code: 'FORBIDDEN', message: err.message } }
       }
       throw err
     }
   })
 
   // PATCH / — update a setting (admin only)
-  .patch('/', zValidator('json', updateSettingSchema), async (c) => {
-    const input = c.req.valid('json')
-    const actor = c.get('authUser')
-    const tx = c.get('tx')
+  .patch('/', async ({ body, set, ...c }) => {
+    const { authUser: actor, tx } = c as unknown as Ctx
 
     try {
-      const data = await settingsService.updateSetting(input, { actor, tx })
-      return c.json<ApiResponse<typeof data>>({
-        success: true,
-        data,
-        error: null,
-      })
+      const data = await settingsService.updateSetting(body, { actor, tx })
+      return { success: true, data, error: null }
     } catch (err) {
       if (err instanceof settingsService.InsufficientRoleError) {
-        return c.json<ApiError>(
-          { success: false, data: null, error: { code: 'FORBIDDEN', message: err.message } },
-          403,
-        )
+        set.status = 403
+        return { success: false, data: null, error: { code: 'FORBIDDEN', message: err.message } }
       }
       throw err
     }
-  })
+  }, { body: updateSettingSchema })

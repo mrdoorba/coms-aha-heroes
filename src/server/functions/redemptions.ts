@@ -1,5 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
+import { createServerApi, unwrap } from '~/lib/api-client'
 
 type RequestRedemptionParams = {
   rewardId: string
@@ -11,6 +12,9 @@ type ListRedemptionsParams = {
   limit?: number
   status?: string
   mine?: boolean
+  search?: string
+  dateFrom?: string
+  dateTo?: string
 }
 
 type ResolveRedemptionParams = {
@@ -22,126 +26,80 @@ export const requestRedemptionFn = createServerFn({ method: 'POST' })
   .inputValidator((data: RequestRedemptionParams) => data)
   .handler(async ({ data }) => {
     const request = getRequest()
-    const response = await fetch(`${getBaseUrl(request)}/api/v1/redemptions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: request.headers.get('cookie') ?? '',
-      },
-      body: JSON.stringify({ rewardId: data.rewardId, notes: data.notes }),
-    })
+    const api = createServerApi(request)
 
-    const result = await response.json()
-    if (!response.ok)
-      throw new Error(result.error?.message ?? 'Failed to request redemption')
-    return result.data
+    const result = await api.api.v1.redemptions.post({
+      rewardId: data.rewardId,
+      notes: data.notes,
+    } as any)
+    const res = unwrap(result, 'Failed to request redemption')
+    return res.data
   })
 
 export const listRedemptionsFn = createServerFn({ method: 'GET' })
   .inputValidator((data: ListRedemptionsParams) => data)
   .handler(async ({ data }) => {
     const request = getRequest()
-    const params = new URLSearchParams()
-    params.set('page', String(data.page ?? 1))
-    params.set('limit', String(data.limit ?? 20))
-    if (data.status) params.set('status', data.status)
-    if (data.mine !== undefined) params.set('mine', String(data.mine))
+    const api = createServerApi(request)
 
-    const response = await fetch(
-      `${getBaseUrl(request)}/api/v1/redemptions?${params.toString()}`,
-      {
-        headers: { Cookie: request.headers.get('cookie') ?? '' },
-      },
-    )
-
-    const result = await response.json()
-    if (!response.ok)
-      throw new Error(result.error?.message ?? 'Failed to list redemptions')
-    return { redemptions: result.data, meta: result.meta }
+    const result = await api.api.v1.redemptions.get({
+      query: {
+        page: data.page ?? 1,
+        limit: data.limit ?? 20,
+        ...(data.status ? { status: data.status } : {}),
+        ...(data.mine !== undefined ? { mine: data.mine } : {}),
+        ...(data.search ? { search: data.search } : {}),
+        ...(data.dateFrom ? { dateFrom: data.dateFrom } : {}),
+        ...(data.dateTo ? { dateTo: data.dateTo } : {}),
+      } as any,
+    })
+    const res = unwrap(result, 'Failed to list redemptions')
+    return { redemptions: res.data, meta: res.meta }
   })
 
 export const getRedemptionByIdFn = createServerFn({ method: 'GET' })
   .inputValidator((data: { id: string }) => data)
   .handler(async ({ data }) => {
     const request = getRequest()
-    const response = await fetch(
-      `${getBaseUrl(request)}/api/v1/redemptions/${data.id}`,
-      {
-        headers: { Cookie: request.headers.get('cookie') ?? '' },
-      },
-    )
+    const api = createServerApi(request)
 
-    const result = await response.json()
-    if (!response.ok)
-      throw new Error(result.error?.message ?? 'Failed to get redemption')
-    return result.data
+    const result = await api.api.v1.redemptions({ id: data.id }).get()
+    const res = unwrap(result, 'Failed to get redemption')
+    return res.data
   })
 
 export const approveRedemptionFn = createServerFn({ method: 'POST' })
   .inputValidator((data: { id: string }) => data)
   .handler(async ({ data }) => {
     const request = getRequest()
-    const response = await fetch(
-      `${getBaseUrl(request)}/api/v1/redemptions/${data.id}/approve`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Cookie: request.headers.get('cookie') ?? '',
-        },
-      },
-    )
+    const api = createServerApi(request)
 
-    const result = await response.json()
-    if (!response.ok)
-      throw new Error(result.error?.message ?? 'Failed to approve redemption')
-    return result.data
+    const result = await api.api.v1.redemptions({ id: data.id }).approve.patch({} as any)
+    const res = unwrap(result, 'Failed to approve redemption')
+    return res.data
   })
 
 export const rejectRedemptionFn = createServerFn({ method: 'POST' })
   .inputValidator((data: ResolveRedemptionParams) => data)
   .handler(async ({ data }) => {
     const request = getRequest()
-    const response = await fetch(
-      `${getBaseUrl(request)}/api/v1/redemptions/${data.id}/reject`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Cookie: request.headers.get('cookie') ?? '',
-        },
-        body: JSON.stringify({
-          status: 'rejected',
-          rejectionReason: data.rejectionReason,
-        }),
-      },
-    )
+    const api = createServerApi(request)
 
-    const result = await response.json()
-    if (!response.ok)
-      throw new Error(result.error?.message ?? 'Failed to reject redemption')
-    return result.data
+    const result = await api.api.v1.redemptions({ id: data.id }).reject.patch({
+      status: 'rejected',
+      rejectionReason: data.rejectionReason,
+    } as any)
+    const res = unwrap(result, 'Failed to reject redemption')
+    return res.data
   })
 
 export const bulkResolveRedemptionsFn = createServerFn({ method: 'POST' })
   .inputValidator((data: { ids: string[]; action: 'approve' | 'reject'; rejectionReason?: string }) => data)
   .handler(async ({ data }) => {
     const request = getRequest()
-    const response = await fetch(`${getBaseUrl(request)}/api/v1/redemptions/bulk`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: request.headers.get('cookie') ?? '',
-      },
-      body: JSON.stringify(data),
-    })
+    const api = createServerApi(request)
 
-    const result = await response.json()
-    if (!response.ok) throw new Error(result.error?.message ?? 'Failed to bulk resolve redemptions')
-    return result.data
+    const result = await api.api.v1.redemptions.bulk.post(data as any)
+    const res = unwrap(result, 'Failed to bulk resolve redemptions')
+    return res.data
   })
-
-function getBaseUrl(request: Request): string {
-  const url = new URL(request.url)
-  return `${url.protocol}//${url.host}`
-}

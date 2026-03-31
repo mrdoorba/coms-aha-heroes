@@ -1,35 +1,27 @@
-import { Hono } from 'hono'
-import { zValidator } from '@hono/zod-validator'
-import { z } from 'zod'
-import { rbacMiddleware } from '../middleware/rbac'
+import { Elysia, t } from 'elysia'
+import { requireRole } from '../middleware/rbac'
 import * as categoriesRepo from '../repositories/categories'
 import type { AuthUser } from '../middleware/auth'
 import type { DbClient } from '../repositories/base'
-import type { ApiResponse, ApiError } from '~/shared/types/api'
 
-type Env = {
-  Variables: {
-    authUser: AuthUser
-    tx: DbClient
-  }
-}
+type Ctx = { authUser: AuthUser; tx: DbClient }
 
-const toggleSchema = z.object({
-  isActive: z.boolean(),
+const toggleSchema = t.Object({
+  isActive: t.Boolean(),
 })
 
-export const categoriesRoute = new Hono<Env>()
+export const categoriesRoute = new Elysia({ prefix: '/categories' })
 
   // GET /categories — list all with translations (any authenticated user)
-  .get('/', async (c) => {
-    const tx = c.get('tx')
-    const locale = c.req.query('locale')
+  .get('/', async ({ query, ...c }) => {
+    const { tx } = c as unknown as Ctx
+    const locale = query.locale
 
     const categories = await categoriesRepo.listCategories(tx)
 
     const data = categories.map((cat) => {
       const translation = locale
-        ? cat.translations.find((t) => t.locale === locale)
+        ? cat.translations.find((tr) => tr.locale === locale)
         : undefined
 
       return {
@@ -43,37 +35,25 @@ export const categoriesRoute = new Hono<Env>()
       }
     })
 
-    return c.json<ApiResponse<typeof data>>({
-      success: true,
-      data,
-      error: null,
-    })
+    return { success: true, data, error: null }
+  }, {
+    query: t.Object({
+      locale: t.Optional(t.String()),
+    }),
   })
 
   // PATCH /categories/:id — toggle active (admin only)
-  .patch(
-    '/:id',
-    rbacMiddleware(['admin']),
-    zValidator('json', toggleSchema),
-    async (c) => {
-      const id = c.req.param('id')
-      const { isActive } = c.req.valid('json')
-      const tx = c.get('tx')
+  .patch('/:id', async ({ params, body, set, ...c }) => {
+    const { tx } = c as unknown as Ctx
+    requireRole('admin')(c as any)
 
-      const existing = await categoriesRepo.getCategoryById(id, tx)
-      if (!existing) {
-        return c.json<ApiError>(
-          { success: false, data: null, error: { code: 'NOT_FOUND', message: `Category not found: ${id}` } },
-          404,
-        )
-      }
+    const existing = await categoriesRepo.getCategoryById(params.id, tx)
+    if (!existing) {
+      set.status = 404
+      return { success: false, data: null, error: { code: 'NOT_FOUND', message: `Category not found: ${params.id}` } }
+    }
 
-      const updated = await categoriesRepo.toggleCategoryActive(id, isActive, tx)
+    const updated = await categoriesRepo.toggleCategoryActive(params.id, body.isActive, tx)
 
-      return c.json<ApiResponse<typeof updated>>({
-        success: true,
-        data: updated,
-        error: null,
-      })
-    },
-  )
+    return { success: true, data: updated, error: null }
+  }, { body: toggleSchema })

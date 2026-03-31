@@ -1,17 +1,14 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
+import { createServerApi } from '~/lib/api-client'
 
 export const getUnreadCountFn = createServerFn({ method: 'GET' }).handler(
   async () => {
     const request = getRequest()
-    const res = await fetch(
-      new URL('/api/v1/notifications/unread-count', request.url).href,
-      { headers: request.headers },
-    )
+    const api = createServerApi(request)
 
-    if (!res.ok) return { count: 0 }
-
-    const data = (await res.json()) as { count?: number }
-    return { count: data.count ?? 0 }
+    const result = await api.api.v1.notifications['unread-count'].get()
+    if (result.error) return { count: 0 }
+    return { count: (result.data as any)?.data?.count ?? 0 }
   },
 )

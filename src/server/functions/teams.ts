@@ -1,9 +1,10 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
+import { createServerApi, unwrap } from '~/lib/api-client'
 import { auth } from '~/server/auth'
 import { db } from '~/db'
-import { teams, users } from '~/db/schema'
-import { eq, and, count, asc } from 'drizzle-orm'
+import { users } from '~/db/schema'
+import { eq, asc } from 'drizzle-orm'
 
 type ListTeamsParams = {
   page?: number
@@ -15,46 +16,37 @@ export const listTeamsFn = createServerFn({ method: 'GET' })
   .inputValidator((data: ListTeamsParams) => data)
   .handler(async ({ data }) => {
     const request = getRequest()
-    const session = await auth.api.getSession({ headers: request.headers })
-    if (!session) throw new Error('Not authenticated')
+    const api = createServerApi(request)
 
-    const qs = new URLSearchParams()
-    qs.set('page', String(data.page ?? 1))
-    qs.set('limit', String(data.limit ?? 20))
-    if (data.search) qs.set('search', data.search)
-
-    const response = await fetch(`${getBaseUrl(request)}/api/v1/teams?${qs}`, {
-      headers: { Cookie: request.headers.get('cookie') ?? '' },
+    const result = await api.api.v1.teams.get({
+      query: {
+        page: data.page ?? 1,
+        limit: data.limit ?? 20,
+        ...(data.search ? { search: data.search } : {}),
+      } as any,
     })
-
-    const result = await response.json()
-    if (!response.ok) throw new Error(result.error?.message ?? 'Failed to list teams')
-    return { teams: result.data, meta: result.meta }
+    const res = unwrap(result, 'Failed to list teams')
+    return { teams: res.data, meta: res.meta }
   })
 
 export const getTeamByIdFn = createServerFn({ method: 'GET' })
   .inputValidator((data: { id: string }) => data)
   .handler(async ({ data }) => {
     const request = getRequest()
-    const session = await auth.api.getSession({ headers: request.headers })
-    if (!session) throw new Error('Not authenticated')
+    const api = createServerApi(request)
 
-    const response = await fetch(`${getBaseUrl(request)}/api/v1/teams/${data.id}`, {
-      headers: { Cookie: request.headers.get('cookie') ?? '' },
-    })
-
-    const result = await response.json()
-    if (!response.ok) throw new Error(result.error?.message ?? 'Failed to get team')
-    return result.data
+    const result = await api.api.v1.teams({ id: data.id }).get()
+    const res = unwrap(result, 'Failed to get team')
+    return res.data
   })
 
+// Pattern B — Direct DB access (no API call)
 export const getLookupDataFn = createServerFn({ method: 'GET' }).handler(
   async () => {
     const request = getRequest()
     const session = await auth.api.getSession({ headers: request.headers })
     if (!session) throw new Error('Not authenticated')
 
-    // Get users who can be leaders (leaders, hr, admin)
     const leaderCandidates = await db
       .select({
         id: users.id,
@@ -79,18 +71,11 @@ export const createTeamFn = createServerFn({ method: 'POST' })
   )
   .handler(async ({ data }) => {
     const request = getRequest()
-    const response = await fetch(`${getBaseUrl(request)}/api/v1/teams`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: request.headers.get('cookie') ?? '',
-      },
-      body: JSON.stringify(data),
-    })
+    const api = createServerApi(request)
 
-    const result = await response.json()
-    if (!response.ok) throw new Error(result.error?.message ?? 'Failed to create team')
-    return result.data
+    const result = await api.api.v1.teams.post(data as any)
+    const res = unwrap(result, 'Failed to create team')
+    return res.data
   })
 
 export const updateTeamFn = createServerFn({ method: 'POST' })
@@ -104,21 +89,9 @@ export const updateTeamFn = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const { id, ...body } = data
     const request = getRequest()
-    const response = await fetch(`${getBaseUrl(request)}/api/v1/teams/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: request.headers.get('cookie') ?? '',
-      },
-      body: JSON.stringify(body),
-    })
+    const api = createServerApi(request)
 
-    const result = await response.json()
-    if (!response.ok) throw new Error(result.error?.message ?? 'Failed to update team')
-    return result.data
+    const result = await api.api.v1.teams({ id }).patch(body as any)
+    const res = unwrap(result, 'Failed to update team')
+    return res.data
   })
-
-function getBaseUrl(request: Request): string {
-  const url = new URL(request.url)
-  return `${url.protocol}//${url.host}`
-}

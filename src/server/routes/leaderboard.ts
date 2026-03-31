@@ -1,39 +1,27 @@
-import { Hono } from 'hono'
-import { zValidator } from '@hono/zod-validator'
-import { z } from 'zod'
+import { Elysia, t } from 'elysia'
+import { paginationQuery } from './_query'
 import * as leaderboardService from '../services/leaderboard'
 import type { AuthUser } from '../middleware/auth'
 import type { DbClient } from '../repositories/base'
-import type { ApiResponse, PaginationMeta } from '~/shared/types/api'
 
-type Env = {
-  Variables: {
-    authUser: AuthUser
-    tx: DbClient
-  }
-}
+type Ctx = { authUser: AuthUser; tx: DbClient }
 
-const leaderboardQuerySchema = z.object({
-  type: z.enum(['bintang', 'poin_aha']).default('bintang'),
-  teamId: z.string().uuid().optional(),
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
-})
-
-export const leaderboardRoute = new Hono<Env>()
+export const leaderboardRoute = new Elysia({ prefix: '/leaderboard' })
 
   // GET /leaderboard — ranked list by bintang or poin_aha
-  .get('/', zValidator('query', leaderboardQuerySchema), async (c) => {
-    const input = c.req.valid('query')
-    const actor = c.get('authUser')
-    const tx = c.get('tx')
+  .get('/', async ({ query, ...c }) => {
+    const { authUser: actor, tx } = c as unknown as Ctx
 
-    const result = await leaderboardService.getLeaderboard(input, { actor, tx })
+    const result = await leaderboardService.getLeaderboard(query, { actor, tx })
 
-    return c.json<ApiResponse<typeof result.entries> & { meta: PaginationMeta }>({
+    return {
       success: true,
       data: result.entries,
       error: null,
       meta: result.meta,
-    })
-  })
+    }
+  }, { query: t.Object({
+    type: t.Union([t.Literal('bintang'), t.Literal('poin_aha')], { default: 'bintang' }),
+    teamId: t.Optional(t.String({ format: 'uuid' })),
+    ...paginationQuery,
+  }) })

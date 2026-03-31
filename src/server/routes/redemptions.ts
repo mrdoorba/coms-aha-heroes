@@ -1,254 +1,176 @@
-import { Hono } from 'hono'
-import { zValidator } from '@hono/zod-validator'
+import { Elysia, t } from 'elysia'
 import {
   requestRedemptionSchema,
-  listRedemptionsSchema,
   resolveRedemptionSchema,
 } from '~/shared/schemas/redemptions'
+import { REDEMPTION_STATUSES } from '~/shared/constants'
+import { paginationQuery } from './_query'
 import { bulkRedemptionActionSchema } from '~/shared/schemas/bulk'
 import * as redemptionsService from '../services/redemptions'
 import type { AuthUser } from '../middleware/auth'
 import type { DbClient } from '../repositories/base'
-import type { ApiResponse, ApiError, PaginationMeta } from '~/shared/types/api'
 
-type Env = {
-  Variables: {
-    authUser: AuthUser
-    tx: DbClient
-  }
-}
+type Ctx = { authUser: AuthUser; tx: DbClient }
 
-export const redemptionsRoute = new Hono<Env>()
+export const redemptionsRoute = new Elysia({ prefix: '/redemptions' })
 
   // POST / — request a redemption (any authenticated user)
-  .post('/', zValidator('json', requestRedemptionSchema), async (c) => {
-    const input = c.req.valid('json')
-    const actor = c.get('authUser')
-    const tx = c.get('tx')
-    const ipAddress =
-      c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip')
+  .post('/', async ({ body, headers, set, ...c }) => {
+    const { authUser: actor, tx } = c as unknown as Ctx
+    const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
     try {
-      const created = await redemptionsService.requestRedemption(input, {
+      const created = await redemptionsService.requestRedemption(body, {
         actor,
         tx,
         ipAddress,
       })
-      return c.json<ApiResponse<typeof created>>(
-        { success: true, data: created, error: null },
-        201,
-      )
+      set.status = 201
+      return { success: true, data: created, error: null }
     } catch (err) {
       if (err instanceof redemptionsService.RewardNotFoundError) {
-        return c.json<ApiError>(
-          {
-            success: false,
-            data: null,
-            error: { code: 'NOT_FOUND', message: err.message },
-          },
-          404,
-        )
+        set.status = 404
+        return { success: false, data: null, error: { code: 'NOT_FOUND', message: err.message } }
       }
       if (err instanceof redemptionsService.RewardNotActiveError) {
-        return c.json<ApiError>(
-          {
-            success: false,
-            data: null,
-            error: { code: 'REWARD_NOT_ACTIVE', message: err.message },
-          },
-          422,
-        )
+        set.status = 422
+        return { success: false, data: null, error: { code: 'REWARD_NOT_ACTIVE', message: err.message } }
       }
       if (err instanceof redemptionsService.InsufficientBalanceError) {
-        return c.json<ApiError>(
-          {
-            success: false,
-            data: null,
-            error: { code: 'INSUFFICIENT_BALANCE', message: err.message },
-          },
-          422,
-        )
+        set.status = 422
+        return { success: false, data: null, error: { code: 'INSUFFICIENT_BALANCE', message: err.message } }
       }
       throw err
     }
-  })
+  }, { body: requestRedemptionSchema })
 
   // POST /bulk — bulk approve/reject redemptions (HR/Admin only)
-  .post('/bulk', zValidator('json', bulkRedemptionActionSchema), async (c) => {
-    const input = c.req.valid('json')
-    const actor = c.get('authUser')
-    const tx = c.get('tx')
-    const ipAddress = c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip')
+  .post('/bulk', async ({ body, headers, set, ...c }) => {
+    const { authUser: actor, tx } = c as unknown as Ctx
+    const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
     try {
-      const result = await redemptionsService.bulkResolveRedemptions(input, { actor, tx, ipAddress })
-      return c.json<ApiResponse<typeof result>>({ success: true, data: result, error: null })
+      const result = await redemptionsService.bulkResolveRedemptions(body, { actor, tx, ipAddress })
+      return { success: true, data: result, error: null }
     } catch (err) {
       if (err instanceof redemptionsService.InsufficientRoleError) {
-        return c.json<ApiError>(
-          { success: false, data: null, error: { code: 'FORBIDDEN', message: err.message } },
-          403,
-        )
+        set.status = 403
+        return { success: false, data: null, error: { code: 'FORBIDDEN', message: err.message } }
       }
       throw err
     }
+  }, {
+    body: bulkRedemptionActionSchema,
+    beforeHandle({ body, set }) {
+      if (body.action === 'reject' && !body.rejectionReason) {
+        set.status = 422
+        return { success: false, data: null, error: { code: 'VALIDATION_ERROR', message: 'rejectionReason is required when rejecting', path: ['rejectionReason'] } }
+      }
+    },
   })
 
   // GET / — list redemptions (with optional mine filter)
-  .get('/', zValidator('query', listRedemptionsSchema), async (c) => {
-    const input = c.req.valid('query')
-    const actor = c.get('authUser')
-    const tx = c.get('tx')
+  .get('/', async ({ query, ...c }) => {
+    const { authUser: actor, tx } = c as unknown as Ctx
 
-    const result = await redemptionsService.listRedemptions(input, {
-      actor,
-      tx,
-    })
+    const result = await redemptionsService.listRedemptions(query, { actor, tx })
 
-    return c.json<ApiResponse<typeof result.redemptions> & { meta: PaginationMeta }>({
+    return {
       success: true,
       data: result.redemptions,
       error: null,
       meta: result.meta,
-    })
-  })
+    }
+  }, { query: t.Object({
+    ...paginationQuery,
+    status: t.Optional(t.Union(REDEMPTION_STATUSES.map((s) => t.Literal(s)))),
+    mine: t.Optional(t.BooleanString()),
+    search: t.Optional(t.String({ maxLength: 200 })),
+    dateFrom: t.Optional(t.String()),
+    dateTo: t.Optional(t.String()),
+  }) })
 
   // GET /:id — get redemption by id
-  .get('/:id', async (c) => {
-    const id = c.req.param('id')
-    const actor = c.get('authUser')
-    const tx = c.get('tx')
+  .get('/:id', async ({ params, set, ...c }) => {
+    const { authUser: actor, tx } = c as unknown as Ctx
 
     try {
-      const redemption = await redemptionsService.getRedemptionById(id, {
+      const redemption = await redemptionsService.getRedemptionById(params.id, {
         actor,
         tx,
       })
-      return c.json<ApiResponse<typeof redemption>>({
-        success: true,
-        data: redemption,
-        error: null,
-      })
+      return { success: true, data: redemption, error: null }
     } catch (err) {
       if (err instanceof redemptionsService.RedemptionNotFoundError) {
-        return c.json<ApiError>(
-          {
-            success: false,
-            data: null,
-            error: { code: 'NOT_FOUND', message: err.message },
-          },
-          404,
-        )
+        set.status = 404
+        return { success: false, data: null, error: { code: 'NOT_FOUND', message: err.message } }
       }
       throw err
     }
   })
 
   // PATCH /:id/approve — approve a redemption (HR/Admin only)
-  .patch('/:id/approve', async (c) => {
-    const id = c.req.param('id')
-    const actor = c.get('authUser')
-    const tx = c.get('tx')
-    const ipAddress =
-      c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip')
+  .patch('/:id/approve', async ({ params, headers, set, ...c }) => {
+    const { authUser: actor, tx } = c as unknown as Ctx
+    const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
     try {
-      const updated = await redemptionsService.approveRedemption(id, {
+      const updated = await redemptionsService.approveRedemption(params.id, {
         actor,
         tx,
         ipAddress,
       })
-      return c.json<ApiResponse<typeof updated>>({
-        success: true,
-        data: updated,
-        error: null,
-      })
+      return { success: true, data: updated, error: null }
     } catch (err) {
       if (err instanceof redemptionsService.RedemptionNotFoundError) {
-        return c.json<ApiError>(
-          {
-            success: false,
-            data: null,
-            error: { code: 'NOT_FOUND', message: err.message },
-          },
-          404,
-        )
+        set.status = 404
+        return { success: false, data: null, error: { code: 'NOT_FOUND', message: err.message } }
       }
       if (err instanceof redemptionsService.RedemptionNotPendingError) {
-        return c.json<ApiError>(
-          {
-            success: false,
-            data: null,
-            error: { code: 'NOT_PENDING', message: err.message },
-          },
-          409,
-        )
+        set.status = 409
+        return { success: false, data: null, error: { code: 'NOT_PENDING', message: err.message } }
       }
       if (err instanceof redemptionsService.InsufficientRoleError) {
-        return c.json<ApiError>(
-          {
-            success: false,
-            data: null,
-            error: { code: 'FORBIDDEN', message: err.message },
-          },
-          403,
-        )
+        set.status = 403
+        return { success: false, data: null, error: { code: 'FORBIDDEN', message: err.message } }
       }
       throw err
     }
   })
 
   // PATCH /:id/reject — reject a redemption (HR/Admin only)
-  .patch('/:id/reject', zValidator('json', resolveRedemptionSchema), async (c) => {
-    const id = c.req.param('id')
-    const input = c.req.valid('json')
-    const actor = c.get('authUser')
-    const tx = c.get('tx')
-    const ipAddress =
-      c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip')
+  .patch('/:id/reject', async ({ params, body, headers, set, ...c }) => {
+    const { authUser: actor, tx } = c as unknown as Ctx
+    const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
     try {
-      const updated = await redemptionsService.rejectRedemption(id, input, {
+      const updated = await redemptionsService.rejectRedemption(params.id, body, {
         actor,
         tx,
         ipAddress,
       })
-      return c.json<ApiResponse<typeof updated>>({
-        success: true,
-        data: updated,
-        error: null,
-      })
+      return { success: true, data: updated, error: null }
     } catch (err) {
       if (err instanceof redemptionsService.RedemptionNotFoundError) {
-        return c.json<ApiError>(
-          {
-            success: false,
-            data: null,
-            error: { code: 'NOT_FOUND', message: err.message },
-          },
-          404,
-        )
+        set.status = 404
+        return { success: false, data: null, error: { code: 'NOT_FOUND', message: err.message } }
       }
       if (err instanceof redemptionsService.RedemptionNotPendingError) {
-        return c.json<ApiError>(
-          {
-            success: false,
-            data: null,
-            error: { code: 'NOT_PENDING', message: err.message },
-          },
-          409,
-        )
+        set.status = 409
+        return { success: false, data: null, error: { code: 'NOT_PENDING', message: err.message } }
       }
       if (err instanceof redemptionsService.InsufficientRoleError) {
-        return c.json<ApiError>(
-          {
-            success: false,
-            data: null,
-            error: { code: 'FORBIDDEN', message: err.message },
-          },
-          403,
-        )
+        set.status = 403
+        return { success: false, data: null, error: { code: 'FORBIDDEN', message: err.message } }
       }
       throw err
     }
+  }, {
+    body: resolveRedemptionSchema,
+    beforeHandle({ body, set }) {
+      if (body.status === 'rejected' && !body.rejectionReason) {
+        set.status = 422
+        return { success: false, data: null, error: { code: 'VALIDATION_ERROR', message: 'rejectionReason is required when status is rejected', path: ['rejectionReason'] } }
+      }
+    },
   })

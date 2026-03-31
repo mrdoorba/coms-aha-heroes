@@ -179,6 +179,10 @@ export async function listPoints(input: ListPointsInput, ctx: ServiceContext) {
       status: input.status,
       userId: input.userId,
       teamId: input.teamId,
+      search: input.search,
+      submittedBy: input.submittedBy,
+      dateFrom: input.dateFrom,
+      dateTo: input.dateTo,
     },
     ctx.tx,
   )

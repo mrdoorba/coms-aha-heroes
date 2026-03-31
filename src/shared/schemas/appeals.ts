@@ -1,25 +1,19 @@
-import { z } from 'zod'
-import { APPEAL_STATUSES } from '../constants'
+import { Type as t, type Static } from '@sinclair/typebox'
 
-const resolvableStatuses = APPEAL_STATUSES.filter((s) => s !== 'open') as [
-  string,
-  ...string[],
-]
-
-export const fileAppealSchema = z.object({
-  reason: z.string().min(1).max(2000),
+export const fileAppealSchema = t.Object({
+  reason: t.String({ minLength: 1, maxLength: 2000 }),
 })
 
-export const resolveAppealSchema = z.object({
-  status: z.enum(resolvableStatuses),
-  resolutionNote: z.string().min(1).max(2000),
+export const resolveAppealSchema = t.Object({
+  status: t.Union([t.Literal('upheld'), t.Literal('overturned')]),
+  resolutionNote: t.String({ minLength: 1, maxLength: 2000 }),
 })
 
-export const listAppealsSchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
+export const listAppealsSchema = t.Object({
+  page: t.Integer({ minimum: 1, default: 1 }),
+  limit: t.Integer({ minimum: 1, maximum: 100, default: 20 }),
 })
 
-export type FileAppealInput = z.infer<typeof fileAppealSchema>
-export type ResolveAppealInput = z.infer<typeof resolveAppealSchema>
-export type ListAppealsInput = z.infer<typeof listAppealsSchema>
+export type FileAppealInput = Static<typeof fileAppealSchema>
+export type ResolveAppealInput = Static<typeof resolveAppealSchema>
+export type ListAppealsInput = Static<typeof listAppealsSchema>

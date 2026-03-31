@@ -1,5 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
+import { createServerApi, unwrap } from '~/lib/api-client'
 
 type ReportsQueryParams = {
   startDate?: string
@@ -7,29 +8,13 @@ type ReportsQueryParams = {
   branchId?: string
 }
 
-function getBaseUrl(request: Request): string {
-  const url = new URL(request.url)
-  return `${url.protocol}//${url.host}`
-}
-
 export const getReportsFn = createServerFn({ method: 'GET' })
   .inputValidator((data: ReportsQueryParams) => data)
   .handler(async ({ data }) => {
     const request = getRequest()
-    const params = new URLSearchParams()
-    if (data.startDate) params.set('startDate', data.startDate)
-    if (data.endDate) params.set('endDate', data.endDate)
-    if (data.branchId) params.set('branchId', data.branchId)
+    const api = createServerApi(request)
 
-    const query = params.toString()
-    const response = await fetch(
-      `${getBaseUrl(request)}/api/v1/reports${query ? `?${query}` : ''}`,
-      {
-        headers: { Cookie: request.headers.get('cookie') ?? '' },
-      },
-    )
-
-    const result = await response.json()
-    if (!response.ok) throw new Error(result.error?.message ?? 'Failed to fetch reports')
-    return result.data
+    const result = await api.api.v1.reports.get({ query: data as any })
+    const res = unwrap(result, 'Failed to fetch reports')
+    return res.data
   })

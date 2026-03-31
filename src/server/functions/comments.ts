@@ -1,5 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
+import { createServerApi, unwrap } from '~/lib/api-client'
 
 type CreateCommentParams = {
   entityType: string
@@ -23,64 +24,38 @@ export const listCommentsFn = createServerFn({ method: 'GET' })
   .inputValidator((data: ListCommentsParams) => data)
   .handler(async ({ data }) => {
     const request = getRequest()
-    const params = new URLSearchParams()
-    params.set('entityType', data.entityType)
-    params.set('entityId', data.entityId)
-    params.set('page', String(data.page ?? 1))
-    params.set('limit', String(data.limit ?? 20))
+    const api = createServerApi(request)
 
-    const response = await fetch(
-      `${getBaseUrl(request)}/api/v1/comments?${params.toString()}`,
-      {
-        headers: { Cookie: request.headers.get('cookie') ?? '' },
-      },
-    )
-
-    const result = await response.json()
-    if (!response.ok) throw new Error(result.error?.message ?? 'Failed to list comments')
-    return { comments: result.data, meta: result.meta }
+    const result = await api.api.v1.comments.get({
+      query: {
+        entityType: data.entityType,
+        entityId: data.entityId,
+        page: data.page ?? 1,
+        limit: data.limit ?? 20,
+      } as any,
+    })
+    const res = unwrap(result, 'Failed to list comments')
+    return { comments: res.data, meta: res.meta }
   })
 
 export const createCommentFn = createServerFn({ method: 'POST' })
   .inputValidator((data: CreateCommentParams) => data)
   .handler(async ({ data }) => {
     const request = getRequest()
-    const response = await fetch(`${getBaseUrl(request)}/api/v1/comments`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: request.headers.get('cookie') ?? '',
-      },
-      body: JSON.stringify(data),
-    })
+    const api = createServerApi(request)
 
-    const result = await response.json()
-    if (!response.ok) throw new Error(result.error?.message ?? 'Failed to create comment')
-    return result.data
+    const result = await api.api.v1.comments.post(data as any)
+    const res = unwrap(result, 'Failed to create comment')
+    return res.data
   })
 
 export const updateCommentFn = createServerFn({ method: 'POST' })
   .inputValidator((data: UpdateCommentParams) => data)
   .handler(async ({ data }) => {
     const request = getRequest()
-    const response = await fetch(
-      `${getBaseUrl(request)}/api/v1/comments/${data.commentId}`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Cookie: request.headers.get('cookie') ?? '',
-        },
-        body: JSON.stringify({ body: data.body }),
-      },
-    )
+    const api = createServerApi(request)
 
-    const result = await response.json()
-    if (!response.ok) throw new Error(result.error?.message ?? 'Failed to update comment')
-    return result.data
+    const result = await api.api.v1.comments({ id: data.commentId }).patch({ body: data.body } as any)
+    const res = unwrap(result, 'Failed to update comment')
+    return res.data
   })
-
-function getBaseUrl(request: Request): string {
-  const url = new URL(request.url)
-  return `${url.protocol}//${url.host}`
-}

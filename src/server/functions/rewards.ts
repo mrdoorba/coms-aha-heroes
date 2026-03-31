@@ -1,14 +1,11 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
+import { createServerApi, unwrap } from '~/lib/api-client'
 import type { CreateRewardInput, UpdateRewardInput } from '~/shared/schemas/rewards'
 
 type ListRewardsParams = {
   page?: number
   limit?: number
-}
-
-type GetRewardByIdParams = {
-  id: string
 }
 
 type UpdateRewardParams = {
@@ -19,56 +16,35 @@ export const listRewardsFn = createServerFn({ method: 'GET' })
   .inputValidator((data: ListRewardsParams) => data)
   .handler(async ({ data }) => {
     const request = getRequest()
-    const params = new URLSearchParams()
-    params.set('page', String(data.page ?? 1))
-    params.set('limit', String(data.limit ?? 20))
+    const api = createServerApi(request)
 
-    const response = await fetch(
-      `${getBaseUrl(request)}/api/v1/rewards?${params.toString()}`,
-      {
-        headers: { Cookie: request.headers.get('cookie') ?? '' },
-      },
-    )
-
-    const result = await response.json()
-    if (!response.ok) throw new Error(result.error?.message ?? 'Failed to list rewards')
-    return { rewards: result.data, meta: result.meta }
+    const result = await api.api.v1.rewards.get({
+      query: { page: data.page ?? 1, limit: data.limit ?? 20 } as any,
+    })
+    const res = unwrap(result, 'Failed to list rewards')
+    return { rewards: res.data, meta: res.meta }
   })
 
 export const getRewardByIdFn = createServerFn({ method: 'GET' })
-  .inputValidator((data: GetRewardByIdParams) => data)
+  .inputValidator((data: { id: string }) => data)
   .handler(async ({ data }) => {
     const request = getRequest()
+    const api = createServerApi(request)
 
-    const response = await fetch(
-      `${getBaseUrl(request)}/api/v1/rewards/${data.id}`,
-      {
-        headers: { Cookie: request.headers.get('cookie') ?? '' },
-      },
-    )
-
-    const result = await response.json()
-    if (!response.ok) throw new Error(result.error?.message ?? 'Failed to get reward')
-    return result.data
+    const result = await api.api.v1.rewards({ id: data.id }).get()
+    const res = unwrap(result, 'Failed to get reward')
+    return res.data
   })
 
 export const createRewardFn = createServerFn({ method: 'POST' })
   .inputValidator((data: CreateRewardInput) => data)
   .handler(async ({ data }) => {
     const request = getRequest()
+    const api = createServerApi(request)
 
-    const response = await fetch(`${getBaseUrl(request)}/api/v1/rewards`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: request.headers.get('cookie') ?? '',
-      },
-      body: JSON.stringify(data),
-    })
-
-    const result = await response.json()
-    if (!response.ok) throw new Error(result.error?.message ?? 'Failed to create reward')
-    return result.data
+    const result = await api.api.v1.rewards.post(data as any)
+    const res = unwrap(result, 'Failed to create reward')
+    return res.data
   })
 
 export const updateRewardFn = createServerFn({ method: 'POST' })
@@ -76,22 +52,9 @@ export const updateRewardFn = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const { id, ...input } = data
     const request = getRequest()
+    const api = createServerApi(request)
 
-    const response = await fetch(`${getBaseUrl(request)}/api/v1/rewards/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: request.headers.get('cookie') ?? '',
-      },
-      body: JSON.stringify(input),
-    })
-
-    const result = await response.json()
-    if (!response.ok) throw new Error(result.error?.message ?? 'Failed to update reward')
-    return result.data
+    const result = await api.api.v1.rewards({ id }).patch(input as any)
+    const res = unwrap(result, 'Failed to update reward')
+    return res.data
   })
-
-function getBaseUrl(request: Request): string {
-  const url = new URL(request.url)
-  return `${url.protocol}//${url.host}`
-}

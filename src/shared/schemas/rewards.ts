@@ -1,25 +1,25 @@
-import { z } from 'zod'
+import { Type as t, type Static } from '@sinclair/typebox'
 
-export const listRewardsSchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
+export const listRewardsSchema = t.Object({
+  page: t.Integer({ minimum: 1, default: 1 }),
+  limit: t.Integer({ minimum: 1, maximum: 100, default: 20 }),
 })
 
-export const createRewardSchema = z.object({
-  name: z.string().min(1).max(200),
-  description: z.string().optional(),
-  pointCost: z.number().int().min(1),
-  imageUrl: z.string().url().optional(),
+export const createRewardSchema = t.Object({
+  name: t.String({ minLength: 1, maxLength: 200 }),
+  description: t.Optional(t.String()),
+  pointCost: t.Integer({ minimum: 1 }),
+  imageUrl: t.Optional(t.String({ format: 'uri' })),
 })
 
-export const updateRewardSchema = z.object({
-  name: z.string().min(1).max(200).optional(),
-  description: z.string().optional(),
-  pointCost: z.number().int().min(1).optional(),
-  imageUrl: z.string().url().optional(),
-  isActive: z.boolean().optional(),
+export const updateRewardSchema = t.Object({
+  name: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
+  description: t.Optional(t.String()),
+  pointCost: t.Optional(t.Integer({ minimum: 1 })),
+  imageUrl: t.Optional(t.String({ format: 'uri' })),
+  isActive: t.Optional(t.Boolean()),
 })
 
-export type ListRewardsInput = z.infer<typeof listRewardsSchema>
-export type CreateRewardInput = z.infer<typeof createRewardSchema>
-export type UpdateRewardInput = z.infer<typeof updateRewardSchema>
+export type ListRewardsInput = Static<typeof listRewardsSchema>
+export type CreateRewardInput = Static<typeof createRewardSchema>
+export type UpdateRewardInput = Static<typeof updateRewardSchema>

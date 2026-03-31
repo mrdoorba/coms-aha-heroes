@@ -16,7 +16,7 @@ export default defineConfig({
     tailwindcss(),
     tanstackStart(),
     viteReact(),
-    nitro(),
+    nitro({ preset: 'bun' }),
     paraglideVitePlugin({
       project: './project.inlang',
       outdir: './src/paraglide',

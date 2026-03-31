@@ -1,10 +1,6 @@
-import { Hono } from 'hono'
+import { Elysia } from 'elysia'
 import { auth } from '../auth'
 
-const authRoute = new Hono()
-
-authRoute.on(['POST', 'GET'], '/auth/*', (c) => {
-  return auth.handler(c.req.raw)
+export const authRoute = new Elysia().all('/auth/*', ({ request }) => {
+  return auth.handler(request)
 })
-
-export { authRoute }

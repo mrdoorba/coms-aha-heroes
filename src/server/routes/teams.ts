@@ -1,114 +1,78 @@
-import { Hono } from 'hono'
-import { zValidator } from '@hono/zod-validator'
-import { rbacMiddleware } from '../middleware/rbac'
+import { Elysia, t } from 'elysia'
+import { requireRole } from '../middleware/rbac'
 import {
   createTeamSchema,
   updateTeamSchema,
-  listTeamsSchema,
 } from '~/shared/schemas/teams'
+import { paginationQuery } from './_query'
 import * as teamsService from '../services/teams'
 import type { AuthUser } from '../middleware/auth'
 import type { DbClient } from '../repositories/base'
-import type { ApiResponse, ApiError, PaginationMeta } from '~/shared/types/api'
 
-type Env = {
-  Variables: {
-    authUser: AuthUser
-    tx: DbClient
-  }
-}
+type Ctx = { authUser: AuthUser; tx: DbClient }
 
-export const teamsRoute = new Hono<Env>()
+export const teamsRoute = new Elysia({ prefix: '/teams' })
   // All team routes require admin or hr
-  .use('/*', rbacMiddleware(['admin', 'hr']))
+  .onBeforeHandle((ctx) => {
+    requireRole('admin', 'hr')(ctx as any)
+  })
 
   // GET /teams — list with search + pagination
-  .get('/', zValidator('query', listTeamsSchema), async (c) => {
-    const input = c.req.valid('query')
-    const actor = c.get('authUser')
-    const tx = c.get('tx')
+  .get('/', async ({ query, ...c }) => {
+    const { authUser: actor, tx } = c as unknown as Ctx
 
-    const result = await teamsService.listTeams(input, {
-      actor,
-      tx,
-    })
+    const result = await teamsService.listTeams(query, { actor, tx })
 
-    return c.json<ApiResponse<typeof result.teams> & { meta: PaginationMeta }>({
+    return {
       success: true,
       data: result.teams,
       error: null,
       meta: result.meta,
-    })
-  })
+    }
+  }, { query: t.Object({
+    ...paginationQuery,
+    search: t.Optional(t.String({ maxLength: 100 })),
+  }) })
 
   // GET /teams/:id — single team with members
-  .get('/:id', async (c) => {
-    const id = c.req.param('id')
-    const actor = c.get('authUser')
-    const tx = c.get('tx')
+  .get('/:id', async ({ params, set, ...c }) => {
+    const { authUser: actor, tx } = c as unknown as Ctx
 
     try {
-      const team = await teamsService.getTeamById(id, { actor, tx })
-      return c.json<ApiResponse<typeof team>>({
-        success: true,
-        data: team,
-        error: null,
-      })
+      const team = await teamsService.getTeamById(params.id, { actor, tx })
+      return { success: true, data: team, error: null }
     } catch (err) {
       if (err instanceof teamsService.TeamNotFoundError) {
-        return c.json<ApiError>(
-          { success: false, data: null, error: { code: 'NOT_FOUND', message: err.message } },
-          404,
-        )
+        set.status = 404
+        return { success: false, data: null, error: { code: 'NOT_FOUND', message: err.message } }
       }
       throw err
     }
   })
 
   // POST /teams — create new team
-  .post('/', zValidator('json', createTeamSchema), async (c) => {
-    const input = c.req.valid('json')
-    const actor = c.get('authUser')
-    const tx = c.get('tx')
-    const ipAddress = c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip')
+  .post('/', async ({ body, headers, set, ...c }) => {
+    const { authUser: actor, tx } = c as unknown as Ctx
+    const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
-    const created = await teamsService.createTeam(input, {
-      actor,
-      tx,
-      ipAddress,
-    })
-    return c.json<ApiResponse<typeof created>>(
-      { success: true, data: created, error: null },
-      201,
-    )
-  })
+    const created = await teamsService.createTeam(body, { actor, tx, ipAddress })
+    set.status = 201
+    return { success: true, data: created, error: null }
+  }, { body: createTeamSchema })
 
   // PATCH /teams/:id — update team
-  .patch('/:id', zValidator('json', updateTeamSchema), async (c) => {
-    const id = c.req.param('id')
-    const input = c.req.valid('json')
-    const actor = c.get('authUser')
-    const tx = c.get('tx')
-    const ipAddress = c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip')
+  .patch('/:id', async ({ params, body, headers, set, ...c }) => {
+    const { authUser: actor, tx } = c as unknown as Ctx
+    const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
     try {
-      const updated = await teamsService.updateTeam(id, input, {
-        actor,
-        tx,
-        ipAddress,
-      })
-      return c.json<ApiResponse<typeof updated>>({
-        success: true,
-        data: updated,
-        error: null,
-      })
+      const updated = await teamsService.updateTeam(params.id, body, { actor, tx, ipAddress })
+      return { success: true, data: updated, error: null }
     } catch (err) {
       if (err instanceof teamsService.TeamNotFoundError) {
-        return c.json<ApiError>(
-          { success: false, data: null, error: { code: 'NOT_FOUND', message: err.message } },
-          404,
-        )
+        set.status = 404
+        return { success: false, data: null, error: { code: 'NOT_FOUND', message: err.message } }
       }
       throw err
     }
-  })
+  }, { body: updateTeamSchema })

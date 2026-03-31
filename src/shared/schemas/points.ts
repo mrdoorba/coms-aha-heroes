@@ -1,51 +1,36 @@
-import { z } from 'zod'
+import { Type as t, type Static } from '@sinclair/typebox'
 import { KITTA_CODES, POINT_STATUSES, POINT_CATEGORY_CODES } from '../constants'
 
-export const submitPointSchema = z
-  .object({
-    userId: z.string().uuid(),
-    categoryCode: z.enum(POINT_CATEGORY_CODES),
-    points: z.number().int().min(1).max(10),
-    reason: z.string().min(1).max(1000),
-    relatedStaff: z.string().max(500).optional(),
-    screenshotUrl: z.string().url().optional(),
-    kittaComponent: z.enum(KITTA_CODES).optional(),
-  })
-  .refine(
-    (data) => {
-      if (data.categoryCode === 'PENALTI') return data.kittaComponent != null
-      return true
-    },
-    { message: 'KITTA component is required for Penalti', path: ['kittaComponent'] },
-  )
-  .refine(
-    (data) => {
-      if (data.categoryCode !== 'PENALTI') return data.kittaComponent == null
-      return true
-    },
-    { message: 'KITTA component is only for Penalti', path: ['kittaComponent'] },
-  )
-  .refine(
-    (data) => {
-      if (data.categoryCode === 'BINTANG') return data.points === 1
-      return true
-    },
-    { message: 'Bintang is always 1 point', path: ['points'] },
-  )
-
-export const listPointsSchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
-  categoryCode: z.enum(POINT_CATEGORY_CODES).optional(),
-  status: z.enum(POINT_STATUSES).optional(),
-  userId: z.string().uuid().optional(),
-  teamId: z.string().uuid().optional(),
+// Note: cross-field validation (kittaComponent required for PENALTI, BINTANG
+// always 1 point, etc.) must be checked at the handler/service level —
+// TypeBox has no .refine() equivalent.
+export const submitPointSchema = t.Object({
+  userId: t.String({ format: 'uuid' }),
+  categoryCode: t.Union(POINT_CATEGORY_CODES.map((c) => t.Literal(c))),
+  points: t.Integer({ minimum: 1, maximum: 10 }),
+  reason: t.String({ minLength: 1, maxLength: 1000 }),
+  relatedStaff: t.Optional(t.String({ maxLength: 500 })),
+  screenshotUrl: t.Optional(t.String({ format: 'uri' })),
+  kittaComponent: t.Optional(t.Union(KITTA_CODES.map((c) => t.Literal(c)))),
 })
 
-export const approveRejectSchema = z.object({
-  reason: z.string().max(500).optional(),
+export const listPointsSchema = t.Object({
+  page: t.Integer({ minimum: 1, default: 1 }),
+  limit: t.Integer({ minimum: 1, maximum: 100, default: 20 }),
+  categoryCode: t.Optional(t.Union(POINT_CATEGORY_CODES.map((c) => t.Literal(c)))),
+  status: t.Optional(t.Union(POINT_STATUSES.map((s) => t.Literal(s)))),
+  userId: t.Optional(t.String({ format: 'uuid' })),
+  teamId: t.Optional(t.String({ format: 'uuid' })),
+  search: t.Optional(t.String({ maxLength: 200 })),
+  submittedBy: t.Optional(t.String({ format: 'uuid' })),
+  dateFrom: t.Optional(t.String()),
+  dateTo: t.Optional(t.String()),
 })
 
-export type SubmitPointInput = z.infer<typeof submitPointSchema>
-export type ListPointsInput = z.infer<typeof listPointsSchema>
-export type ApproveRejectInput = z.infer<typeof approveRejectSchema>
+export const approveRejectSchema = t.Object({
+  reason: t.Optional(t.String({ maxLength: 500 })),
+})
+
+export type SubmitPointInput = Static<typeof submitPointSchema>
+export type ListPointsInput = Static<typeof listPointsSchema>
+export type ApproveRejectInput = Static<typeof approveRejectSchema>

@@ -1,227 +1,195 @@
-import { Hono } from 'hono'
-import { zValidator } from '@hono/zod-validator'
-import { submitPointSchema, listPointsSchema, approveRejectSchema } from '~/shared/schemas/points'
+import { Elysia, t } from 'elysia'
+import { submitPointSchema, approveRejectSchema } from '~/shared/schemas/points'
+import { POINT_STATUSES, POINT_CATEGORY_CODES } from '~/shared/constants'
+import { paginationQuery } from './_query'
 import { bulkPointActionSchema } from '~/shared/schemas/bulk'
 import * as pointsService from '../services/points'
 import * as approvalService from '../services/approval'
 import type { AuthUser } from '../middleware/auth'
 import type { DbClient } from '../repositories/base'
-import type { ApiResponse, ApiError, PaginationMeta } from '~/shared/types/api'
 
-type Env = {
-  Variables: {
-    authUser: AuthUser
-    tx: DbClient
-  }
-}
+type Ctx = { authUser: AuthUser; tx: DbClient }
 
-export const pointsRoute = new Hono<Env>()
+export const pointsRoute = new Elysia({ prefix: '/points' })
 
   // POST /points — submit a new point
-  .post('/', zValidator('json', submitPointSchema), async (c) => {
-    const input = c.req.valid('json')
-    const actor = c.get('authUser')
-    const tx = c.get('tx')
-    const ipAddress = c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip')
+  .post('/', async ({ body, headers, set, ...c }) => {
+    const { authUser: actor, tx } = c as unknown as Ctx
+    const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
     try {
-      const created = await pointsService.submitPoint(input, {
+      const created = await pointsService.submitPoint(body, {
         actor,
         tx,
         ipAddress,
       })
-      return c.json<ApiResponse<typeof created>>(
-        { success: true, data: created, error: null },
-        201,
-      )
+      set.status = 201
+      return { success: true, data: created, error: null }
     } catch (err) {
       if (err instanceof pointsService.CategoryNotFoundError) {
-        return c.json<ApiError>(
-          { success: false, data: null, error: { code: 'NOT_FOUND', message: err.message } },
-          404,
-        )
+        set.status = 404
+        return { success: false, data: null, error: { code: 'NOT_FOUND', message: err.message } }
       }
       if (err instanceof pointsService.CategoryDisabledError) {
-        return c.json<ApiError>(
-          { success: false, data: null, error: { code: 'CATEGORY_DISABLED', message: err.message } },
-          422,
-        )
+        set.status = 422
+        return { success: false, data: null, error: { code: 'CATEGORY_DISABLED', message: err.message } }
       }
       if (err instanceof pointsService.TargetUserNotFoundError) {
-        return c.json<ApiError>(
-          { success: false, data: null, error: { code: 'USER_NOT_FOUND', message: err.message } },
-          404,
-        )
+        set.status = 404
+        return { success: false, data: null, error: { code: 'USER_NOT_FOUND', message: err.message } }
       }
       if (err instanceof pointsService.ScreenshotRequiredError) {
-        return c.json<ApiError>(
-          { success: false, data: null, error: { code: 'SCREENSHOT_REQUIRED', message: err.message } },
-          422,
-        )
+        set.status = 422
+        return { success: false, data: null, error: { code: 'SCREENSHOT_REQUIRED', message: err.message } }
       }
       if (
         err instanceof pointsService.SelfPenaltiError ||
         err instanceof pointsService.LeaderSelfGiveError ||
         err instanceof pointsService.InsufficientRoleForPenaltiError
       ) {
-        return c.json<ApiError>(
-          { success: false, data: null, error: { code: 'FORBIDDEN', message: err.message } },
-          403,
-        )
+        set.status = 403
+        return { success: false, data: null, error: { code: 'FORBIDDEN', message: (err as Error).message } }
       }
       throw err
     }
+  }, {
+    body: submitPointSchema,
+    beforeHandle({ body, set }) {
+      if (body.categoryCode === 'PENALTI' && !body.kittaComponent) {
+        set.status = 422
+        return { success: false, data: null, error: { code: 'VALIDATION_ERROR', message: 'KITTA component is required for Penalti', path: ['kittaComponent'] } }
+      }
+      if (body.categoryCode !== 'PENALTI' && body.kittaComponent != null) {
+        set.status = 422
+        return { success: false, data: null, error: { code: 'VALIDATION_ERROR', message: 'KITTA component is only for Penalti', path: ['kittaComponent'] } }
+      }
+      if (body.categoryCode === 'BINTANG' && body.points !== 1) {
+        set.status = 422
+        return { success: false, data: null, error: { code: 'VALIDATION_ERROR', message: 'Bintang is always 1 point', path: ['points'] } }
+      }
+    },
   })
 
-  // POST /bulk — bulk approve/reject points (HR/Admin/Leader)
-  .post('/bulk', zValidator('json', bulkPointActionSchema), async (c) => {
-    const input = c.req.valid('json')
-    const actor = c.get('authUser')
-    const tx = c.get('tx')
-    const ipAddress = c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip')
+  // POST /points/bulk — bulk approve/reject points (HR/Admin/Leader)
+  .post('/bulk', async ({ body, headers, ...c }) => {
+    const { authUser: actor, tx } = c as unknown as Ctx
+    const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
-    const result = await approvalService.bulkResolvePoints(input, { actor, tx, ipAddress })
-    return c.json<ApiResponse<typeof result>>({ success: true, data: result, error: null })
-  })
+    const result = await approvalService.bulkResolvePoints(body, { actor, tx, ipAddress })
+    return { success: true, data: result, error: null }
+  }, { body: bulkPointActionSchema })
 
   // GET /points — paginated list with filters
-  .get('/', zValidator('query', listPointsSchema), async (c) => {
-    const input = c.req.valid('query')
-    const actor = c.get('authUser')
-    const tx = c.get('tx')
+  .get('/', async ({ query, ...c }) => {
+    const { authUser: actor, tx } = c as unknown as Ctx
 
-    const result = await pointsService.listPoints(input, { actor, tx })
+    const result = await pointsService.listPoints(query, { actor, tx })
 
-    return c.json<ApiResponse<typeof result.points> & { meta: PaginationMeta }>({
+    return {
       success: true,
       data: result.points,
       error: null,
       meta: result.meta,
-    })
-  })
+    }
+  }, { query: t.Object({
+    ...paginationQuery,
+    categoryCode: t.Optional(t.Union(POINT_CATEGORY_CODES.map((c) => t.Literal(c)))),
+    status: t.Optional(t.Union(POINT_STATUSES.map((s) => t.Literal(s)))),
+    userId: t.Optional(t.String({ format: 'uuid' })),
+    teamId: t.Optional(t.String({ format: 'uuid' })),
+    search: t.Optional(t.String({ maxLength: 200 })),
+    submittedBy: t.Optional(t.String({ format: 'uuid' })),
+    dateFrom: t.Optional(t.String()),
+    dateTo: t.Optional(t.String()),
+  }) })
 
   // GET /points/:id — detail with submitter info
-  .get('/:id', async (c) => {
-    const id = c.req.param('id')
-    const actor = c.get('authUser')
-    const tx = c.get('tx')
+  .get('/:id', async ({ params, set, ...c }) => {
+    const { authUser: actor, tx } = c as unknown as Ctx
 
     try {
-      const point = await pointsService.getPointById(id, { actor, tx })
-      return c.json<ApiResponse<typeof point>>({
-        success: true,
-        data: point,
-        error: null,
-      })
+      const point = await pointsService.getPointById(params.id, { actor, tx })
+      return { success: true, data: point, error: null }
     } catch (err) {
       if (err instanceof pointsService.PointNotFoundError) {
-        return c.json<ApiError>(
-          { success: false, data: null, error: { code: 'NOT_FOUND', message: err.message } },
-          404,
-        )
+        set.status = 404
+        return { success: false, data: null, error: { code: 'NOT_FOUND', message: err.message } }
       }
       throw err
     }
   })
 
   // PATCH /points/:id/approve — approve a pending point
-  .patch('/:id/approve', zValidator('json', approveRejectSchema), async (c) => {
-    const id = c.req.param('id')
-    const input = c.req.valid('json')
-    const actor = c.get('authUser')
-    const tx = c.get('tx')
-    const ipAddress = c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip')
+  .patch('/:id/approve', async ({ params, body, headers, set, ...c }) => {
+    const { authUser: actor, tx } = c as unknown as Ctx
+    const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
     try {
-      const updated = await approvalService.approvePoint(id, input, { actor, tx, ipAddress })
-      return c.json<ApiResponse<typeof updated>>({ success: true, data: updated, error: null })
+      const updated = await approvalService.approvePoint(params.id, body, { actor, tx, ipAddress })
+      return { success: true, data: updated, error: null }
     } catch (err) {
       if (err instanceof approvalService.PointNotFoundError) {
-        return c.json<ApiError>(
-          { success: false, data: null, error: { code: 'NOT_FOUND', message: err.message } },
-          404,
-        )
+        set.status = 404
+        return { success: false, data: null, error: { code: 'NOT_FOUND', message: err.message } }
       }
       if (err instanceof approvalService.PointNotPendingError) {
-        return c.json<ApiError>(
-          { success: false, data: null, error: { code: 'NOT_PENDING', message: err.message } },
-          409,
-        )
+        set.status = 409
+        return { success: false, data: null, error: { code: 'NOT_PENDING', message: err.message } }
       }
       if (err instanceof approvalService.UnauthorizedApprovalError) {
-        return c.json<ApiError>(
-          { success: false, data: null, error: { code: 'FORBIDDEN', message: err.message } },
-          403,
-        )
+        set.status = 403
+        return { success: false, data: null, error: { code: 'FORBIDDEN', message: err.message } }
       }
       throw err
     }
-  })
+  }, { body: approveRejectSchema })
 
   // PATCH /points/:id/reject — reject a pending point
-  .patch('/:id/reject', zValidator('json', approveRejectSchema), async (c) => {
-    const id = c.req.param('id')
-    const input = c.req.valid('json')
-    const actor = c.get('authUser')
-    const tx = c.get('tx')
-    const ipAddress = c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip')
+  .patch('/:id/reject', async ({ params, body, headers, set, ...c }) => {
+    const { authUser: actor, tx } = c as unknown as Ctx
+    const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
     try {
-      const updated = await approvalService.rejectPoint(id, input, { actor, tx, ipAddress })
-      return c.json<ApiResponse<typeof updated>>({ success: true, data: updated, error: null })
+      const updated = await approvalService.rejectPoint(params.id, body, { actor, tx, ipAddress })
+      return { success: true, data: updated, error: null }
     } catch (err) {
       if (err instanceof approvalService.PointNotFoundError) {
-        return c.json<ApiError>(
-          { success: false, data: null, error: { code: 'NOT_FOUND', message: err.message } },
-          404,
-        )
+        set.status = 404
+        return { success: false, data: null, error: { code: 'NOT_FOUND', message: err.message } }
       }
       if (err instanceof approvalService.PointNotPendingError) {
-        return c.json<ApiError>(
-          { success: false, data: null, error: { code: 'NOT_PENDING', message: err.message } },
-          409,
-        )
+        set.status = 409
+        return { success: false, data: null, error: { code: 'NOT_PENDING', message: err.message } }
       }
       if (err instanceof approvalService.UnauthorizedApprovalError) {
-        return c.json<ApiError>(
-          { success: false, data: null, error: { code: 'FORBIDDEN', message: err.message } },
-          403,
-        )
+        set.status = 403
+        return { success: false, data: null, error: { code: 'FORBIDDEN', message: err.message } }
       }
       throw err
     }
-  })
+  }, { body: approveRejectSchema })
 
   // PATCH /points/:id/revoke — revoke an active point (HR/Admin only)
-  .patch('/:id/revoke', zValidator('json', approveRejectSchema), async (c) => {
-    const id = c.req.param('id')
-    const input = c.req.valid('json')
-    const actor = c.get('authUser')
-    const tx = c.get('tx')
-    const ipAddress = c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip')
+  .patch('/:id/revoke', async ({ params, body, headers, set, ...c }) => {
+    const { authUser: actor, tx } = c as unknown as Ctx
+    const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
     try {
-      const updated = await approvalService.revokePoint(id, input, { actor, tx, ipAddress })
-      return c.json<ApiResponse<typeof updated>>({ success: true, data: updated, error: null })
+      const updated = await approvalService.revokePoint(params.id, body, { actor, tx, ipAddress })
+      return { success: true, data: updated, error: null }
     } catch (err) {
       if (err instanceof approvalService.PointNotFoundError) {
-        return c.json<ApiError>(
-          { success: false, data: null, error: { code: 'NOT_FOUND', message: err.message } },
-          404,
-        )
+        set.status = 404
+        return { success: false, data: null, error: { code: 'NOT_FOUND', message: err.message } }
       }
       if (err instanceof approvalService.PointNotActiveError) {
-        return c.json<ApiError>(
-          { success: false, data: null, error: { code: 'NOT_ACTIVE', message: err.message } },
-          409,
-        )
+        set.status = 409
+        return { success: false, data: null, error: { code: 'NOT_ACTIVE', message: err.message } }
       }
       if (err instanceof approvalService.UnauthorizedApprovalError) {
-        return c.json<ApiError>(
-          { success: false, data: null, error: { code: 'FORBIDDEN', message: err.message } },
-          403,
-        )
+        set.status = 403
+        return { success: false, data: null, error: { code: 'FORBIDDEN', message: err.message } }
       }
       throw err
     }
-  })
+  }, { body: approveRejectSchema })

@@ -1,31 +1,15 @@
-import { createMiddleware } from 'hono/factory'
 import type { UserRole } from '~/shared/constants'
 import type { AuthUser } from './auth'
+import { AuthError } from './auth'
 
-type AuthEnv = {
-  Variables: {
-    authUser: AuthUser
-  }
-}
-
-export function rbacMiddleware(allowedRoles: readonly UserRole[]) {
-  return createMiddleware<AuthEnv>(async (c, next) => {
-    const user = c.get('authUser')
-
-    if (!allowedRoles.includes(user.role)) {
-      return c.json(
-        {
-          success: false,
-          data: null,
-          error: {
-            code: 'FORBIDDEN',
-            message: `Role '${user.role}' is not authorized for this action`,
-          },
-        },
+export function requireRole(...allowedRoles: readonly UserRole[]) {
+  return ({ authUser }: { authUser: AuthUser }) => {
+    if (!allowedRoles.includes(authUser.role)) {
+      throw new AuthError(
         403,
+        'FORBIDDEN',
+        `Role '${authUser.role}' is not authorized for this action`,
       )
     }
-
-    await next()
-  })
+  }
 }

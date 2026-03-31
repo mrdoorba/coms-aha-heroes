@@ -1,10 +1,10 @@
-import { Hono } from 'hono'
-import { cors } from 'hono/cors'
-import { logger } from 'hono/logger'
+import { Elysia } from 'elysia'
+import { cors } from '@elysiajs/cors'
 import { health } from './routes/health'
 import { authRoute } from './routes/auth'
-import { authMiddleware } from './middleware/auth'
-import { rlsMiddleware } from './middleware/rls'
+import { authPlugin } from './middleware/auth'
+import { rlsPlugin } from './middleware/rls'
+import { errorHandler } from './middleware/error-handler'
 import { usersRoute } from './routes/users'
 import { teamsRoute } from './routes/teams'
 import { categoriesRoute } from './routes/categories'
@@ -21,46 +21,41 @@ import { redemptionsRoute } from './routes/redemptions'
 import { settingsRoute } from './routes/settings'
 import { auditLogsRoute } from './routes/audit-logs'
 import { reportsRoute } from './routes/reports'
-import { errorHandler } from './middleware/error-handler'
 
-const app = new Hono().basePath('/api')
-app.onError(errorHandler)
+const app = new Elysia({ prefix: '/api' })
+  .onError(errorHandler)
+  .use(
+    cors({
+      origin: true,
+      credentials: true,
+    }),
+  )
+  // Public routes (no auth required)
+  .use(health)
+  .use(authRoute)
+  // Protected routes — auth + RLS middleware chain
+  .group('/v1', (app) =>
+    app
+      .use(authPlugin)
+      .use(rlsPlugin)
+      .use(usersRoute)
+      .use(teamsRoute)
+      .use(categoriesRoute)
+      .use(pointsRoute)
+      .use(uploadsRoute)
+      .use(leaderboardRoute)
+      .use(notificationsRoute)
+      .use(dashboardRoute)
+      .use(challengesRoute)
+      .use(appealsRoute)
+      .use(commentsRoute)
+      .use(rewardsRoute)
+      .use(redemptionsRoute)
+      .use(settingsRoute)
+      .use(auditLogsRoute)
+      .use(reportsRoute),
+  )
 
-app.use('*', logger())
-app.use(
-  '*',
-  cors({
-    origin: (origin) => origin,
-    credentials: true,
-  }),
-)
-
-// Public routes (no auth required)
-app.route('/', health)
-app.route('/', authRoute)
-
-// Protected routes — auth + RLS middleware chain
-app.use('/v1/*', authMiddleware)
-app.use('/v1/*', rlsMiddleware)
-
-// v1 routes
-app.route('/v1/users', usersRoute)
-app.route('/v1/teams', teamsRoute)
-app.route('/v1/categories', categoriesRoute)
-app.route('/v1/points', pointsRoute)
-app.route('/v1/uploads', uploadsRoute)
-app.route('/v1/leaderboard', leaderboardRoute)
-app.route('/v1/notifications', notificationsRoute)
-app.route('/v1/dashboard', dashboardRoute)
-app.route('/v1', challengesRoute)
-app.route('/v1', appealsRoute)
-app.route('/v1/comments', commentsRoute)
-app.route('/v1/rewards', rewardsRoute)
-app.route('/v1/redemptions', redemptionsRoute)
-app.route('/v1/settings', settingsRoute)
-app.route('/v1/audit-logs', auditLogsRoute)
-app.route('/v1/reports', reportsRoute)
-
-export type AppType = typeof app
+export type App = typeof app
 
 export { app }
