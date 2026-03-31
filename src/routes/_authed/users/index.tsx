@@ -43,6 +43,8 @@ import { BulkActionBar } from '~/components/bulk/bulk-action-bar'
 import { USER_ROLES, ROLE_LABELS } from '~/shared/constants'
 import type { UserRole } from '~/shared/constants'
 import type { CreateUserInput, UpdateUserInput } from '~/shared/schemas/users'
+import { Label } from '~/components/ui/label'
+import { AdvancedFilters } from '~/components/filters/advanced-filters'
 
 type UserRow = {
   id: string
@@ -78,6 +80,9 @@ function UsersPage() {
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState<string>('')
   const [activeFilter, setActiveFilter] = useState<string>('')
+  const [departmentFilter, setDepartmentFilter] = useState('')
+  const [positionFilter, setPositionFilter] = useState('')
+  const [branchFilter, setBranchFilter] = useState('')
   const [page, setPage] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -95,11 +100,17 @@ function UsersPage() {
     search?: string
     role?: string
     isActive?: string
+    department?: string
+    position?: string
+    branchId?: string
   }) {
     const p = params?.page ?? page
     const s = params?.search ?? search
     const r = params?.role ?? roleFilter
     const a = params?.isActive ?? activeFilter
+    const dept = params?.department ?? departmentFilter
+    const pos = params?.position ?? positionFilter
+    const br = params?.branchId ?? branchFilter
 
     setIsLoading(true)
     try {
@@ -110,6 +121,9 @@ function UsersPage() {
           search: s || undefined,
           role: r || undefined,
           isActive: a === '' ? undefined : a === 'true',
+          department: dept || undefined,
+          position: pos || undefined,
+          branchId: br || undefined,
         },
       })
       setUsers(result.users as UserRow[])
@@ -138,6 +152,35 @@ function UsersPage() {
     setPage(1)
     fetchUsers({ page: 1, isActive: v })
   }
+
+  function handleDepartmentChange(value: string) {
+    setDepartmentFilter(value)
+    setPage(1)
+    fetchUsers({ page: 1, department: value })
+  }
+
+  function handlePositionChange(value: string) {
+    setPositionFilter(value)
+    setPage(1)
+    fetchUsers({ page: 1, position: value })
+  }
+
+  function handleBranchChange(value: string | null) {
+    const v = !value || value === 'all' ? '' : value
+    setBranchFilter(v)
+    setPage(1)
+    fetchUsers({ page: 1, branchId: v })
+  }
+
+  function handleClearAdvanced() {
+    setDepartmentFilter('')
+    setPositionFilter('')
+    setBranchFilter('')
+    setPage(1)
+    fetchUsers({ page: 1, department: '', position: '', branchId: '' })
+  }
+
+  const hasActiveAdvanced = !!(departmentFilter || positionFilter || branchFilter)
 
   function handlePageChange(newPage: number) {
     setPage(newPage)
@@ -351,6 +394,65 @@ function UsersPage() {
             <SelectItem value="false">{m.status_archived()}</SelectItem>
           </SelectContent>
         </Select>
+      </div>
+
+      {/* Advanced Filters */}
+      <div className="mb-4">
+        <AdvancedFilters
+          onClear={handleClearAdvanced}
+          hasActiveFilters={hasActiveAdvanced}
+          children={[
+            {
+              key: 'department',
+              node: (
+                <div className="space-y-1">
+                  <Label className="text-xs">{m.filter_department()}</Label>
+                  <Input
+                    placeholder={m.filter_department_placeholder()}
+                    value={departmentFilter}
+                    onChange={(e) => handleDepartmentChange(e.target.value)}
+                    className="h-8 text-sm"
+                  />
+                </div>
+              ),
+            },
+            {
+              key: 'position',
+              node: (
+                <div className="space-y-1">
+                  <Label className="text-xs">{m.filter_position()}</Label>
+                  <Input
+                    placeholder={m.filter_position_placeholder()}
+                    value={positionFilter}
+                    onChange={(e) => handlePositionChange(e.target.value)}
+                    className="h-8 text-sm"
+                  />
+                </div>
+              ),
+            },
+            {
+              key: 'branch',
+              node: (
+                <div className="space-y-1">
+                  <Label className="text-xs">{m.filter_branch()}</Label>
+                  <Select value={branchFilter || 'all'} onValueChange={handleBranchChange}>
+                    <SelectTrigger className="h-8 text-sm">
+                      <SelectValue placeholder={m.filter_all_branches()} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{m.filter_all_branches()}</SelectItem>
+                      {lookupData.branches.map((b) => (
+                        <SelectItem key={b.id} value={b.id}>
+                          {b.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ),
+            },
+          ]}
+        />
       </div>
 
       {/* Table */}

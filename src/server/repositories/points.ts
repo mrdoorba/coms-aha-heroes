@@ -1,4 +1,4 @@
-import { eq, and, count, desc } from 'drizzle-orm'
+import { eq, and, count, desc, ilike, gte, lte, sql } from 'drizzle-orm'
 import { achievementPoints, pointCategories, users } from '~/db/schema'
 import type { DbClient } from './base'
 import { getDb } from './base'
@@ -13,6 +13,10 @@ type ListPointsOpts = {
   readonly status?: PointStatus
   readonly userId?: string
   readonly teamId?: string
+  readonly search?: string
+  readonly submittedBy?: string
+  readonly dateFrom?: string
+  readonly dateTo?: string
 }
 
 export async function listPoints(opts: ListPointsOpts, tx?: DbClient) {
@@ -21,6 +25,10 @@ export async function listPoints(opts: ListPointsOpts, tx?: DbClient) {
 
   if (opts.status) conditions.push(eq(achievementPoints.status, opts.status))
   if (opts.userId) conditions.push(eq(achievementPoints.userId, opts.userId))
+  if (opts.search) conditions.push(ilike(achievementPoints.reason, `%${opts.search}%`))
+  if (opts.submittedBy) conditions.push(eq(achievementPoints.submittedBy, opts.submittedBy))
+  if (opts.dateFrom) conditions.push(gte(achievementPoints.createdAt, new Date(opts.dateFrom)))
+  if (opts.dateTo) conditions.push(lte(achievementPoints.createdAt, new Date(`${opts.dateTo}T23:59:59.999Z`)))
 
   if (opts.categoryCode) {
     // Join to point_categories to filter by code

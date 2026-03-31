@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { Plus, Filter } from 'lucide-react'
+import { Plus, Filter, Search } from 'lucide-react'
 import * as m from '~/paraglide/messages'
 import { Button } from '~/components/ui/button'
+import { Input } from '~/components/ui/input'
+import { Label } from '~/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -25,6 +27,7 @@ import { useBulkSelection } from '~/hooks/use-bulk-selection'
 import { BulkCheckbox } from '~/components/bulk/bulk-checkbox'
 import { BulkActionBar } from '~/components/bulk/bulk-action-bar'
 import { bulkResolvePointsFn } from '~/server/functions/approval'
+import { AdvancedFilters } from '~/components/filters/advanced-filters'
 
 type PointRow = {
   id: string
@@ -66,6 +69,9 @@ function PointsPage() {
   const [meta, setMeta] = useState(initialData.meta)
   const [activeTab, setActiveTab] = useState<PointCategoryCode | 'ALL'>('ALL')
   const [statusFilter, setStatusFilter] = useState<string>('')
+  const [searchFilter, setSearchFilter] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
   const [page, setPage] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [showTypeSelector, setShowTypeSelector] = useState(false)
@@ -74,10 +80,16 @@ function PointsPage() {
     category?: PointCategoryCode | 'ALL'
     status?: string
     pg?: number
+    search?: string
+    dateFrom?: string
+    dateTo?: string
   }) {
     const cat = opts?.category ?? activeTab
     const st = opts?.status ?? statusFilter
     const p = opts?.pg ?? page
+    const s = opts?.search ?? searchFilter
+    const df = opts?.dateFrom ?? dateFrom
+    const dt = opts?.dateTo ?? dateTo
 
     setIsLoading(true)
     try {
@@ -87,6 +99,9 @@ function PointsPage() {
           limit: 20,
           categoryCode: cat === 'ALL' ? undefined : cat,
           status: st || undefined,
+          search: s || undefined,
+          dateFrom: df || undefined,
+          dateTo: dt || undefined,
         },
       })
       setPoints(data.points as PointRow[])
@@ -122,6 +137,34 @@ function PointsPage() {
       // error handled by server function
     }
   }
+
+  function handleSearchChange(value: string) {
+    setSearchFilter(value)
+    setPage(1)
+    fetchPoints({ search: value, pg: 1 })
+  }
+
+  function handleDateFromChange(value: string) {
+    setDateFrom(value)
+    setPage(1)
+    fetchPoints({ dateFrom: value, pg: 1 })
+  }
+
+  function handleDateToChange(value: string) {
+    setDateTo(value)
+    setPage(1)
+    fetchPoints({ dateTo: value, pg: 1 })
+  }
+
+  function handleClearAdvanced() {
+    setSearchFilter('')
+    setDateFrom('')
+    setDateTo('')
+    setPage(1)
+    fetchPoints({ search: '', dateFrom: '', dateTo: '', pg: 1 })
+  }
+
+  const hasActiveAdvanced = !!(searchFilter || dateFrom || dateTo)
 
   function handlePageChange(newPage: number) {
     setPage(newPage)
@@ -171,6 +214,56 @@ function PointsPage() {
           </SelectContent>
         </Select>
       </div>
+
+      {/* Advanced Filters */}
+      <AdvancedFilters
+        onClear={handleClearAdvanced}
+        hasActiveFilters={hasActiveAdvanced}
+        children={[
+          {
+            key: 'search',
+            node: (
+              <div className="space-y-1">
+                <Label className="text-xs">{m.common_search()}</Label>
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder={m.filter_search_reason()}
+                    value={searchFilter}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    className="h-8 pl-8 text-sm"
+                  />
+                </div>
+              </div>
+            ),
+          },
+          {
+            key: 'dateRange',
+            node: (
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-xs">{m.filter_date_from()}</Label>
+                  <Input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => handleDateFromChange(e.target.value)}
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">{m.filter_date_to()}</Label>
+                  <Input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => handleDateToChange(e.target.value)}
+                    className="h-8 text-sm"
+                  />
+                </div>
+              </div>
+            ),
+          },
+        ]}
+      />
 
       {/* Point cards */}
       <div className="space-y-2">

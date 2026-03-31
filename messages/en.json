@@ -351,5 +351,21 @@
   "bulk_confirm_title": "Confirm bulk action",
   "bulk_confirm_message": "Are you sure you want to {action} {count} items?",
   "bulk_result_summary": "{succeeded} succeeded, {failed} failed",
-  "bulk_rejection_reason_label": "Rejection reason"
+  "bulk_rejection_reason_label": "Rejection reason",
+
+  "filter_advanced": "Advanced Filters",
+  "filter_hide_advanced": "Hide Filters",
+  "filter_date_from": "From",
+  "filter_date_to": "To",
+  "filter_search_reason": "Search by reason...",
+  "filter_submitted_by": "Submitted by",
+  "filter_all_submitters": "All Submitters",
+  "filter_search_reward": "Search by reward name...",
+  "filter_department": "Department",
+  "filter_department_placeholder": "Filter by department...",
+  "filter_position": "Position",
+  "filter_position_placeholder": "Filter by position...",
+  "filter_branch": "Branch",
+  "filter_all_branches": "All Branches",
+  "filter_clear": "Clear Filters"
 }

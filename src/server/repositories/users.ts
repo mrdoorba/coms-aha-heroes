@@ -13,6 +13,9 @@ type ListUsersOpts = {
   readonly teamId?: string
   readonly search?: string
   readonly isActive?: boolean
+  readonly department?: string
+  readonly position?: string
+  readonly branchId?: string
 }
 
 export async function listUsers(opts: ListUsersOpts, tx?: DbClient) {
@@ -23,6 +26,9 @@ export async function listUsers(opts: ListUsersOpts, tx?: DbClient) {
   if (opts.teamId) conditions.push(eq(users.teamId, opts.teamId))
   if (opts.isActive !== undefined) conditions.push(eq(users.isActive, opts.isActive))
   if (opts.search) conditions.push(ilike(users.name, `%${opts.search}%`))
+  if (opts.department) conditions.push(ilike(users.department, `%${opts.department}%`))
+  if (opts.position) conditions.push(ilike(users.position, `%${opts.position}%`))
+  if (opts.branchId) conditions.push(eq(users.branchId, opts.branchId))
 
   const where = conditions.length > 0 ? and(...conditions) : undefined
   const offset = (opts.page - 1) * opts.limit

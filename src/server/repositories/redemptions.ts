@@ -1,4 +1,4 @@
-import { eq, and, count, desc, sql } from 'drizzle-orm'
+import { eq, and, count, desc, sql, ilike, gte, lte } from 'drizzle-orm'
 import { redemptions, rewards, users } from '~/db/schema'
 import type { DbClient } from './base'
 import { getDb } from './base'
@@ -8,6 +8,9 @@ export type RedemptionRow = typeof redemptions.$inferSelect
 type ListFilters = {
   readonly status?: string
   readonly userId?: string
+  readonly search?: string
+  readonly dateFrom?: string
+  readonly dateTo?: string
 }
 
 type ListOpts = {
@@ -29,6 +32,15 @@ export async function listRedemptions(
   }
   if (filters.userId) {
     conditions.push(eq(redemptions.userId, filters.userId))
+  }
+  if (filters.search) {
+    conditions.push(ilike(rewards.name, `%${filters.search}%`))
+  }
+  if (filters.dateFrom) {
+    conditions.push(gte(redemptions.createdAt, new Date(filters.dateFrom)))
+  }
+  if (filters.dateTo) {
+    conditions.push(lte(redemptions.createdAt, new Date(`${filters.dateTo}T23:59:59.999Z`)))
   }
 
   const where = conditions.length > 0 ? and(...conditions) : undefined
@@ -60,7 +72,11 @@ export async function listRedemptions(
       .orderBy(desc(redemptions.createdAt))
       .limit(opts.limit)
       .offset(offset),
-    db.select({ total: count() }).from(redemptions).where(where),
+    db
+      .select({ total: count() })
+      .from(redemptions)
+      .innerJoin(rewards, eq(redemptions.rewardId, rewards.id))
+      .where(where),
   ])
 
   return { rows, total }

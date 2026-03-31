@@ -351,5 +351,21 @@
   "bulk_confirm_title": "ยืนยันการดำเนินการจำนวนมาก",
   "bulk_confirm_message": "คุณแน่ใจหรือไม่ว่าต้องการ {action} {count} รายการ?",
   "bulk_result_summary": "สำเร็จ {succeeded}, ล้มเหลว {failed}",
-  "bulk_rejection_reason_label": "เหตุผลในการปฏิเสธ"
+  "bulk_rejection_reason_label": "เหตุผลในการปฏิเสธ",
+
+  "filter_advanced": "ตัวกรองขั้นสูง",
+  "filter_hide_advanced": "ซ่อนตัวกรอง",
+  "filter_date_from": "จาก",
+  "filter_date_to": "ถึง",
+  "filter_search_reason": "ค้นหาตามเหตุผล...",
+  "filter_submitted_by": "ส่งโดย",
+  "filter_all_submitters": "ผู้ส่งทั้งหมด",
+  "filter_search_reward": "ค้นหาตามชื่อรางวัล...",
+  "filter_department": "แผนก",
+  "filter_department_placeholder": "กรองตามแผนก...",
+  "filter_position": "ตำแหน่ง",
+  "filter_position_placeholder": "กรองตามตำแหน่ง...",
+  "filter_branch": "สาขา",
+  "filter_all_branches": "ทุกสาขา",
+  "filter_clear": "ล้างตัวกรอง"
 }

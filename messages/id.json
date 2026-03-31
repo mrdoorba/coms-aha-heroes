@@ -351,5 +351,21 @@
   "bulk_confirm_title": "Konfirmasi tindakan massal",
   "bulk_confirm_message": "Apakah Anda yakin ingin {action} {count} item?",
   "bulk_result_summary": "{succeeded} berhasil, {failed} gagal",
-  "bulk_rejection_reason_label": "Alasan penolakan"
+  "bulk_rejection_reason_label": "Alasan penolakan",
+
+  "filter_advanced": "Filter Lanjutan",
+  "filter_hide_advanced": "Sembunyikan Filter",
+  "filter_date_from": "Dari",
+  "filter_date_to": "Sampai",
+  "filter_search_reason": "Cari berdasarkan alasan...",
+  "filter_submitted_by": "Diajukan oleh",
+  "filter_all_submitters": "Semua Pengaju",
+  "filter_search_reward": "Cari berdasarkan nama hadiah...",
+  "filter_department": "Departemen",
+  "filter_department_placeholder": "Filter berdasarkan departemen...",
+  "filter_position": "Jabatan",
+  "filter_position_placeholder": "Filter berdasarkan jabatan...",
+  "filter_branch": "Cabang",
+  "filter_all_branches": "Semua Cabang",
+  "filter_clear": "Hapus Filter"
 }
