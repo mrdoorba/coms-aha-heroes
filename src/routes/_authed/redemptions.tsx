@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import * as m from '~/paraglide/messages'
-import { Gift } from 'lucide-react'
+import { Gift, Search } from 'lucide-react'
 import { Button } from '~/components/ui/button'
 import { Badge } from '~/components/ui/badge'
+import { Input } from '~/components/ui/input'
+import { Label } from '~/components/ui/label'
 import {
   Dialog,
   DialogContent,
@@ -21,6 +23,7 @@ import {
 import { useBulkSelection } from '~/hooks/use-bulk-selection'
 import { BulkCheckbox } from '~/components/bulk/bulk-checkbox'
 import { BulkActionBar } from '~/components/bulk/bulk-action-bar'
+import { AdvancedFilters } from '~/components/filters/advanced-filters'
 
 type RedemptionRow = {
   id: string
@@ -125,20 +128,34 @@ function RedemptionsPage() {
     (initialData.redemptions ?? []) as RedemptionRow[],
   )
   const [isLoading, setIsLoading] = useState(false)
+  const [searchFilter, setSearchFilter] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [rejectionReason, setRejectionReason] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const bulk = useBulkSelection()
 
-  async function loadTab(tab: Tab) {
+  async function loadTab(tab: Tab, opts?: { search?: string; dateFrom?: string; dateTo?: string }) {
+    const s = opts?.search ?? searchFilter
+    const df = opts?.dateFrom ?? dateFrom
+    const dt = opts?.dateTo ?? dateTo
+
     setIsLoading(true)
     try {
-      const params =
+      const base =
         tab === 'mine'
           ? { mine: true }
           : { status: 'pending' as const }
-      const data = await listRedemptionsFn({ data: params })
+      const data = await listRedemptionsFn({
+        data: {
+          ...base,
+          search: s || undefined,
+          dateFrom: df || undefined,
+          dateTo: dt || undefined,
+        },
+      })
       setRedemptions((data.redemptions ?? []) as RedemptionRow[])
     } finally {
       setIsLoading(false)
@@ -150,6 +167,30 @@ function RedemptionsPage() {
     bulk.clearSelection()
     loadTab(tab)
   }
+
+  function handleSearchChange(value: string) {
+    setSearchFilter(value)
+    loadTab(activeTab, { search: value })
+  }
+
+  function handleDateFromChange(value: string) {
+    setDateFrom(value)
+    loadTab(activeTab, { dateFrom: value })
+  }
+
+  function handleDateToChange(value: string) {
+    setDateTo(value)
+    loadTab(activeTab, { dateTo: value })
+  }
+
+  function handleClearAdvanced() {
+    setSearchFilter('')
+    setDateFrom('')
+    setDateTo('')
+    loadTab(activeTab, { search: '', dateFrom: '', dateTo: '' })
+  }
+
+  const hasActiveAdvanced = !!(searchFilter || dateFrom || dateTo)
 
   async function handleBulkAction(action: 'approve' | 'reject', rejectionReason?: string) {
     setIsSubmitting(true)
@@ -235,6 +276,56 @@ function RedemptionsPage() {
           </button>
         )}
       </div>
+
+      {/* Advanced Filters */}
+      <AdvancedFilters
+        onClear={handleClearAdvanced}
+        hasActiveFilters={hasActiveAdvanced}
+        children={[
+          {
+            key: 'search',
+            node: (
+              <div className="space-y-1">
+                <Label className="text-xs">{m.common_search()}</Label>
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder={m.filter_search_reward()}
+                    value={searchFilter}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    className="h-8 pl-8 text-sm"
+                  />
+                </div>
+              </div>
+            ),
+          },
+          {
+            key: 'dateRange',
+            node: (
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-xs">{m.filter_date_from()}</Label>
+                  <Input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => handleDateFromChange(e.target.value)}
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">{m.filter_date_to()}</Label>
+                  <Input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => handleDateToChange(e.target.value)}
+                    className="h-8 text-sm"
+                  />
+                </div>
+              </div>
+            ),
+          },
+        ]}
+      />
 
       {/* Card list */}
       {activeTab === 'pending' && isHrOrAdmin && redemptions.length > 0 && !isLoading && (
