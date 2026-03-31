@@ -1,107 +1,71 @@
-import { Hono } from 'hono'
-import { zValidator } from '@hono/zod-validator'
+import { Elysia, t } from 'elysia'
 import {
   createCommentSchema,
   updateCommentSchema,
-  listCommentsSchema,
 } from '~/shared/schemas/comments'
+import { paginationQuery } from './_query'
 import * as commentsService from '../services/comments'
 import type { AuthUser } from '../middleware/auth'
 import type { DbClient } from '../repositories/base'
-import type { ApiResponse, ApiError, PaginationMeta } from '~/shared/types/api'
 
-type Env = {
-  Variables: {
-    authUser: AuthUser
-    tx: DbClient
-  }
-}
+type Ctx = { authUser: AuthUser; tx: DbClient }
 
-export const commentsRoute = new Hono<Env>()
+export const commentsRoute = new Elysia({ prefix: '/comments' })
 
   // GET /comments — list comments for an entity
-  .get('/', zValidator('query', listCommentsSchema), async (c) => {
-    const input = c.req.valid('query')
-    const actor = c.get('authUser')
-    const tx = c.get('tx')
+  .get('/', async ({ query, ...c }) => {
+    const { authUser: actor, tx } = c as unknown as Ctx
 
-    const result = await commentsService.listComments(input, { actor, tx })
+    const result = await commentsService.listComments(query, { actor, tx })
 
-    return c.json<
-      ApiResponse<typeof result.comments> & { meta: PaginationMeta }
-    >({
+    return {
       success: true,
       data: result.comments,
       error: null,
       meta: result.meta,
-    })
-  })
+    }
+  }, { query: t.Object({
+    entityType: t.Union([t.Literal('achievement'), t.Literal('challenge'), t.Literal('appeal')]),
+    entityId: t.String({ format: 'uuid' }),
+    ...paginationQuery,
+  }) })
 
   // POST /comments — create a comment
-  .post('/', zValidator('json', createCommentSchema), async (c) => {
-    const input = c.req.valid('json')
-    const actor = c.get('authUser')
-    const tx = c.get('tx')
+  .post('/', async ({ body, set, ...c }) => {
+    const { authUser: actor, tx } = c as unknown as Ctx
 
     try {
-      const created = await commentsService.createComment(input, { actor, tx })
-      return c.json<ApiResponse<typeof created>>(
-        { success: true, data: created, error: null },
-        201,
-      )
+      const created = await commentsService.createComment(body, { actor, tx })
+      set.status = 201
+      return { success: true, data: created, error: null }
     } catch (err) {
       if (err instanceof commentsService.EntityNotFoundError) {
-        return c.json<ApiError>(
-          {
-            success: false,
-            data: null,
-            error: { code: 'NOT_FOUND', message: err.message },
-          },
-          404,
-        )
+        set.status = 404
+        return { success: false, data: null, error: { code: 'NOT_FOUND', message: err.message } }
       }
       throw err
     }
-  })
+  }, { body: createCommentSchema })
 
   // PATCH /comments/:id — update own comment
-  .patch('/:id', zValidator('json', updateCommentSchema), async (c) => {
-    const id = c.req.param('id')
-    const input = c.req.valid('json')
-    const actor = c.get('authUser')
-    const tx = c.get('tx')
+  .patch('/:id', async ({ params, body, set, ...c }) => {
+    const { authUser: actor, tx } = c as unknown as Ctx
 
     try {
-      const updated = await commentsService.updateComment(id, input, {
+      const updated = await commentsService.updateComment(params.id, body, {
         actor,
         tx,
       })
-      return c.json<ApiResponse<typeof updated>>({
-        success: true,
-        data: updated,
-        error: null,
-      })
+      return { success: true, data: updated, error: null }
     } catch (err) {
       if (err instanceof commentsService.CommentNotFoundError) {
-        return c.json<ApiError>(
-          {
-            success: false,
-            data: null,
-            error: { code: 'NOT_FOUND', message: err.message },
-          },
-          404,
-        )
+        set.status = 404
+        return { success: false, data: null, error: { code: 'NOT_FOUND', message: err.message } }
       }
       if (err instanceof commentsService.NotCommentAuthorError) {
-        return c.json<ApiError>(
-          {
-            success: false,
-            data: null,
-            error: { code: 'FORBIDDEN', message: err.message },
-          },
-          403,
-        )
+        set.status = 403
+        return { success: false, data: null, error: { code: 'FORBIDDEN', message: err.message } }
       }
       throw err
     }
-  })
+  }, { body: updateCommentSchema })

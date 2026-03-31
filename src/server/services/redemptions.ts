@@ -74,7 +74,13 @@ export async function listRedemptions(
 
   const { rows, total } = await redemptionsRepo.listRedemptions(
     { page: input.page, limit: input.limit },
-    { status: input.status, userId: filterByUser },
+    {
+      status: input.status,
+      userId: filterByUser,
+      search: input.search,
+      dateFrom: input.dateFrom,
+      dateTo: input.dateTo,
+    },
     ctx.tx,
   )
 
@@ -204,7 +210,7 @@ export async function bulkResolveRedemptions(
       if (input.action === 'approve') {
         await approveRedemption(id, ctx)
       } else {
-        await rejectRedemption(id, { rejectionReason: input.rejectionReason }, ctx)
+        await rejectRedemption(id, { status: 'rejected', rejectionReason: input.rejectionReason }, ctx)
       }
       results.push({ id, success: true })
     } catch (err) {

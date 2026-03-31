@@ -1,24 +1,24 @@
-import { z } from 'zod'
+import { Type as t, type Static } from '@sinclair/typebox'
 
 const ENTITY_TYPES = ['achievement', 'challenge', 'appeal'] as const
 
-export const createCommentSchema = z.object({
-  entityType: z.enum(ENTITY_TYPES),
-  entityId: z.string().uuid(),
-  body: z.string().min(1).max(5000),
+export const createCommentSchema = t.Object({
+  entityType: t.Union([t.Literal('achievement'), t.Literal('challenge'), t.Literal('appeal')]),
+  entityId: t.String({ format: 'uuid' }),
+  body: t.String({ minLength: 1, maxLength: 5000 }),
 })
 
-export const updateCommentSchema = z.object({
-  body: z.string().min(1).max(5000),
+export const updateCommentSchema = t.Object({
+  body: t.String({ minLength: 1, maxLength: 5000 }),
 })
 
-export const listCommentsSchema = z.object({
-  entityType: z.enum(ENTITY_TYPES),
-  entityId: z.string().uuid(),
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
+export const listCommentsSchema = t.Object({
+  entityType: t.Union([t.Literal('achievement'), t.Literal('challenge'), t.Literal('appeal')]),
+  entityId: t.String({ format: 'uuid' }),
+  page: t.Integer({ minimum: 1, default: 1 }),
+  limit: t.Integer({ minimum: 1, maximum: 100, default: 20 }),
 })
 
-export type CreateCommentInput = z.infer<typeof createCommentSchema>
-export type UpdateCommentInput = z.infer<typeof updateCommentSchema>
-export type ListCommentsInput = z.infer<typeof listCommentsSchema>
+export type CreateCommentInput = Static<typeof createCommentSchema>
+export type UpdateCommentInput = Static<typeof updateCommentSchema>
+export type ListCommentsInput = Static<typeof listCommentsSchema>

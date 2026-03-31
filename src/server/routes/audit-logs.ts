@@ -1,41 +1,37 @@
-import { Hono } from 'hono'
-import { zValidator } from '@hono/zod-validator'
-import { listAuditLogsSchema } from '~/shared/schemas/audit'
+import { Elysia, t } from 'elysia'
+import { paginationQuery50 } from './_query'
 import * as auditLogsService from '../services/audit-logs'
 import type { AuthUser } from '../middleware/auth'
 import type { DbClient } from '../repositories/base'
-import type { ApiResponse, ApiError, PaginationMeta } from '~/shared/types/api'
 
-type Env = {
-  Variables: {
-    authUser: AuthUser
-    tx: DbClient
-  }
-}
+type Ctx = { authUser: AuthUser; tx: DbClient }
 
-export const auditLogsRoute = new Hono<Env>()
+export const auditLogsRoute = new Elysia({ prefix: '/audit-logs' })
 
   // GET / — list audit logs (HR/Admin)
-  .get('/', zValidator('query', listAuditLogsSchema), async (c) => {
-    const input = c.req.valid('query')
-    const actor = c.get('authUser')
-    const tx = c.get('tx')
+  .get('/', async ({ query, set, ...c }) => {
+    const { authUser: actor, tx } = c as unknown as Ctx
 
     try {
-      const result = await auditLogsService.listAuditLogs(input, { actor, tx })
-      return c.json<ApiResponse<typeof result.logs> & { meta: PaginationMeta }>({
+      const result = await auditLogsService.listAuditLogs(query, { actor, tx })
+      return {
         success: true,
         data: result.logs,
         error: null,
         meta: result.meta,
-      })
+      }
     } catch (err) {
       if (err instanceof auditLogsService.InsufficientRoleError) {
-        return c.json<ApiError>(
-          { success: false, data: null, error: { code: 'FORBIDDEN', message: err.message } },
-          403,
-        )
+        set.status = 403
+        return { success: false, data: null, error: { code: 'FORBIDDEN', message: err.message } }
       }
       throw err
     }
-  })
+  }, { query: t.Object({
+    ...paginationQuery50,
+    action: t.Optional(t.String()),
+    entityType: t.Optional(t.String()),
+    actorId: t.Optional(t.String({ format: 'uuid' })),
+    startDate: t.Optional(t.String()),
+    endDate: t.Optional(t.String()),
+  }) })

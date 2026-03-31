@@ -1,20 +1,17 @@
-import { z } from 'zod'
+import { Type as t, type Static } from '@sinclair/typebox'
 
-export const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8).max(128),
+export const loginSchema = t.Object({
+  email: t.String({ format: 'email' }),
+  password: t.String({ minLength: 8, maxLength: 128 }),
 })
 
-export const changePasswordSchema = z
-  .object({
-    currentPassword: z.string().min(1),
-    newPassword: z.string().min(8).max(128),
-    confirmPassword: z.string().min(1),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  })
+// Note: cross-field validation (confirmPassword === newPassword) must be
+// checked at the handler level — TypeBox has no .refine() equivalent.
+export const changePasswordSchema = t.Object({
+  currentPassword: t.String({ minLength: 1 }),
+  newPassword: t.String({ minLength: 8, maxLength: 128 }),
+  confirmPassword: t.String({ minLength: 1 }),
+})
 
-export type LoginInput = z.infer<typeof loginSchema>
-export type ChangePasswordInput = z.infer<typeof changePasswordSchema>
+export type LoginInput = Static<typeof loginSchema>
+export type ChangePasswordInput = Static<typeof changePasswordSchema>

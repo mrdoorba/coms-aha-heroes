@@ -1,36 +1,39 @@
-import { z } from 'zod'
+import { Type as t, type Static } from '@sinclair/typebox'
 import { USER_ROLES } from '../constants'
 
-export const createUserSchema = z.object({
-  email: z.string().email(),
-  name: z.string().min(1).max(255),
-  role: z.enum(USER_ROLES),
-  branchId: z.string().uuid(),
-  teamId: z.string().uuid().nullable().optional(),
-  department: z.string().max(100).optional(),
-  position: z.string().max(100).optional(),
-  phone: z.string().max(20).optional(),
+export const createUserSchema = t.Object({
+  email: t.String({ format: 'email' }),
+  name: t.String({ minLength: 1, maxLength: 255 }),
+  role: t.Union(USER_ROLES.map((r) => t.Literal(r))),
+  branchId: t.String({ format: 'uuid' }),
+  teamId: t.Optional(t.Union([t.String({ format: 'uuid' }), t.Null()])),
+  department: t.Optional(t.String({ maxLength: 100 })),
+  position: t.Optional(t.String({ maxLength: 100 })),
+  phone: t.Optional(t.String({ maxLength: 20 })),
 })
 
-export const updateUserSchema = z.object({
-  name: z.string().min(1).max(255).optional(),
-  role: z.enum(USER_ROLES).optional(),
-  teamId: z.string().uuid().nullable().optional(),
-  department: z.string().max(100).optional(),
-  position: z.string().max(100).optional(),
-  phone: z.string().max(20).optional(),
-  isActive: z.boolean().optional(),
+export const updateUserSchema = t.Object({
+  name: t.Optional(t.String({ minLength: 1, maxLength: 255 })),
+  role: t.Optional(t.Union(USER_ROLES.map((r) => t.Literal(r)))),
+  teamId: t.Optional(t.Union([t.String({ format: 'uuid' }), t.Null()])),
+  department: t.Optional(t.String({ maxLength: 100 })),
+  position: t.Optional(t.String({ maxLength: 100 })),
+  phone: t.Optional(t.String({ maxLength: 20 })),
+  isActive: t.Optional(t.Boolean()),
 })
 
-export const listUsersSchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
-  role: z.enum(USER_ROLES).optional(),
-  teamId: z.string().uuid().optional(),
-  search: z.string().max(100).optional(),
-  isActive: z.coerce.boolean().optional(),
+export const listUsersSchema = t.Object({
+  page: t.Integer({ minimum: 1, default: 1 }),
+  limit: t.Integer({ minimum: 1, maximum: 100, default: 20 }),
+  role: t.Optional(t.Union(USER_ROLES.map((r) => t.Literal(r)))),
+  teamId: t.Optional(t.String({ format: 'uuid' })),
+  search: t.Optional(t.String({ maxLength: 100 })),
+  isActive: t.Optional(t.Boolean()),
+  department: t.Optional(t.String({ maxLength: 100 })),
+  position: t.Optional(t.String({ maxLength: 100 })),
+  branchId: t.Optional(t.String({ format: 'uuid' })),
 })
 
-export type CreateUserInput = z.infer<typeof createUserSchema>
-export type UpdateUserInput = z.infer<typeof updateUserSchema>
-export type ListUsersInput = z.infer<typeof listUsersSchema>
+export type CreateUserInput = Static<typeof createUserSchema>
+export type UpdateUserInput = Static<typeof updateUserSchema>
+export type ListUsersInput = Static<typeof listUsersSchema>

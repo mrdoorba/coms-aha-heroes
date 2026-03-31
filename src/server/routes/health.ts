@@ -1,4 +1,4 @@
-import { Hono } from 'hono'
+import { Elysia } from 'elysia'
 import { db } from '~/db'
 import { sql } from 'drizzle-orm'
 import type { ApiResult } from '~/shared/types/api'
@@ -9,7 +9,7 @@ type HealthData = {
   db: 'connected' | 'disconnected'
 }
 
-const health = new Hono().get('/health', async (c) => {
+export const health = new Elysia().get('/health', async ({ set }) => {
   let dbStatus: HealthData['db'] = 'disconnected'
 
   try {
@@ -25,13 +25,7 @@ const health = new Hono().get('/health', async (c) => {
     db: dbStatus,
   }
 
-  const response: ApiResult<HealthData> = {
-    success: true,
-    data,
-    error: null,
-  }
+  if (dbStatus !== 'connected') set.status = 503
 
-  return c.json(response, dbStatus === 'connected' ? 200 : 503)
+  return { success: true, data, error: null } satisfies ApiResult<HealthData>
 })
-
-export { health }

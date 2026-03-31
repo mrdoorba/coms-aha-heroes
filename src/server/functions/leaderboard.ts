@@ -1,5 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
+import { createServerApi, unwrap } from '~/lib/api-client'
 
 type LeaderboardParams = {
   type?: 'bintang' | 'poin_aha'
@@ -12,25 +13,16 @@ export const getLeaderboardFn = createServerFn({ method: 'GET' })
   .inputValidator((data: LeaderboardParams) => data)
   .handler(async ({ data }) => {
     const request = getRequest()
-    const params = new URLSearchParams()
-    params.set('type', data.type ?? 'bintang')
-    params.set('page', String(data.page ?? 1))
-    params.set('limit', String(data.limit ?? 50))
-    if (data.teamId) params.set('teamId', data.teamId)
+    const api = createServerApi(request)
 
-    const response = await fetch(
-      `${getBaseUrl(request)}/api/v1/leaderboard?${params.toString()}`,
-      {
-        headers: { Cookie: request.headers.get('cookie') ?? '' },
-      },
-    )
-
-    const result = await response.json()
-    if (!response.ok) throw new Error(result.error?.message ?? 'Failed to load leaderboard')
-    return { entries: result.data, meta: result.meta }
+    const result = await api.api.v1.leaderboard.get({
+      query: {
+        type: data.type ?? 'bintang',
+        page: data.page ?? 1,
+        limit: data.limit ?? 50,
+        ...(data.teamId ? { teamId: data.teamId } : {}),
+      } as any,
+    })
+    const res = unwrap(result, 'Failed to load leaderboard')
+    return { entries: res.data, meta: res.meta }
   })
-
-function getBaseUrl(request: Request): string {
-  const url = new URL(request.url)
-  return `${url.protocol}//${url.host}`
-}

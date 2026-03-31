@@ -1,13 +1,13 @@
-import { z } from 'zod'
+import { Type as t, type Static } from '@sinclair/typebox'
 
-export const listAuditLogsSchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(50),
-  action: z.string().optional(),
-  entityType: z.string().optional(),
-  actorId: z.string().uuid().optional(),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
+export const listAuditLogsSchema = t.Object({
+  page: t.Integer({ minimum: 1, default: 1 }),
+  limit: t.Integer({ minimum: 1, maximum: 100, default: 50 }),
+  action: t.Optional(t.String()),
+  entityType: t.Optional(t.String()),
+  actorId: t.Optional(t.String({ format: 'uuid' })),
+  startDate: t.Optional(t.String()),
+  endDate: t.Optional(t.String()),
 })
 
-export type ListAuditLogsInput = z.infer<typeof listAuditLogsSchema>
+export type ListAuditLogsInput = Static<typeof listAuditLogsSchema>

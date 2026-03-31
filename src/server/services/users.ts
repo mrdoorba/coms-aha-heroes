@@ -25,6 +25,9 @@ export async function listUsers(input: ListUsersInput, ctx: ServiceContext) {
       teamId: input.teamId,
       search: input.search,
       isActive: input.isActive,
+      department: input.department,
+      position: input.position,
+      branchId: input.branchId,
     },
     ctx.tx,
   )

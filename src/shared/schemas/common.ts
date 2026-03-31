@@ -1,10 +1,10 @@
-import { z } from 'zod'
+import { Type as t, type Static } from '@sinclair/typebox'
 
-export const uuidSchema = z.string().uuid()
+export const uuidSchema = t.String({ format: 'uuid' })
 
-export const paginationSchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
+export const paginationSchema = t.Object({
+  page: t.Integer({ minimum: 1, default: 1 }),
+  limit: t.Integer({ minimum: 1, maximum: 100, default: 20 }),
 })
 
-export type PaginationInput = z.infer<typeof paginationSchema>
+export type PaginationInput = Static<typeof paginationSchema>

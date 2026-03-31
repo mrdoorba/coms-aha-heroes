@@ -1,5 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
+import { createServerApi, unwrap } from '~/lib/api-client'
 import { auth } from '~/server/auth'
 import { db } from '~/db'
 import { users, pointCategories, pointCategoryTranslations } from '~/db/schema'
@@ -11,6 +12,10 @@ type ListPointsParams = {
   categoryCode?: string
   status?: string
   teamId?: string
+  search?: string
+  submittedBy?: string
+  dateFrom?: string
+  dateTo?: string
 }
 
 type SubmitPointParams = {
@@ -27,59 +32,48 @@ export const listPointsFn = createServerFn({ method: 'GET' })
   .inputValidator((data: ListPointsParams) => data)
   .handler(async ({ data }) => {
     const request = getRequest()
-    const params = new URLSearchParams()
-    params.set('page', String(data.page ?? 1))
-    params.set('limit', String(data.limit ?? 20))
-    if (data.categoryCode) params.set('categoryCode', data.categoryCode)
-    if (data.status) params.set('status', data.status)
-    if (data.teamId) params.set('teamId', data.teamId)
+    const api = createServerApi(request)
 
-    const response = await fetch(
-      `${getBaseUrl(request)}/api/v1/points?${params.toString()}`,
-      {
-        headers: { Cookie: request.headers.get('cookie') ?? '' },
-      },
-    )
-
-    const result = await response.json()
-    if (!response.ok) throw new Error(result.error?.message ?? 'Failed to list points')
-    return { points: result.data, meta: result.meta }
+    const result = await api.api.v1.points.get({
+      query: {
+        page: data.page ?? 1,
+        limit: data.limit ?? 20,
+        ...(data.categoryCode ? { categoryCode: data.categoryCode } : {}),
+        ...(data.status ? { status: data.status } : {}),
+        ...(data.teamId ? { teamId: data.teamId } : {}),
+        ...(data.search ? { search: data.search } : {}),
+        ...(data.submittedBy ? { submittedBy: data.submittedBy } : {}),
+        ...(data.dateFrom ? { dateFrom: data.dateFrom } : {}),
+        ...(data.dateTo ? { dateTo: data.dateTo } : {}),
+      } as any,
+    })
+    const res = unwrap(result, 'Failed to list points')
+    return { points: res.data, meta: res.meta }
   })
 
 export const getPointByIdFn = createServerFn({ method: 'GET' })
   .inputValidator((data: { id: string }) => data)
   .handler(async ({ data }) => {
     const request = getRequest()
-    const response = await fetch(
-      `${getBaseUrl(request)}/api/v1/points/${data.id}`,
-      {
-        headers: { Cookie: request.headers.get('cookie') ?? '' },
-      },
-    )
+    const api = createServerApi(request)
 
-    const result = await response.json()
-    if (!response.ok) throw new Error(result.error?.message ?? 'Failed to get point')
-    return result.data
+    const result = await api.api.v1.points({ id: data.id }).get()
+    const res = unwrap(result, 'Failed to get point')
+    return res.data
   })
 
 export const submitPointFn = createServerFn({ method: 'POST' })
   .inputValidator((data: SubmitPointParams) => data)
   .handler(async ({ data }) => {
     const request = getRequest()
-    const response = await fetch(`${getBaseUrl(request)}/api/v1/points`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: request.headers.get('cookie') ?? '',
-      },
-      body: JSON.stringify(data),
-    })
+    const api = createServerApi(request)
 
-    const result = await response.json()
-    if (!response.ok) throw new Error(result.error?.message ?? 'Failed to submit point')
-    return result.data
+    const result = await api.api.v1.points.post(data as any)
+    const res = unwrap(result, 'Failed to submit point')
+    return res.data
   })
 
+// Pattern B — Direct DB access (no API call)
 export const getPointsLookupDataFn = createServerFn({ method: 'GET' }).handler(
   async () => {
     const request = getRequest()
@@ -112,6 +106,7 @@ export const getPointsLookupDataFn = createServerFn({ method: 'GET' }).handler(
   },
 )
 
+// Pattern B — Direct DB access (no API call)
 export const searchEmployeesFn = createServerFn({ method: 'GET' })
   .inputValidator((data: { search: string }) => data)
   .handler(async ({ data }) => {
@@ -140,8 +135,3 @@ export const searchEmployeesFn = createServerFn({ method: 'GET' })
 
     return rows
   })
-
-function getBaseUrl(request: Request): string {
-  const url = new URL(request.url)
-  return `${url.protocol}//${url.host}`
-}

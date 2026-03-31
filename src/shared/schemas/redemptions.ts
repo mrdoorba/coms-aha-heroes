@@ -1,36 +1,28 @@
-import { z } from 'zod'
+import { Type as t, type Static } from '@sinclair/typebox'
 import { REDEMPTION_STATUSES } from '../constants'
 
-const resolvableStatuses = REDEMPTION_STATUSES.filter((s) => s !== 'pending') as [
-  string,
-  ...string[],
-]
-
-export const requestRedemptionSchema = z.object({
-  rewardId: z.string().uuid(),
-  notes: z.string().max(500).optional(),
+export const requestRedemptionSchema = t.Object({
+  rewardId: t.String({ format: 'uuid' }),
+  notes: t.Optional(t.String({ maxLength: 500 })),
 })
 
-export const listRedemptionsSchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
-  status: z.enum(REDEMPTION_STATUSES).optional(),
-  mine: z.coerce.boolean().optional(),
+export const listRedemptionsSchema = t.Object({
+  page: t.Integer({ minimum: 1, default: 1 }),
+  limit: t.Integer({ minimum: 1, maximum: 100, default: 20 }),
+  status: t.Optional(t.Union(REDEMPTION_STATUSES.map((s) => t.Literal(s)))),
+  mine: t.Optional(t.Boolean()),
+  search: t.Optional(t.String({ maxLength: 200 })),
+  dateFrom: t.Optional(t.String()),
+  dateTo: t.Optional(t.String()),
 })
 
-export const resolveRedemptionSchema = z
-  .object({
-    status: z.enum(resolvableStatuses),
-    rejectionReason: z.string().max(500).optional(),
-  })
-  .refine(
-    (data) => data.status !== 'rejected' || !!data.rejectionReason,
-    {
-      message: 'rejectionReason is required when status is rejected',
-      path: ['rejectionReason'],
-    },
-  )
+// Note: cross-field validation (rejectionReason required when status === 'rejected')
+// must be checked at the handler level — TypeBox has no .refine() equivalent.
+export const resolveRedemptionSchema = t.Object({
+  status: t.Union([t.Literal('approved'), t.Literal('rejected')]),
+  rejectionReason: t.Optional(t.String({ maxLength: 500 })),
+})
 
-export type RequestRedemptionInput = z.infer<typeof requestRedemptionSchema>
-export type ListRedemptionsInput = z.infer<typeof listRedemptionsSchema>
-export type ResolveRedemptionInput = z.infer<typeof resolveRedemptionSchema>
+export type RequestRedemptionInput = Static<typeof requestRedemptionSchema>
+export type ListRedemptionsInput = Static<typeof listRedemptionsSchema>
+export type ResolveRedemptionInput = Static<typeof resolveRedemptionSchema>

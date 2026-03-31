@@ -1,5 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
+import { createServerApi, unwrap } from '~/lib/api-client'
 import { auth } from '~/server/auth'
 import { db } from '~/db'
 import { users, branches, teams } from '~/db/schema'
@@ -13,8 +14,12 @@ type ListUsersParams = {
   teamId?: string
   search?: string
   isActive?: boolean
+  department?: string
+  position?: string
+  branchId?: string
 }
 
+// Pattern B — Direct DB access (no API call)
 export const listUsersFn = createServerFn({ method: 'GET' })
   .inputValidator((data: ListUsersParams) => data)
   .handler(async ({ data }) => {
@@ -31,6 +36,9 @@ export const listUsersFn = createServerFn({ method: 'GET' })
     if (data.teamId) conditions.push(eq(users.teamId, data.teamId))
     if (data.isActive !== undefined) conditions.push(eq(users.isActive, data.isActive))
     if (data.search) conditions.push(ilike(users.name, `%${data.search}%`))
+    if (data.department) conditions.push(ilike(users.department, `%${data.department}%`))
+    if (data.position) conditions.push(ilike(users.position, `%${data.position}%`))
+    if (data.branchId) conditions.push(eq(users.branchId, data.branchId))
 
     const where = conditions.length > 0 ? and(...conditions) : undefined
 
@@ -59,6 +67,7 @@ export const listUsersFn = createServerFn({ method: 'GET' })
     return { users: rows, meta: { total, page, limit } }
   })
 
+// Pattern B — Direct DB access (no API call)
 export const getLookupDataFn = createServerFn({ method: 'GET' }).handler(
   async () => {
     const request = getRequest()
@@ -89,18 +98,11 @@ export const createUserFn = createServerFn({ method: 'POST' })
   )
   .handler(async ({ data }) => {
     const request = getRequest()
-    const response = await fetch(`${getBaseUrl(request)}/api/v1/users`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: request.headers.get('cookie') ?? '',
-      },
-      body: JSON.stringify(data),
-    })
+    const api = createServerApi(request)
 
-    const result = await response.json()
-    if (!response.ok) throw new Error(result.error?.message ?? 'Failed to create user')
-    return result.data
+    const result = await api.api.v1.users.post(data as any)
+    const res = unwrap(result, 'Failed to create user')
+    return res.data
   })
 
 export const updateUserFn = createServerFn({ method: 'POST' })
@@ -117,58 +119,31 @@ export const updateUserFn = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const { id, ...body } = data
     const request = getRequest()
-    const response = await fetch(`${getBaseUrl(request)}/api/v1/users/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: request.headers.get('cookie') ?? '',
-      },
-      body: JSON.stringify(body),
-    })
+    const api = createServerApi(request)
 
-    const result = await response.json()
-    if (!response.ok) throw new Error(result.error?.message ?? 'Failed to update user')
-    return result.data
+    const result = await api.api.v1.users({ id }).patch(body as any)
+    const res = unwrap(result, 'Failed to update user')
+    return res.data
   })
 
 export const archiveUserFn = createServerFn({ method: 'POST' })
   .inputValidator((data: { id: string }) => data)
   .handler(async ({ data }) => {
     const request = getRequest()
-    const response = await fetch(
-      `${getBaseUrl(request)}/api/v1/users/${data.id}/archive`,
-      {
-        method: 'PATCH',
-        headers: {
-          Cookie: request.headers.get('cookie') ?? '',
-        },
-      },
-    )
+    const api = createServerApi(request)
 
-    const result = await response.json()
-    if (!response.ok) throw new Error(result.error?.message ?? 'Failed to archive user')
-    return result.data
+    const result = await api.api.v1.users({ id: data.id }).archive.patch({} as any)
+    const res = unwrap(result, 'Failed to archive user')
+    return res.data
   })
 
 export const bulkToggleUsersFn = createServerFn({ method: 'POST' })
   .inputValidator((data: { ids: string[]; action: 'archive' | 'activate' }) => data)
   .handler(async ({ data }) => {
     const request = getRequest()
-    const response = await fetch(`${getBaseUrl(request)}/api/v1/users/bulk`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Cookie: request.headers.get('cookie') ?? '',
-      },
-      body: JSON.stringify(data),
-    })
+    const api = createServerApi(request)
 
-    const result = await response.json()
-    if (!response.ok) throw new Error(result.error?.message ?? 'Failed to bulk update users')
-    return result.data
+    const result = await api.api.v1.users.bulk.post(data as any)
+    const res = unwrap(result, 'Failed to bulk update users')
+    return res.data
   })
-
-function getBaseUrl(request: Request): string {
-  const url = new URL(request.url)
-  return `${url.protocol}//${url.host}`
-}

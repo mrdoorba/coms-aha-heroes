@@ -1,11 +1,11 @@
-import { z } from 'zod'
+import { Type as t, type Static } from '@sinclair/typebox'
 
-export const listSettingsSchema = z.object({})
+export const listSettingsSchema = t.Object({})
 
-export const updateSettingSchema = z.object({
-  key: z.string().min(1).max(100),
-  value: z.any(),
+export const updateSettingSchema = t.Object({
+  key: t.String({ minLength: 1, maxLength: 100 }),
+  value: t.Any(),
 })
 
-export type ListSettingsInput = z.infer<typeof listSettingsSchema>
-export type UpdateSettingInput = z.infer<typeof updateSettingSchema>
+export type ListSettingsInput = Static<typeof listSettingsSchema>
+export type UpdateSettingInput = Static<typeof updateSettingSchema>

@@ -13,6 +13,7 @@ export const AUDIT_ACTIONS = [
   'USER_CREATED',
   'USER_UPDATED',
   'USER_ARCHIVED',
+  'USER_ACTIVATED',
   'TEAM_CREATED',
   'TEAM_UPDATED',
 ] as const

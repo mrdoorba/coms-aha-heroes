@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { app } from '~/server'
 
 const serve = async ({ request }: { request: Request }) => {
-  return app.fetch(request)
+  return app.handle(request)
 }
 
 export const Route = createFileRoute('/api/$')({

@@ -1,9 +1,9 @@
-import { z } from 'zod'
+import { Type as t, type Static } from '@sinclair/typebox'
 
-export const reportsQuerySchema = z.object({
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
-  branchId: z.string().uuid().optional(),
+export const reportsQuerySchema = t.Object({
+  startDate: t.Optional(t.String()),
+  endDate: t.Optional(t.String()),
+  branchId: t.Optional(t.String({ format: 'uuid' })),
 })
 
-export type ReportsQueryInput = z.infer<typeof reportsQuerySchema>
+export type ReportsQueryInput = Static<typeof reportsQuerySchema>
