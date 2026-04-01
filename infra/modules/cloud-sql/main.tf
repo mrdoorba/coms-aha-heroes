@@ -68,8 +68,8 @@ resource "google_project_service" "secretmanager" {
 
 locals {
   db_socket_dir           = "/cloudsql/${google_sql_database_instance.main.connection_name}"
-  production_database_url = "postgres://${var.db_user}:${random_password.db.result}@localhost/coms_aha_heroes_production?host=${local.db_socket_dir}&pool_max=5"
-  staging_database_url    = "postgres://${var.db_user}:${random_password.db.result}@localhost/coms_aha_heroes_staging?host=${local.db_socket_dir}&pool_max=5"
+  production_database_url = "postgres://${var.db_user}:${random_password.db.result}@localhost/coms_aha_heroes_production?host=${local.db_socket_dir}&pool_max=4"
+  staging_database_url    = "postgres://${var.db_user}:${random_password.db.result}@localhost/coms_aha_heroes_staging?host=${local.db_socket_dir}&pool_max=2"
 }
 
 resource "google_secret_manager_secret" "db_url_production" {
@@ -98,4 +98,36 @@ resource "google_secret_manager_secret" "db_url_staging" {
 resource "google_secret_manager_secret_version" "db_url_staging" {
   secret      = google_secret_manager_secret.db_url_staging.id
   secret_data = local.staging_database_url
+}
+
+# ── DB Credentials for CI Migrations ──────────────────────────────────────────
+# CI reads these via `gcloud secrets versions access` to construct
+# localhost-format URLs for migrations through the Cloud SQL Auth Proxy.
+
+resource "google_secret_manager_secret" "db_user" {
+  project   = var.project_id
+  secret_id = "coms-aha-heroes-db-user"
+  replication {
+    auto {}
+  }
+  depends_on = [google_project_service.secretmanager]
+}
+
+resource "google_secret_manager_secret_version" "db_user" {
+  secret      = google_secret_manager_secret.db_user.id
+  secret_data = var.db_user
+}
+
+resource "google_secret_manager_secret" "db_password" {
+  project   = var.project_id
+  secret_id = "coms-aha-heroes-db-password"
+  replication {
+    auto {}
+  }
+  depends_on = [google_project_service.secretmanager]
+}
+
+resource "google_secret_manager_secret_version" "db_password" {
+  secret      = google_secret_manager_secret.db_password.id
+  secret_data = random_password.db.result
 }
