@@ -90,7 +90,10 @@ export async function getDashboardStats(
     totalSubmissions: Number(total),
     byCategory: categoryRows.map((r) => ({ name: r.name, count: Number(r.count) })),
     byTeam: teamRows.map((r) => ({ name: r.name, total: Number(r.total ?? 0) })),
-    overTime: overTimeRows.map((r) => ({ date: String(r.date).slice(0, 10), count: Number(r.count) })),
+    overTime: overTimeRows.map((r) => ({
+      date: r.date instanceof Date ? r.date.toISOString().slice(0, 10) : String(r.date),
+      count: Number(r.count),
+    })),
   }
 }
 
