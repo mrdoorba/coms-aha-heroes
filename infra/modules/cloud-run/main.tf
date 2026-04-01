@@ -170,11 +170,12 @@ resource "google_cloud_run_v2_service" "app" {
 
       startup_probe {
         http_get {
-          path = "/api/health"
+          path = "/api/healthz"
         }
-        initial_delay_seconds = 5
-        period_seconds        = 10
-        failure_threshold     = 3
+        initial_delay_seconds = 0
+        period_seconds        = 5
+        failure_threshold     = 12
+        timeout_seconds       = 3
       }
 
       liveness_probe {
