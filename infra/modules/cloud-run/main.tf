@@ -40,6 +40,19 @@ resource "google_secret_manager_secret" "auth" {
   }
 }
 
+# Placeholder versions — Cloud Run requires at least one version to exist.
+# Overwrite with real values via:
+#   echo -n "real-value" | gcloud secrets versions add SECRET_ID --data-file=-
+resource "google_secret_manager_secret_version" "auth_placeholder" {
+  for_each    = local.auth_secrets
+  secret      = google_secret_manager_secret.auth[each.key].id
+  secret_data = "PLACEHOLDER_REPLACE_ME"
+
+  lifecycle {
+    ignore_changes = [secret_data]
+  }
+}
+
 # Cloud Run SA needs to read each auth secret
 resource "google_secret_manager_secret_iam_member" "cloud_run_auth_access" {
   for_each  = local.auth_secrets
@@ -86,11 +99,7 @@ resource "google_cloud_run_v2_service" "app" {
   name     = "coms-aha-heroes-app"
   location = var.region
 
-  # Keep at most 10 revisions for rollback; anything older is pruned
-  annotations = {
-    "run.googleapis.com/launch-stage"  = "GA"
-    "run.googleapis.com/maxRevisions"  = "10"
-  }
+  deletion_protection = false
 
   template {
     service_account = google_service_account.cloud_run.email
@@ -193,6 +202,7 @@ resource "google_cloud_run_v2_service" "app" {
     google_project_iam_member.cloud_run_sql_client,
     google_secret_manager_secret_iam_member.cloud_run_db_url_access,
     google_secret_manager_secret_iam_member.cloud_run_auth_access,
+    google_secret_manager_secret_version.auth_placeholder,
     google_project_service.iamcredentials,
   ]
 }
