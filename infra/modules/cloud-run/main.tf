@@ -20,6 +20,67 @@ resource "google_secret_manager_secret_iam_member" "cloud_run_db_url_access" {
   member    = "serviceAccount:${google_service_account.cloud_run.email}"
 }
 
+# ── Auth Secrets (owned by this module — Cloud Run-specific) ──────────────────
+
+locals {
+  auth_secrets = {
+    "coms-aha-heroes-auth-secret"        = "BETTER_AUTH_SECRET"
+    "coms-aha-heroes-auth-url"           = "BETTER_AUTH_URL"
+    "coms-aha-heroes-google-client-id"   = "GOOGLE_CLIENT_ID"
+    "coms-aha-heroes-google-client-secret" = "GOOGLE_CLIENT_SECRET"
+  }
+}
+
+resource "google_secret_manager_secret" "auth" {
+  for_each  = local.auth_secrets
+  project   = var.project_id
+  secret_id = each.key
+  replication {
+    auto {}
+  }
+}
+
+# Cloud Run SA needs to read each auth secret
+resource "google_secret_manager_secret_iam_member" "cloud_run_auth_access" {
+  for_each  = local.auth_secrets
+  project   = var.project_id
+  secret_id = google_secret_manager_secret.auth[each.key].secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.cloud_run.email}"
+}
+
+# ── Storage IAM ───────────────────────────────────────────────────────────────
+
+# Read/write uploaded files (screenshots, evidence)
+resource "google_storage_bucket_iam_member" "cloud_run_uploads" {
+  bucket = var.uploads_bucket_name
+  role   = "roles/storage.objectUser"
+  member = "serviceAccount:${google_service_account.cloud_run.email}"
+}
+
+# Read/write report exports
+resource "google_storage_bucket_iam_member" "cloud_run_exports" {
+  bucket = var.exports_bucket_name
+  role   = "roles/storage.objectUser"
+  member = "serviceAccount:${google_service_account.cloud_run.email}"
+}
+
+# Generate V4 signed URLs — signBlob API requires this role on itself
+resource "google_service_account_iam_member" "cloud_run_token_creator" {
+  service_account_id = google_service_account.cloud_run.name
+  role               = "roles/iam.serviceAccountTokenCreator"
+  member             = "serviceAccount:${google_service_account.cloud_run.email}"
+}
+
+# Enable IAM Credentials API (required for signBlob / signed URLs)
+resource "google_project_service" "iamcredentials" {
+  project            = var.project_id
+  service            = "iamcredentials.googleapis.com"
+  disable_on_destroy = false
+}
+
+# ── Cloud Run Service ─────────────────────────────────────────────────────────
+
 resource "google_cloud_run_v2_service" "app" {
   project  = var.project_id
   name     = "coms-aha-heroes-app"
@@ -39,7 +100,7 @@ resource "google_cloud_run_v2_service" "app" {
 
     scaling {
       min_instance_count = 0
-      max_instance_count = 10
+      max_instance_count = 5
     }
 
     # Mount Cloud SQL socket directory — avoids needing a VPC connector
@@ -72,6 +133,41 @@ resource "google_cloud_run_v2_service" "app" {
         value = "production"
       }
 
+      env {
+        name  = "GCS_BUCKET"
+        value = var.uploads_bucket_name
+      }
+
+      dynamic "env" {
+        for_each = local.auth_secrets
+        content {
+          name = env.value
+          value_source {
+            secret_key_ref {
+              secret  = google_secret_manager_secret.auth[env.key].secret_id
+              version = "latest"
+            }
+          }
+        }
+      }
+
+      startup_probe {
+        http_get {
+          path = "/api/health"
+        }
+        initial_delay_seconds = 5
+        period_seconds        = 10
+        failure_threshold     = 3
+      }
+
+      liveness_probe {
+        http_get {
+          path = "/api/healthz"
+        }
+        period_seconds    = 30
+        failure_threshold = 5
+      }
+
       resources {
         limits = {
           cpu    = "1"
@@ -96,6 +192,8 @@ resource "google_cloud_run_v2_service" "app" {
   depends_on = [
     google_project_iam_member.cloud_run_sql_client,
     google_secret_manager_secret_iam_member.cloud_run_db_url_access,
+    google_secret_manager_secret_iam_member.cloud_run_auth_access,
+    google_project_service.iamcredentials,
   ]
 }
 
