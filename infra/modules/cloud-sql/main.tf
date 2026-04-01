@@ -14,7 +14,8 @@ resource "google_sql_database_instance" "main" {
   deletion_protection = true
 
   settings {
-    tier = var.tier
+    tier    = var.tier
+    edition = "ENTERPRISE"
 
     ip_configuration {
       # Public IP enabled; Auth Proxy is the only allowed access path.
