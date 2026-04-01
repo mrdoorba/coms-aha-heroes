@@ -6,8 +6,13 @@ export const api = treaty<App>('/')
 
 /** Server-side Eden Treaty client factory — forwards cookies from the incoming request */
 export function createServerApi(request: Request) {
+  // On Cloud Run, TLS terminates at the load balancer so the internal URL is http://.
+  // Use x-forwarded-proto to reconstruct the external origin, ensuring Better Auth
+  // resolves the correct __Secure- cookie prefix.
   const url = new URL(request.url)
-  return treaty<App>(`${url.protocol}//${url.host}`, {
+  const proto = request.headers.get('x-forwarded-proto') ?? url.protocol.replace(':', '')
+  const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host') ?? url.host
+  return treaty<App>(`${proto}://${host}`, {
     headers: {
       cookie: request.headers.get('cookie') ?? '',
     },
