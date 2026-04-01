@@ -32,7 +32,8 @@ module "cloud_run" {
   region              = var.region
   image               = var.app_image
   db_connection_name  = module.cloud_sql.connection_name
-  db_url_secret_id    = module.cloud_sql.db_url_production_secret_id
+  db_url_secret_id         = module.cloud_sql.db_url_production_secret_id
+  db_url_staging_secret_id = module.cloud_sql.db_url_staging_secret_id
   uploads_bucket_name = module.storage.uploads_bucket_name
   exports_bucket_name = module.storage.exports_bucket_name
 

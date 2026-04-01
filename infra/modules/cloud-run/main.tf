@@ -20,6 +20,14 @@ resource "google_secret_manager_secret_iam_member" "cloud_run_db_url_access" {
   member    = "serviceAccount:${google_service_account.cloud_run.email}"
 }
 
+# Allow Cloud Run SA to read the staging DATABASE_URL secret (used by staging revision)
+resource "google_secret_manager_secret_iam_member" "cloud_run_db_url_staging_access" {
+  project   = var.project_id
+  secret_id = var.db_url_staging_secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.cloud_run.email}"
+}
+
 # ── Auth Secrets (owned by this module — Cloud Run-specific) ──────────────────
 
 locals {
