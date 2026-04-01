@@ -15,8 +15,8 @@ export const health = new Elysia().get('/health', async ({ set }) => {
   try {
     await db.execute(sql`SELECT 1`)
     dbStatus = 'connected'
-  } catch {
-    // DB unreachable — report degraded
+  } catch (e) {
+    console.error('[health] DB connection failed:', e)
   }
 
   const data: HealthData = {
