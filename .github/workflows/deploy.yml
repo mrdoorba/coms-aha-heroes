@@ -31,10 +31,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
 
       - name: Authenticate to GCP (Workload Identity Federation)
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@v2.1.10
         with:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
@@ -65,16 +65,16 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
 
       - name: Authenticate to GCP
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@v2.1.10
         with:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
 
       - name: Setup gcloud CLI
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@v2.1.4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -96,8 +96,11 @@ jobs:
           DB_PASSWORD=$(gcloud secrets versions access latest --secret=coms-aha-heroes-db-password --project=${{ env.PROJECT_ID }})
           echo "::add-mask::${DB_USER}"
           echo "::add-mask::${DB_PASSWORD}"
+          # URL-encode the password (may contain special chars like !#$%&)
+          DB_PASSWORD_ENCODED=$(bun -e "console.log(encodeURIComponent('${DB_PASSWORD//\'/\\\'}'))")
+          echo "::add-mask::${DB_PASSWORD_ENCODED}"
           echo "DB_USER=${DB_USER}" >> "$GITHUB_ENV"
-          echo "DB_PASSWORD=${DB_PASSWORD}" >> "$GITHUB_ENV"
+          echo "DB_PASSWORD_ENCODED=${DB_PASSWORD_ENCODED}" >> "$GITHUB_ENV"
 
       - name: Run Drizzle migrations → staging
         run: |
@@ -106,7 +109,7 @@ jobs:
           PROXY_PID=$!
           sleep 3
 
-          DATABASE_URL="postgres://${DB_USER}:${DB_PASSWORD}@127.0.0.1:5432/coms_aha_heroes_staging" \
+          DATABASE_URL="postgres://${DB_USER}:${DB_PASSWORD_ENCODED}@127.0.0.1:5432/coms_aha_heroes_staging" \
             bun run db:migrate
 
           kill "$PROXY_PID"
@@ -150,16 +153,16 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
 
       - name: Authenticate to GCP
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@v2.1.10
         with:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
 
       - name: Setup gcloud CLI
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@v2.1.4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -181,8 +184,11 @@ jobs:
           DB_PASSWORD=$(gcloud secrets versions access latest --secret=coms-aha-heroes-db-password --project=${{ env.PROJECT_ID }})
           echo "::add-mask::${DB_USER}"
           echo "::add-mask::${DB_PASSWORD}"
+          # URL-encode the password (may contain special chars like !#$%&)
+          DB_PASSWORD_ENCODED=$(bun -e "console.log(encodeURIComponent('${DB_PASSWORD//\'/\\\'}'))")
+          echo "::add-mask::${DB_PASSWORD_ENCODED}"
           echo "DB_USER=${DB_USER}" >> "$GITHUB_ENV"
-          echo "DB_PASSWORD=${DB_PASSWORD}" >> "$GITHUB_ENV"
+          echo "DB_PASSWORD_ENCODED=${DB_PASSWORD_ENCODED}" >> "$GITHUB_ENV"
 
       - name: Run Drizzle migrations → production
         run: |
@@ -190,7 +196,7 @@ jobs:
           PROXY_PID=$!
           sleep 3
 
-          DATABASE_URL="postgres://${DB_USER}:${DB_PASSWORD}@127.0.0.1:5432/coms_aha_heroes_production" \
+          DATABASE_URL="postgres://${DB_USER}:${DB_PASSWORD_ENCODED}@127.0.0.1:5432/coms_aha_heroes_production" \
             bun run db:migrate
 
           kill "$PROXY_PID"
