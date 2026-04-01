@@ -1,6 +1,7 @@
 import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
 import { health } from './routes/health'
+import { healthz } from './routes/healthz'
 import { authRoute } from './routes/auth'
 import { authPlugin } from './middleware/auth'
 import { rlsPlugin } from './middleware/rls'
@@ -32,6 +33,7 @@ const app = new Elysia({ prefix: '/api' })
   )
   // Public routes (no auth required)
   .use(health)
+  .use(healthz)
   .use(authRoute)
   // Protected routes — auth + RLS middleware chain
   .group('/v1', (app) =>
