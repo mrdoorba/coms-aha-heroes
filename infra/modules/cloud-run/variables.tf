@@ -21,6 +21,11 @@ variable "db_url_secret_id" {
   type        = string
 }
 
+variable "db_url_staging_secret_id" {
+  description = "Secret Manager secret ID containing the staging DATABASE_URL"
+  type        = string
+}
+
 variable "uploads_bucket_name" {
   description = "GCS bucket name for file uploads"
   type        = string
