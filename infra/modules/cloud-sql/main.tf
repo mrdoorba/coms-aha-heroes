@@ -70,8 +70,8 @@ resource "google_project_service" "secretmanager" {
 locals {
   db_socket_dir           = "/cloudsql/${google_sql_database_instance.main.connection_name}"
   db_password_encoded     = urlencode(random_password.db.result)
-  production_database_url = "postgres://${var.db_user}:${local.db_password_encoded}@localhost/coms_aha_heroes_production?host=${local.db_socket_dir}&pool_max=4"
-  staging_database_url    = "postgres://${var.db_user}:${local.db_password_encoded}@localhost/coms_aha_heroes_staging?host=${local.db_socket_dir}&pool_max=2"
+  production_database_url = "postgres://${var.db_user}:${local.db_password_encoded}@/coms_aha_heroes_production?host=${local.db_socket_dir}"
+  staging_database_url    = "postgres://${var.db_user}:${local.db_password_encoded}@/coms_aha_heroes_staging?host=${local.db_socket_dir}"
 }
 
 resource "google_secret_manager_secret" "db_url_production" {
