@@ -17,3 +17,13 @@ output "cloud_run_service_account" {
   description = "Service account email used by Cloud Run"
   value       = module.cloud_run.service_account_email
 }
+
+output "wif_provider" {
+  description = "WIF provider resource name — set as WIF_PROVIDER GitHub secret"
+  value       = module.github_wif.provider_name
+}
+
+output "wif_service_account" {
+  description = "Deployer SA email — set as WIF_SERVICE_ACCOUNT GitHub secret"
+  value       = module.github_wif.deployer_service_account_email
+}
