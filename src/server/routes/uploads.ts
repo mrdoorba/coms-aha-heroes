@@ -3,14 +3,51 @@ import { createReadStream } from 'fs'
 import { stat } from 'fs/promises'
 import { Readable } from 'stream'
 import * as storage from '../services/storage'
-import type { AuthUser } from '../middleware/auth'
-import type { DbClient } from '../repositories/base'
-
-type Ctx = { authUser: AuthUser; tx: DbClient }
 
 export const uploadsRoute = new Elysia({ prefix: '/uploads' })
 
-  // POST /uploads — upload a file (multipart/form-data)
+  // GET /uploads/signed-url — generate a signed URL for direct GCS upload
+  .get('/signed-url', async ({ query, set }) => {
+    try {
+      const result = await storage.generateSignedUploadUrl(query.contentType, query.filename)
+      return { success: true, data: result, error: null }
+    } catch (err) {
+      if (err instanceof storage.InvalidFileTypeError) {
+        set.status = 422
+        return { success: false, data: null, error: { code: 'INVALID_FILE_TYPE', message: err.message } }
+      }
+      set.status = 503
+      return { success: false, data: null, error: { code: 'STORAGE_ERROR', message: 'Failed to generate upload URL' } }
+    }
+  }, {
+    query: t.Object({
+      filename: t.String({ minLength: 1 }),
+      contentType: t.String({ minLength: 1 }),
+    }),
+  })
+
+  // POST /uploads/confirm — verify upload completed and get read URL
+  .post('/confirm', async ({ body, set }) => {
+    try {
+      const exists = await storage.verifyUpload(body.fileKey)
+      if (!exists) {
+        set.status = 404
+        return { success: false, data: null, error: { code: 'NOT_FOUND', message: 'Upload not found in storage' } }
+      }
+
+      const readUrl = await storage.generateSignedReadUrl(body.fileKey)
+      return { success: true, data: { fileKey: body.fileKey, url: readUrl }, error: null }
+    } catch {
+      set.status = 503
+      return { success: false, data: null, error: { code: 'STORAGE_ERROR', message: 'Failed to verify upload' } }
+    }
+  }, {
+    body: t.Object({
+      fileKey: t.String({ minLength: 1 }),
+    }),
+  })
+
+  // POST /uploads — direct file upload (dev mode fallback)
   .post('/', async ({ body, set }) => {
     const file = body.file
 
@@ -24,11 +61,7 @@ export const uploadsRoute = new Elysia({ prefix: '/uploads' })
       const url = await storage.storeFile(file.name, buffer, file.type)
 
       set.status = 201
-      return {
-        success: true,
-        data: { url, fileKey: file.name },
-        error: null,
-      }
+      return { success: true, data: { url, fileKey: file.name }, error: null }
     } catch (err) {
       if (err instanceof storage.InvalidFileTypeError) {
         set.status = 422
@@ -46,8 +79,21 @@ export const uploadsRoute = new Elysia({ prefix: '/uploads' })
     }),
   })
 
-  // GET /uploads/:fileKey — serve uploaded file
+  // GET /uploads/:fileKey — serve file (dev) or redirect to signed URL (prod)
   .get('/:fileKey', async ({ params, set }) => {
+    // In GCS mode, generate a signed read URL
+    if (process.env.GCS_BUCKET) {
+      try {
+        const url = await storage.generateSignedReadUrl(params.fileKey)
+        set.redirect = url
+        return
+      } catch {
+        set.status = 503
+        return { success: false, data: null, error: { code: 'STORAGE_ERROR', message: 'Failed to generate read URL' } }
+      }
+    }
+
+    // Dev mode — serve from local filesystem
     const filePath = storage.getFilePath(params.fileKey)
 
     try {
