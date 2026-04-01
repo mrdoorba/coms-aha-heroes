@@ -23,4 +23,11 @@ resource "google_storage_bucket" "uploads" {
   location                    = var.region
   force_destroy               = false
   uniform_bucket_level_access = true
+
+  cors {
+    origin          = ["https://*.run.app"]
+    method          = ["GET", "PUT", "POST"]
+    response_header = ["Content-Type"]
+    max_age_seconds = 3600
+  }
 }
