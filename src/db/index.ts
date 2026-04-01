@@ -12,7 +12,11 @@ const connectionString = process.env.DATABASE_URL!
 const parsedUrl = new URL(connectionString)
 const socketDir = parsedUrl.searchParams.get('host')
 
-const client = postgres(connectionString, {
+// Remove ?host= so postgres.js doesn't forward it as a server parameter
+if (socketDir) parsedUrl.searchParams.delete('host')
+const cleanedUrl = parsedUrl.toString()
+
+const client = postgres(cleanedUrl, {
   ...(socketDir?.startsWith('/') && {
     path: socketDir + '/.s.PGSQL.5432',
   }),
