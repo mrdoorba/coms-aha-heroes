@@ -22,6 +22,23 @@ variable "db_tier" {
   default     = "db-f1-micro"
 }
 
+variable "github_org" {
+  description = "GitHub organization or user that owns the repository"
+  type        = string
+  default     = "mrdoorba"
+}
+
+variable "github_repo" {
+  description = "GitHub repository name"
+  type        = string
+  default     = "coms-aha-heroes"
+}
+
+variable "alert_email" {
+  description = "Email address for monitoring alert notifications"
+  type        = string
+}
+
 variable "app_image" {
   description = "Full Docker image URI for Cloud Run (overridden per deploy)"
   type        = string
