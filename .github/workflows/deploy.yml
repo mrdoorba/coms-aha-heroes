@@ -1,21 +1,207 @@
 name: Deploy
 
 on:
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Target environment'
-        required: true
-        type: choice
-        options:
-          - staging
-          - production
+  push:
+    branches:
+      - main
+
+env:
+  PROJECT_ID: fbi-dev-484410
+  REGION: asia-southeast2
+  REGISTRY: asia-southeast2-docker.pkg.dev
+  REPOSITORY: coms-aha-heroes-repo
+  SERVICE: coms-aha-heroes-app
+  # Full connection name used by Cloud SQL Auth Proxy and Cloud Run volume
+  DB_INSTANCE: fbi-dev-484410:asia-southeast2:coms-aha-heroes-db
 
 jobs:
-  deploy:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # 1. Build and push the Docker image once; reuse the SHA-tagged image
+  #    in both staging and production deploys.
+  # ─────────────────────────────────────────────────────────────────────────────
+  build-and-push:
+    name: Build & Push Image
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Deploy placeholder
-        run: echo "Deploy to ${{ inputs.environment }} — not yet implemented"
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP (Workload Identity Federation)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGISTRY }} --quiet
+
+      - name: Derive image URI from commit SHA
+        id: meta
+        run: |
+          IMAGE="${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/app:${{ github.sha }}"
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
+
+      - name: Build Docker image
+        run: docker build -t "${{ steps.meta.outputs.image }}" .
+
+      - name: Push Docker image
+        run: docker push "${{ steps.meta.outputs.image }}"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # 2. Migrate staging DB, then deploy the new image at 0% traffic tagged
+  #    "staging" so it can be smoke-tested before production is touched.
+  # ─────────────────────────────────────────────────────────────────────────────
+  deploy-staging:
+    name: Migrate Staging & Deploy (0% Traffic)
+    runs-on: ubuntu-latest
+    needs: build-and-push
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Download Cloud SQL Auth Proxy
+        run: |
+          curl -fsSL -o cloud-sql-proxy \
+            https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.14.1/cloud-sql-proxy.linux.amd64
+          chmod +x cloud-sql-proxy
+
+      - name: Read DB credentials from Secret Manager
+        run: |
+          DB_USER=$(gcloud secrets versions access latest --secret=coms-aha-heroes-db-user --project=${{ env.PROJECT_ID }})
+          DB_PASSWORD=$(gcloud secrets versions access latest --secret=coms-aha-heroes-db-password --project=${{ env.PROJECT_ID }})
+          echo "::add-mask::${DB_USER}"
+          echo "::add-mask::${DB_PASSWORD}"
+          echo "DB_USER=${DB_USER}" >> "$GITHUB_ENV"
+          echo "DB_PASSWORD=${DB_PASSWORD}" >> "$GITHUB_ENV"
+
+      - name: Run Drizzle migrations → staging
+        run: |
+          # Start Auth Proxy; connects via TCP on localhost:5432
+          ./cloud-sql-proxy --port 5432 "${{ env.DB_INSTANCE }}" &
+          PROXY_PID=$!
+          sleep 3
+
+          DATABASE_URL="postgres://${DB_USER}:${DB_PASSWORD}@127.0.0.1:5432/coms_aha_heroes_staging" \
+            bun run db:migrate
+
+          kill "$PROXY_PID"
+
+      - name: Deploy new image — 0% traffic, tag=staging
+        run: |
+          gcloud run deploy "${{ env.SERVICE }}" \
+            --image "${{ needs.build-and-push.outputs.image }}" \
+            --region "${{ env.REGION }}" \
+            --no-traffic \
+            --tag staging \
+            --max-instances 1 \
+            --set-secrets "DATABASE_URL=coms-aha-heroes-db-url-staging:latest,BETTER_AUTH_SECRET=coms-aha-heroes-auth-secret:latest,BETTER_AUTH_URL=coms-aha-heroes-auth-url:latest,GOOGLE_CLIENT_ID=coms-aha-heroes-google-client-id:latest,GOOGLE_CLIENT_SECRET=coms-aha-heroes-google-client-secret:latest" \
+            --set-env-vars "NODE_ENV=production,GCS_BUCKET=coms-aha-heroes-uploads" \
+            --quiet
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # 3. Manual gate — requires a reviewer to approve via the "production"
+  #    GitHub Environment before production is touched.
+  #    Configure required reviewers at:
+  #    Settings → Environments → production → Required reviewers
+  # ─────────────────────────────────────────────────────────────────────────────
+  approve-production:
+    name: Manual Approval — Production
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    environment: production
+
+    steps:
+      - name: Approved
+        run: echo "Production deployment approved by ${{ github.actor }}."
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # 4. Migrate production DB, then redeploy the same image with the production
+  #    DATABASE_URL and shift 100% of traffic to the new revision.
+  # ─────────────────────────────────────────────────────────────────────────────
+  deploy-production:
+    name: Migrate Production & Deploy (100% Traffic)
+    runs-on: ubuntu-latest
+    needs: [build-and-push, approve-production]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Download Cloud SQL Auth Proxy
+        run: |
+          curl -fsSL -o cloud-sql-proxy \
+            https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.14.1/cloud-sql-proxy.linux.amd64
+          chmod +x cloud-sql-proxy
+
+      - name: Read DB credentials from Secret Manager
+        run: |
+          DB_USER=$(gcloud secrets versions access latest --secret=coms-aha-heroes-db-user --project=${{ env.PROJECT_ID }})
+          DB_PASSWORD=$(gcloud secrets versions access latest --secret=coms-aha-heroes-db-password --project=${{ env.PROJECT_ID }})
+          echo "::add-mask::${DB_USER}"
+          echo "::add-mask::${DB_PASSWORD}"
+          echo "DB_USER=${DB_USER}" >> "$GITHUB_ENV"
+          echo "DB_PASSWORD=${DB_PASSWORD}" >> "$GITHUB_ENV"
+
+      - name: Run Drizzle migrations → production
+        run: |
+          ./cloud-sql-proxy --port 5432 "${{ env.DB_INSTANCE }}" &
+          PROXY_PID=$!
+          sleep 3
+
+          DATABASE_URL="postgres://${DB_USER}:${DB_PASSWORD}@127.0.0.1:5432/coms_aha_heroes_production" \
+            bun run db:migrate
+
+          kill "$PROXY_PID"
+
+      - name: Deploy to Cloud Run — 100% traffic
+        run: |
+          gcloud run deploy "${{ env.SERVICE }}" \
+            --image "${{ needs.build-and-push.outputs.image }}" \
+            --region "${{ env.REGION }}" \
+            --set-secrets "DATABASE_URL=coms-aha-heroes-db-url-production:latest,BETTER_AUTH_SECRET=coms-aha-heroes-auth-secret:latest,BETTER_AUTH_URL=coms-aha-heroes-auth-url:latest,GOOGLE_CLIENT_ID=coms-aha-heroes-google-client-id:latest,GOOGLE_CLIENT_SECRET=coms-aha-heroes-google-client-secret:latest" \
+            --set-env-vars "NODE_ENV=production,GCS_BUCKET=coms-aha-heroes-uploads" \
+            --quiet
+
+          # Explicitly route all traffic to the new revision
+          gcloud run services update-traffic "${{ env.SERVICE }}" \
+            --region "${{ env.REGION }}" \
+            --to-latest \
+            --quiet
