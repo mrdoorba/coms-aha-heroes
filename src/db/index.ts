@@ -8,14 +8,25 @@ const connectionString = process.env.DATABASE_URL!
 // postgres.js ignores the host query param when a URL hostname is present
 // and splits host strings on colons (breaking Cloud SQL socket paths like
 // /cloudsql/project:region:instance). Arrays bypass both issues.
-const url = new URL(connectionString)
-const socketHost = url.searchParams.get('host')
+const parsedUrl = new URL(connectionString)
+const socketHost = parsedUrl.searchParams.get('host')
 
-const client = postgres(connectionString, {
-  ...(socketHost?.startsWith('/') && { host: [socketHost], port: [5432] }),
+const pgOptions: Parameters<typeof postgres>[1] = {
   idle_timeout: 20,
   connect_timeout: 10,
   max_lifetime: 1800,
-})
+}
+
+if (socketHost?.startsWith('/')) {
+  pgOptions.host = [socketHost]
+  pgOptions.port = [5432]
+}
+
+console.log('[db] socketHost:', socketHost)
+console.log('[db] pgOptions.host:', pgOptions.host)
+
+const client = postgres(connectionString, pgOptions)
+
+console.log('[db] postgres options.host:', client.options?.host)
 
 export const db = drizzle(client, { schema })
