@@ -305,14 +305,15 @@ function ReportsPage() {
               <div className="flex items-end gap-1.5 min-w-0" style={{ minWidth: `${overTime.length * 36}px` }}>
                 {overTime.map((point) => {
                   const heightPct = Math.max(8, Math.round((point.count / maxTimeCount) * 100))
-                  const shortDate = point.date.slice(5) // MM-DD
+                  const dateStr = point.date instanceof Date ? point.date.toISOString().slice(0, 10) : String(point.date)
+                  const shortDate = dateStr.slice(5) // MM-DD
                   return (
-                    <div key={point.date} className="flex flex-1 flex-col items-center gap-1">
+                    <div key={dateStr} className="flex flex-1 flex-col items-center gap-1">
                       <span className="text-[10px] font-medium text-[#1D388B]">{point.count}</span>
                       <div
                         className="w-full rounded-t-md bg-[#325FEC] transition-all duration-500"
                         style={{ height: `${heightPct * 1.2}px`, minHeight: '8px' }}
-                        title={`${point.date}: ${point.count}`}
+                        title={`${dateStr}: ${point.count}`}
                       />
                       <span className="rotate-45 text-[9px] text-muted-foreground origin-left">
                         {shortDate}
