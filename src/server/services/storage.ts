@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto'
 import { mkdir, writeFile, access, stat } from 'fs/promises'
-import { join } from 'path'
+import { dirname, join } from 'path'
 import { Storage } from '@google-cloud/storage'
 
 const UPLOAD_DIR = join(process.cwd(), 'uploads')
@@ -27,7 +27,10 @@ function validateContentType(contentType: string): void {
 
 function generateFileKey(originalName: string): string {
   const ext = originalName.split('.').pop() ?? 'jpg'
-  return `${Date.now()}-${randomUUID()}.${ext}`
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  return `points/${year}/${month}/${Date.now()}-${randomUUID()}.${ext}`
 }
 
 /**
@@ -113,8 +116,8 @@ export async function storeFile(
     throw new FileTooLargeError(data.length)
   }
 
-  await ensureUploadDir()
   const filePath = join(UPLOAD_DIR, fileKey)
+  await mkdir(dirname(filePath), { recursive: true })
   await writeFile(filePath, data)
 
   return `/api/v1/uploads/${fileKey}`

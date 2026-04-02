@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react'
 import { Button } from './button'
 import { cn } from '~/lib/utils'
@@ -131,6 +131,24 @@ export function FileUpload({
     [uploadFile],
   )
 
+  useEffect(() => {
+    function handlePaste(e: ClipboardEvent) {
+      if (preview) return
+      const items = e.clipboardData?.items
+      if (!items) return
+      for (const item of items) {
+        if (item.type.startsWith('image/')) {
+          e.preventDefault()
+          const file = item.getAsFile()
+          if (file) uploadFile(file)
+          return
+        }
+      }
+    }
+    document.addEventListener('paste', handlePaste)
+    return () => document.removeEventListener('paste', handlePaste)
+  }, [preview, uploadFile])
+
   const handleRemove = useCallback(() => {
     setPreview(null)
     onChange(undefined)
@@ -198,7 +216,7 @@ export function FileUpload({
               <Upload className="h-8 w-8 text-muted-foreground mb-2" />
             )}
             <p className="text-sm font-medium">
-              {isDragging ? 'Drop image here' : 'Click or drag image to upload'}
+              {isDragging ? 'Drop image here' : 'Click, drag, or paste image'}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               JPEG, PNG, WebP, or GIF — max {maxSizeMB}MB
