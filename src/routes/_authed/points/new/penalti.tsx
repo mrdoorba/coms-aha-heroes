@@ -7,6 +7,7 @@ import { Label } from '~/components/ui/label'
 import { EmployeeSelector } from '~/components/points/employee-selector'
 import { FileUpload } from '~/components/ui/file-upload'
 import { getPointsLookupDataFn, submitPointFn } from '~/server/functions/points'
+import { uploadFile } from '~/lib/upload'
 import { KITTA_CODES, KITTA_LABELS, KITTA_DESCRIPTIONS } from '~/shared/constants'
 import type { KittaCode } from '~/shared/constants'
 
@@ -45,7 +46,7 @@ function PenaltiForm() {
   const [violationLevel, setViolationLevel] = useState(1)
   const [reason, setReason] = useState('')
   const [relatedStaff, setRelatedStaff] = useState('')
-  const [screenshotUrl, setScreenshotUrl] = useState<string | undefined>()
+  const [screenshotFile, setScreenshotFile] = useState<File | undefined>()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -56,10 +57,11 @@ function PenaltiForm() {
     if (!userId) return setError(m.form_error_select_employee())
     if (!kittaComponent) return setError(m.penalti_form_error_select_kitta())
     if (!reason.trim()) return setError(m.penalti_form_error_describe())
-    if (!screenshotUrl) return setError(m.form_error_screenshot_required())
+    if (!screenshotFile) return setError(m.form_error_screenshot_required())
 
     setIsSubmitting(true)
     try {
+      const screenshotUrl = await uploadFile(screenshotFile)
       await submitPointFn({
         data: {
           userId,
@@ -183,8 +185,8 @@ function PenaltiForm() {
         <div className="space-y-2">
           <Label>{m.form_screenshot_required()}</Label>
           <FileUpload
-            value={screenshotUrl}
-            onChange={setScreenshotUrl}
+            value={screenshotFile}
+            onChange={setScreenshotFile}
             required
           />
         </div>
