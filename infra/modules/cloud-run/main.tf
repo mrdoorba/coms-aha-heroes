@@ -117,7 +117,7 @@ resource "google_cloud_run_v2_service" "app" {
 
     scaling {
       min_instance_count = 0
-      max_instance_count = 5
+      max_instance_count = 2
     }
 
     # Mount Cloud SQL socket directory — avoids needing a VPC connector

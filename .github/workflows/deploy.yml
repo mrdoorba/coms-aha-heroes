@@ -125,7 +125,7 @@ jobs:
             --tag staging \
             --max-instances 1 \
             --set-secrets "DATABASE_URL=coms-aha-heroes-db-url-staging:latest,BETTER_AUTH_SECRET=coms-aha-heroes-auth-secret:latest,BETTER_AUTH_URL=coms-aha-heroes-auth-url:latest,GOOGLE_CLIENT_ID=coms-aha-heroes-google-client-id:latest,GOOGLE_CLIENT_SECRET=coms-aha-heroes-google-client-secret:latest" \
-            --set-env-vars "NODE_ENV=production,GCS_BUCKET=coms-aha-heroes-uploads" \
+            --set-env-vars "NODE_ENV=production,GCS_BUCKET=coms-aha-heroes-uploads,DB_POOL_MAX=2" \
             --cpu-boost \
             --startup-probe="httpGet.path=/api/healthz,periodSeconds=5,failureThreshold=12,timeoutSeconds=3,initialDelaySeconds=0" \
             --quiet
@@ -213,7 +213,8 @@ jobs:
             --service-account "coms-aha-heroes-run-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com" \
             --add-cloudsql-instances "${{ env.DB_INSTANCE }}" \
             --set-secrets "DATABASE_URL=coms-aha-heroes-db-url-production:latest,BETTER_AUTH_SECRET=coms-aha-heroes-auth-secret:latest,BETTER_AUTH_URL=coms-aha-heroes-auth-url:latest,GOOGLE_CLIENT_ID=coms-aha-heroes-google-client-id:latest,GOOGLE_CLIENT_SECRET=coms-aha-heroes-google-client-secret:latest" \
-            --set-env-vars "NODE_ENV=production,GCS_BUCKET=coms-aha-heroes-uploads" \
+            --max-instances 2 \
+            --set-env-vars "NODE_ENV=production,GCS_BUCKET=coms-aha-heroes-uploads,DB_POOL_MAX=9" \
             --cpu-boost \
             --startup-probe="httpGet.path=/api/healthz,periodSeconds=5,failureThreshold=12,timeoutSeconds=3,initialDelaySeconds=0" \
             --quiet
