@@ -86,6 +86,11 @@ export function FileUpload({
 
       try {
         const resized = await resizeImage(file)
+
+        // Show local preview immediately (no server round-trip needed)
+        const localPreview = URL.createObjectURL(resized)
+        setPreview(localPreview)
+
         const formData = new FormData()
         formData.append('file', resized, file.name)
 
@@ -98,11 +103,13 @@ export function FileUpload({
         const result = await response.json()
 
         if (!response.ok) {
+          // Revert preview on failure
+          URL.revokeObjectURL(localPreview)
+          setPreview(null)
           throw new Error(result.error?.message ?? 'Upload failed')
         }
 
         const url = result.data.url as string
-        setPreview(url)
         onChange(url)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Upload failed')
@@ -150,11 +157,12 @@ export function FileUpload({
   }, [preview, uploadFile])
 
   const handleRemove = useCallback(() => {
+    if (preview?.startsWith('blob:')) URL.revokeObjectURL(preview)
     setPreview(null)
     onChange(undefined)
     setError(null)
     if (inputRef.current) inputRef.current.value = ''
-  }, [onChange])
+  }, [onChange, preview])
 
   if (preview) {
     return (
