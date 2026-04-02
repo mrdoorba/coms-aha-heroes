@@ -1,6 +1,7 @@
 import { eq, and, count, sql, desc } from 'drizzle-orm'
-import { pointSummaries, systemSettings, users } from '~/db/schema'
+import { pointSummaries, users } from '~/db/schema'
 import { withRLS } from '../repositories/base'
+import { getPointImpactSettings } from './settings-cache'
 import type { AuthUser } from '../middleware/auth'
 
 type ServiceContext = {
@@ -29,23 +30,9 @@ export async function getLeaderboard(
   input: LeaderboardInput,
   ctx: ServiceContext,
 ): Promise<{ entries: LeaderboardEntry[]; meta: { total: number; page: number; limit: number } }> {
+  const { bintangPointImpact, penaltiPointImpact } = await getPointImpactSettings()
+
   return withRLS(ctx.actor, async (db) => {
-    const [bintangSetting, penaltiSetting] = await Promise.all([
-      db
-        .select({ value: systemSettings.value })
-        .from(systemSettings)
-        .where(eq(systemSettings.key, 'bintang_point_impact'))
-        .limit(1),
-      db
-        .select({ value: systemSettings.value })
-        .from(systemSettings)
-        .where(eq(systemSettings.key, 'penalti_point_impact'))
-        .limit(1),
-    ])
-
-    const bintangPointImpact = (bintangSetting[0]?.value as number) ?? 10
-    const penaltiPointImpact = (penaltiSetting[0]?.value as number) ?? 5
-
     const whereConditions = input.teamId
       ? and(
           eq(pointSummaries.branchId, ctx.actor.branchId),
