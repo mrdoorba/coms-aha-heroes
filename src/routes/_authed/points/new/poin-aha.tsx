@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { Award } from 'lucide-react'
 import * as m from '~/paraglide/messages'
@@ -32,6 +32,15 @@ function PoinAhaForm() {
   const [error, setError] = useState<string | null>(null)
 
   const isSelfSubmission = userId === session?.appUser?.id
+
+  // Employees cannot give Poin AHA — redirect to dashboard
+  useEffect(() => {
+    if (userRole === 'employee') {
+      router.navigate({ to: '/dashboard' })
+    }
+  }, [userRole, router])
+
+  if (userRole === 'employee') return null
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -95,18 +104,21 @@ function PoinAhaForm() {
 
         <div className="space-y-2">
           <Label>{m.poin_aha_form_level({ level: String(level) })}</Label>
-          <input
-            type="range"
-            min={1}
-            max={10}
-            value={level}
-            onChange={(e) => setLevel(Number(e.target.value))}
-            className="w-full accent-blue-600"
-          />
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>1</span>
-            <span>5</span>
-            <span>10</span>
+          <div className="grid grid-cols-5 gap-2">
+            {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setLevel(n)}
+                className={`flex h-10 items-center justify-center rounded-lg border text-sm font-semibold transition-colors ${
+                  level === n
+                    ? 'border-blue-500 bg-blue-500 text-white shadow-sm'
+                    : 'border-border bg-background text-foreground hover:border-blue-300 hover:bg-blue-50'
+                }`}
+              >
+                {n}
+              </button>
+            ))}
           </div>
         </div>
 

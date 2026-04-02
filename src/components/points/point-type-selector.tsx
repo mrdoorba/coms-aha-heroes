@@ -35,7 +35,7 @@ const pointTypeBases = [
     bg: 'bg-blue-50 hover:bg-blue-100',
     border: 'border-blue-200',
     href: '/points/new/poin-aha' as const,
-    roles: ['admin', 'hr', 'leader', 'employee'] as const,
+    roles: ['admin', 'hr', 'leader'] as const,
   },
 ]
 

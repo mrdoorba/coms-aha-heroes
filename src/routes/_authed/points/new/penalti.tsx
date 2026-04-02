@@ -135,14 +135,22 @@ function PenaltiForm() {
 
         <div className="space-y-2">
           <Label>{m.penalti_form_violation_level({ level: String(violationLevel) })}</Label>
-          <input
-            type="range"
-            min={1}
-            max={10}
-            value={violationLevel}
-            onChange={(e) => setViolationLevel(Number(e.target.value))}
-            className="w-full accent-purple-600"
-          />
+          <div className="grid grid-cols-5 gap-2">
+            {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setViolationLevel(n)}
+                className={`flex h-10 items-center justify-center rounded-lg border text-sm font-semibold transition-colors ${
+                  violationLevel === n
+                    ? 'border-purple-500 bg-purple-500 text-white shadow-sm'
+                    : 'border-border bg-background text-foreground hover:border-purple-300 hover:bg-purple-50'
+                }`}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
           <p className="text-sm text-muted-foreground">
             {violationDescriptions[violationLevel]}
           </p>

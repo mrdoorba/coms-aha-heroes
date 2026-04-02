@@ -69,6 +69,23 @@ export async function submitPoint(input: SubmitPointInput, ctx: ServiceContext) 
       throw new InsufficientRoleForPenaltiError()
     }
 
+    // Poin AHA can only be given by leader, hr, or admin
+    if (
+      input.categoryCode === 'POIN_AHA' &&
+      ctx.actor.role === 'employee'
+    ) {
+      throw new InsufficientRoleForPoinAhaError()
+    }
+
+    // Employees can only submit Bintang for themselves (self-nomination)
+    if (
+      ctx.actor.role === 'employee' &&
+      input.categoryCode === 'BINTANG' &&
+      !isSelfSubmission
+    ) {
+      throw new EmployeeBintangSelfOnlyError()
+    }
+
     // Determine status based on role and submission type
     const status = resolveInitialStatus(ctx.actor.role, isSelfSubmission)
 
@@ -292,6 +309,20 @@ export class InsufficientRoleForPenaltiError extends Error {
   constructor() {
     super('Only leaders, HR, or admins can give Penalti')
     this.name = 'InsufficientRoleForPenaltiError'
+  }
+}
+
+export class InsufficientRoleForPoinAhaError extends Error {
+  constructor() {
+    super('Only leaders, HR, or admins can give Poin AHA')
+    this.name = 'InsufficientRoleForPoinAhaError'
+  }
+}
+
+export class EmployeeBintangSelfOnlyError extends Error {
+  constructor() {
+    super('Employees can only submit Bintang for themselves')
+    this.name = 'EmployeeBintangSelfOnlyError'
   }
 }
 

@@ -18,6 +18,8 @@ type ActionItem = {
 export function QuickActions({ role }: QuickActionsProps) {
   const [open, setOpen] = useState(false)
 
+  const canGiveToOthers = role === 'leader' || role === 'hr' || role === 'admin'
+
   const actions: ActionItem[] = [
     {
       label: m.quick_action_bintang(),
@@ -25,14 +27,14 @@ export function QuickActions({ role }: QuickActionsProps) {
       icon: <Star className="h-4 w-4" />,
       gradientClass: 'btn-gradient-gold text-white',
     },
-    {
-      label: m.quick_action_poin_aha(),
-      to: '/points/new/poin-aha',
-      icon: <Award className="h-4 w-4" />,
-      gradientClass: 'btn-gradient-blue text-white',
-    },
-    ...(role === 'leader' || role === 'hr' || role === 'admin'
+    ...(canGiveToOthers
       ? [
+          {
+            label: m.quick_action_poin_aha(),
+            to: '/points/new/poin-aha',
+            icon: <Award className="h-4 w-4" />,
+            gradientClass: 'btn-gradient-blue text-white',
+          } satisfies ActionItem,
           {
             label: m.quick_action_penalti(),
             to: '/points/new/penalti',

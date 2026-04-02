@@ -23,7 +23,8 @@ function BintangForm() {
   const router = useRouter()
   const userRole = (session?.appUser?.role ?? 'employee') as UserRole
 
-  const [userId, setUserId] = useState('')
+  const isEmployee = userRole === 'employee'
+  const [userId, setUserId] = useState(isEmployee ? (session?.appUser?.id ?? '') : '')
   const [reason, setReason] = useState('')
   const [relatedStaff, setRelatedStaff] = useState('')
   const [screenshotUrl, setScreenshotUrl] = useState<string | undefined>()
@@ -73,12 +74,18 @@ function BintangForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label>{m.form_staff_name()}</Label>
-          <EmployeeSelector
-            employees={employees}
-            value={userId}
-            onChange={setUserId}
-            excludeId={userRole === 'leader' ? session?.appUser?.id : undefined}
-          />
+          {isEmployee ? (
+            <div className="flex h-10 w-full items-center rounded-lg border border-border bg-muted/50 px-3 text-sm text-muted-foreground">
+              {session?.appUser?.name ?? session?.user?.name}
+            </div>
+          ) : (
+            <EmployeeSelector
+              employees={employees}
+              value={userId}
+              onChange={setUserId}
+              excludeId={userRole === 'leader' ? session?.appUser?.id : undefined}
+            />
+          )}
         </div>
 
         <div className="space-y-2">
@@ -114,7 +121,7 @@ function BintangForm() {
           />
         </div>
 
-        {isSelfSubmission && userRole === 'employee' && (
+        {isEmployee && (
           <p className="text-sm text-muted-foreground bg-yellow-50 border border-yellow-200 rounded-lg p-3">
             {m.form_pending_approval()}
           </p>
