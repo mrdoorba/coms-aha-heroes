@@ -23,6 +23,7 @@ Thumbs.db
 
 # Claude / AI tooling
 .claude/
+.claude-flow/
 .gemini/
 .omc/
 CLAUDE.md
