@@ -31,8 +31,8 @@ export function BottomNav({ className }: BottomNavProps) {
         <Link
           key={to}
           to={to}
-          className="flex flex-1 flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-gray-600"
-          activeProps={{ className: 'text-primary' }}
+          className="relative flex flex-1 flex-col items-center justify-center gap-0.5 text-gray-400 transition-colors duration-200 hover:text-[#325FEC]"
+          activeProps={{ className: 'text-[#325FEC] bnav-active' }}
         >
           <Icon className="h-5 w-5" />
           <span className="text-[10px] font-medium leading-none">{labels[index]}</span>

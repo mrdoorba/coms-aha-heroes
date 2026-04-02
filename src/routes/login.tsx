@@ -49,8 +49,25 @@ function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#1D388B] to-[#0F0E7F]">
-      <div className="w-full max-w-sm rounded-xl bg-white p-8 shadow-lg">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-[#0F0E7F] via-[#1D388B] to-[#325FEC]">
+      {/* Floating decorative shapes */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        {/* Large circle top-right */}
+        <div className="float-slow absolute -top-20 -right-20 h-72 w-72 rounded-full bg-[#759EEE]/10" />
+        {/* Medium circle bottom-left */}
+        <div className="float-slower absolute -bottom-16 -left-16 h-56 w-56 rounded-full bg-[#6D50B8]/15" />
+        {/* Small circle center-left */}
+        <div className="float-slow absolute top-1/3 left-[10%] h-24 w-24 rounded-full bg-[#F4C144]/10" />
+        {/* Dots pattern top-left */}
+        <div className="float-slower absolute top-[15%] right-[20%] h-16 w-16 rounded-xl border border-[#96ADF5]/20 rotate-12" />
+        {/* Small dot */}
+        <div className="float-slow absolute bottom-[30%] right-[12%] h-8 w-8 rounded-full bg-[#F4C144]/15" />
+      </div>
+
+      <div className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-white/95 p-8 shadow-2xl backdrop-blur-sm">
+        {/* Gold accent line */}
+        <div className="absolute -top-px left-1/2 h-1 w-16 -translate-x-1/2 rounded-b-full bg-gradient-to-r from-[#F4C144] to-[#FFD97D]" />
+
         <h1 className="text-center font-manrope text-2xl font-extrabold text-[#1D388B]">
           AHA HEROES
         </h1>
@@ -60,7 +77,7 @@ function LoginPage() {
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           {error && (
-            <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 ring-1 ring-red-100">
               {error}
             </div>
           )}
@@ -77,7 +94,7 @@ function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#325FEC] focus:outline-none focus:ring-1 focus:ring-[#325FEC]"
+              className="mt-1 block w-full rounded-lg border border-gray-200 bg-gray-50/50 px-3 py-2.5 text-sm transition-all focus:border-[#325FEC] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#325FEC]/20"
               placeholder="admin@aha.com"
             />
           </div>
@@ -95,7 +112,7 @@ function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 pr-10 text-sm focus:border-[#325FEC] focus:outline-none focus:ring-1 focus:ring-[#325FEC]"
+                className="block w-full rounded-lg border border-gray-200 bg-gray-50/50 px-3 py-2.5 pr-10 text-sm transition-all focus:border-[#325FEC] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#325FEC]/20"
                 placeholder="••••••••"
               />
               <button
@@ -111,7 +128,7 @@ function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-md bg-[#325FEC] px-4 py-2 text-sm font-medium text-white hover:bg-[#2850d0] disabled:opacity-50"
+            className="btn-gradient-blue w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
           >
             {loading ? m.login_signing_in() : m.login_button()}
           </button>
@@ -119,7 +136,7 @@ function LoginPage() {
           <div className="text-center">
             <Link
               to="/forgot-password"
-              className="text-sm text-gray-500 hover:text-[#325FEC]"
+              className="text-sm text-gray-500 hover:text-[#325FEC] transition-colors"
             >
               {m.login_forgot_password()}
             </Link>
@@ -140,7 +157,7 @@ function LoginPage() {
               callbackURL: '/dashboard',
             })
           }}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 hover:shadow-sm"
         >
           <svg className="h-4 w-4" viewBox="0 0 24 24">
             <path
@@ -174,9 +191,9 @@ function LoginPage() {
                   onClick={() => {
                     if (!isActive) setLocale(lang)
                   }}
-                  className={`px-1 text-sm font-medium transition-colors ${
+                  className={`px-1.5 py-0.5 text-sm font-medium transition-colors rounded ${
                     isActive
-                      ? 'text-[#325FEC]'
+                      ? 'text-[#325FEC] bg-[#325FEC]/5'
                       : 'text-gray-400 hover:text-gray-600'
                   }`}
                 >

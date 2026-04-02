@@ -12,7 +12,7 @@ type ActionItem = {
   label: string
   to: string
   icon: React.ReactNode
-  colorClass: string
+  gradientClass: string
 }
 
 export function QuickActions({ role }: QuickActionsProps) {
@@ -23,13 +23,13 @@ export function QuickActions({ role }: QuickActionsProps) {
       label: m.quick_action_bintang(),
       to: '/points/new/bintang',
       icon: <Star className="h-4 w-4" />,
-      colorClass: 'bg-[#F4C144] text-white hover:bg-[#e0ae38]',
+      gradientClass: 'btn-gradient-gold text-white',
     },
     {
       label: m.quick_action_poin_aha(),
       to: '/points/new/poin-aha',
       icon: <Award className="h-4 w-4" />,
-      colorClass: 'bg-[#325FEC] text-white hover:bg-[#2a4fd0]',
+      gradientClass: 'btn-gradient-blue text-white',
     },
     ...(role === 'leader' || role === 'hr' || role === 'admin'
       ? [
@@ -37,7 +37,7 @@ export function QuickActions({ role }: QuickActionsProps) {
             label: m.quick_action_penalti(),
             to: '/points/new/penalti',
             icon: <AlertTriangle className="h-4 w-4" />,
-            colorClass: 'bg-[#6D50B8] text-white hover:bg-[#5d43a0]',
+            gradientClass: 'btn-gradient-purple text-white',
           } satisfies ActionItem,
         ]
       : []),
@@ -54,8 +54,8 @@ export function QuickActions({ role }: QuickActionsProps) {
               to={action.to}
               onClick={() => setOpen(false)}
               className={cn(
-                'flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold shadow-lg transition-colors',
-                action.colorClass,
+                'flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold shadow-lg',
+                action.gradientClass,
               )}
             >
               {action.icon}
@@ -65,7 +65,12 @@ export function QuickActions({ role }: QuickActionsProps) {
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="flex h-13 w-13 items-center justify-center rounded-full bg-[#325FEC] text-white shadow-xl transition-transform active:scale-95"
+          className={cn(
+            'flex h-13 w-13 items-center justify-center rounded-full shadow-xl transition-all active:scale-95',
+            open
+              ? 'bg-gray-600 text-white rotate-0'
+              : 'btn-gradient-blue text-white',
+          )}
           aria-label={m.quick_actions_label()}
         >
           {open ? <X className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
@@ -79,8 +84,8 @@ export function QuickActions({ role }: QuickActionsProps) {
             key={action.to}
             to={action.to}
             className={cn(
-              'flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold shadow-sm transition-colors',
-              action.colorClass,
+              'flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold shadow-sm',
+              action.gradientClass,
             )}
           >
             {action.icon}

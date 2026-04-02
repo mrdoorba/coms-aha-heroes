@@ -79,10 +79,10 @@ export function Sidebar({ user, collapsed, onToggleCollapse, className }: Sideba
             key={to}
             to={to}
             className={cn(
-              'flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-accent hover:text-accent-foreground',
+              'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-500 transition-all duration-200 hover:bg-[#325FEC]/5 hover:text-[#325FEC]',
               collapsed && 'justify-center px-0',
             )}
-            activeProps={{ className: 'bg-primary/10 text-primary' }}
+            activeProps={{ className: 'bg-gradient-to-r from-[#325FEC]/12 to-transparent border-l-[3px] border-[#325FEC] text-[#325FEC] font-semibold' }}
             title={collapsed ? mainLabels[index] : undefined}
           >
             <Icon className="h-5 w-5 shrink-0" />
@@ -105,10 +105,10 @@ export function Sidebar({ user, collapsed, onToggleCollapse, className }: Sideba
                 key={to}
                 to={to}
                 className={cn(
-                  'flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-accent hover:text-accent-foreground',
+                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-500 transition-all duration-200 hover:bg-[#325FEC]/5 hover:text-[#325FEC]',
                   collapsed && 'justify-center px-0',
                 )}
-                activeProps={{ className: 'bg-primary/10 text-primary' }}
+                activeProps={{ className: 'bg-gradient-to-r from-[#325FEC]/12 to-transparent border-l-[3px] border-[#325FEC] text-[#325FEC] font-semibold' }}
                 title={collapsed ? adminLabels[index] : undefined}
               >
                 <Icon className="h-5 w-5 shrink-0" />
