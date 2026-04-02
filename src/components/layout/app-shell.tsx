@@ -12,7 +12,7 @@ interface AppShellProps {
 }
 
 export function AppShell({ user, unreadCount, children }: AppShellProps) {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F0F4FF] to-[#E2E8F4]">
