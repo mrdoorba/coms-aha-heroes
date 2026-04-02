@@ -15,7 +15,7 @@ export function AppShell({ user, unreadCount, children }: AppShellProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-[#F8FAFF] to-[#EEF1F8]">
       <TopBar user={user} unreadCount={unreadCount} className="md:hidden" />
       <Sidebar
         user={user}
