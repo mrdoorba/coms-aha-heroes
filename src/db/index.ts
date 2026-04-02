@@ -17,13 +17,45 @@ if (socketDir) parsedUrl.searchParams.delete('host')
 const cleanedUrl = parsedUrl.toString()
 
 const client = postgres(cleanedUrl, {
+  // Cloud SQL Auth Proxy Unix socket support
   ...(socketDir?.startsWith('/') && {
     path: socketDir + '/.s.PGSQL.5432',
   }),
-  max: Number(process.env.DB_POOL_MAX) || 9,
-  idle_timeout: 20,
-  connect_timeout: 10,
-  max_lifetime: 1800,
+
+  // --- Pool sizing (db-f1-micro: max_connections=40, minus ~3 reserved = 37 usable) ---
+  // 15 per instance × 2 max instances = 30, leaves 7 headroom for migrations/admin
+  max: Number(process.env.DB_POOL_MAX) || 15,
+
+  // --- Aggressive serverless timeouts ---
+  // Kill idle connections fast — Cloud Run may freeze the instance at any moment.
+  // 5s idle keeps the pool warm for burst traffic without hoarding connections.
+  idle_timeout: 5,
+  // Fail fast on connect — don't let a hung Cloud SQL proxy stall the request.
+  connect_timeout: 5,
+  // Force connection recycling every 5 minutes. Cloud Run instances are ephemeral;
+  // long-lived connections risk hitting Cloud SQL's own idle-disconnect (10 min)
+  // and producing "connection terminated unexpectedly" errors on the next query.
+  max_lifetime: 300,
+
+  // --- Serverless essentials ---
+  // Disable named prepared statements. In serverless/pooled environments,
+  // a recycled connection may not have the prepared statement the client expects,
+  // causing "prepared statement does not exist" errors.
+  prepare: false,
+
+  // Graceful shutdown: let in-flight queries finish (matches Cloud Run's SIGTERM grace)
+  onclose: () => {
+    console.log('[db] connection closed')
+  },
 })
 
 export const db = drizzle(client, { schema })
+
+// Graceful shutdown — release all connections when Cloud Run sends SIGTERM
+const shutdown = async () => {
+  console.log('[db] draining pool...')
+  await client.end({ timeout: 5 })
+  process.exit(0)
+}
+process.on('SIGTERM', shutdown)
+process.on('SIGINT', shutdown)

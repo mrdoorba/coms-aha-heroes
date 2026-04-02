@@ -6,9 +6,8 @@ import {
 import { paginationQuery } from './_query'
 import * as challengesService from '../services/challenges'
 import type { AuthUser } from '../middleware/auth'
-import type { DbClient } from '../repositories/base'
 
-type Ctx = { authUser: AuthUser; tx: DbClient }
+type Ctx = { authUser: AuthUser }
 
 export const challengesRoute = new Elysia()
 
@@ -16,11 +15,10 @@ export const challengesRoute = new Elysia()
   .get(
     '/points/:id/challenges',
     async ({ params, query, ...c }) => {
-      const { authUser: actor, tx } = c as unknown as Ctx
+      const { authUser: actor } = c as unknown as Ctx
 
       const result = await challengesService.listChallenges(params.id, query, {
         actor,
-        tx,
       })
 
       return {
@@ -37,13 +35,12 @@ export const challengesRoute = new Elysia()
   .post(
     '/points/:id/challenges',
     async ({ params, body, headers, set, ...c }) => {
-      const { authUser: actor, tx } = c as unknown as Ctx
+      const { authUser: actor } = c as unknown as Ctx
       const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
       try {
         const created = await challengesService.fileChallenge(params.id, body, {
           actor,
-          tx,
           ipAddress,
         })
         set.status = 201
@@ -74,13 +71,12 @@ export const challengesRoute = new Elysia()
   .patch(
     '/challenges/:id/resolve',
     async ({ params, body, headers, set, ...c }) => {
-      const { authUser: actor, tx } = c as unknown as Ctx
+      const { authUser: actor } = c as unknown as Ctx
       const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
       try {
         const updated = await challengesService.resolveChallenge(params.id, body, {
           actor,
-          tx,
           ipAddress,
         })
         return { success: true, data: updated, error: null }

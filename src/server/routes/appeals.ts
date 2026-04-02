@@ -6,9 +6,8 @@ import {
 import { paginationQuery } from './_query'
 import * as appealsService from '../services/appeals'
 import type { AuthUser } from '../middleware/auth'
-import type { DbClient } from '../repositories/base'
 
-type Ctx = { authUser: AuthUser; tx: DbClient }
+type Ctx = { authUser: AuthUser }
 
 export const appealsRoute = new Elysia()
 
@@ -16,11 +15,10 @@ export const appealsRoute = new Elysia()
   .get(
     '/points/:id/appeals',
     async ({ params, query, ...c }) => {
-      const { authUser: actor, tx } = c as unknown as Ctx
+      const { authUser: actor } = c as unknown as Ctx
 
       const result = await appealsService.listAppeals(params.id, query, {
         actor,
-        tx,
       })
 
       return {
@@ -37,13 +35,12 @@ export const appealsRoute = new Elysia()
   .post(
     '/points/:id/appeals',
     async ({ params, body, headers, set, ...c }) => {
-      const { authUser: actor, tx } = c as unknown as Ctx
+      const { authUser: actor } = c as unknown as Ctx
       const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
       try {
         const created = await appealsService.fileAppeal(params.id, body, {
           actor,
-          tx,
           ipAddress,
         })
         set.status = 201
@@ -78,13 +75,12 @@ export const appealsRoute = new Elysia()
   .patch(
     '/appeals/:id/resolve',
     async ({ params, body, headers, set, ...c }) => {
-      const { authUser: actor, tx } = c as unknown as Ctx
+      const { authUser: actor } = c as unknown as Ctx
       const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
       try {
         const updated = await appealsService.resolveAppeal(params.id, body, {
           actor,
-          tx,
           ipAddress,
         })
         return { success: true, data: updated, error: null }

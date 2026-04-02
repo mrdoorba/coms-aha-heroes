@@ -6,17 +6,16 @@ import {
 import { paginationQuery } from './_query'
 import * as rewardsService from '../services/rewards'
 import type { AuthUser } from '../middleware/auth'
-import type { DbClient } from '../repositories/base'
 
-type Ctx = { authUser: AuthUser; tx: DbClient }
+type Ctx = { authUser: AuthUser }
 
 export const rewardsRoute = new Elysia({ prefix: '/rewards' })
 
   // GET /rewards — list rewards (any authenticated user)
   .get('/', async ({ query, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
 
-    const result = await rewardsService.listRewards(query, { actor, tx })
+    const result = await rewardsService.listRewards(query, { actor })
 
     return {
       success: true,
@@ -28,10 +27,10 @@ export const rewardsRoute = new Elysia({ prefix: '/rewards' })
 
   // GET /rewards/:id — get reward by id
   .get('/:id', async ({ params, set, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
 
     try {
-      const reward = await rewardsService.getRewardById(params.id, { actor, tx })
+      const reward = await rewardsService.getRewardById(params.id, { actor })
       return { success: true, data: reward, error: null }
     } catch (err) {
       if (err instanceof rewardsService.RewardNotFoundError) {
@@ -44,13 +43,12 @@ export const rewardsRoute = new Elysia({ prefix: '/rewards' })
 
   // POST /rewards — create reward (HR/Admin)
   .post('/', async ({ body, headers, set, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
     const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
     try {
       const created = await rewardsService.createReward(body, {
         actor,
-        tx,
         ipAddress,
       })
       set.status = 201
@@ -66,13 +64,12 @@ export const rewardsRoute = new Elysia({ prefix: '/rewards' })
 
   // PATCH /rewards/:id — update reward (HR/Admin)
   .patch('/:id', async ({ params, body, headers, set, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
     const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
     try {
       const updated = await rewardsService.updateReward(params.id, body, {
         actor,
-        tx,
         ipAddress,
       })
       return { success: true, data: updated, error: null }

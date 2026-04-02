@@ -1,7 +1,7 @@
 import * as teamsRepo from '../repositories/teams'
 import { writeAuditLog } from './audit'
 import type { AuthUser } from '../middleware/auth'
-import type { DbClient } from '../repositories/base'
+import { withRLS } from '../repositories/base'
 import type {
   CreateTeamInput,
   UpdateTeamInput,
@@ -10,24 +10,27 @@ import type {
 
 type ServiceContext = {
   readonly actor: AuthUser
-  readonly tx: DbClient
   readonly ipAddress?: string
 }
 
 export async function listTeams(input: ListTeamsInput, ctx: ServiceContext) {
-  const { rows, total } = await teamsRepo.listTeams(
-    {
-      page: input.page,
-      limit: input.limit,
-      search: input.search,
-    },
-    ctx.tx,
+  const { rows, total } = await withRLS(ctx.actor, (db) =>
+    teamsRepo.listTeams(
+      {
+        page: input.page,
+        limit: input.limit,
+        search: input.search,
+      },
+      db,
+    ),
   )
 
   // Enrich with member counts
   const teamsWithCounts = await Promise.all(
     rows.map(async (team) => {
-      const memberCount = await teamsRepo.getTeamMemberCount(team.id, ctx.tx)
+      const memberCount = await withRLS(ctx.actor, (db) =>
+        teamsRepo.getTeamMemberCount(team.id, db),
+      )
       return { ...team, memberCount }
     }),
   )
@@ -39,40 +42,44 @@ export async function listTeams(input: ListTeamsInput, ctx: ServiceContext) {
 }
 
 export async function getTeamById(id: string, ctx: ServiceContext) {
-  const team = await teamsRepo.getTeamById(id, ctx.tx)
-  if (!team) {
-    throw new TeamNotFoundError(id)
-  }
+  return withRLS(ctx.actor, async (db) => {
+    const team = await teamsRepo.getTeamById(id, db)
+    if (!team) {
+      throw new TeamNotFoundError(id)
+    }
 
-  const members = await teamsRepo.getTeamMembers(id, ctx.tx)
-  const memberCount = members.length
+    const members = await teamsRepo.getTeamMembers(id, db)
+    const memberCount = members.length
 
-  return { ...team, members, memberCount }
+    return { ...team, members, memberCount }
+  })
 }
 
 export async function createTeam(input: CreateTeamInput, ctx: ServiceContext) {
-  const created = await teamsRepo.createTeam(
-    {
-      name: input.name,
-      branchId: input.branchId,
-      leaderId: input.leaderId ?? null,
-    },
-    ctx.tx,
-  )
+  return withRLS(ctx.actor, async (db) => {
+    const created = await teamsRepo.createTeam(
+      {
+        name: input.name,
+        branchId: input.branchId,
+        leaderId: input.leaderId ?? null,
+      },
+      db,
+    )
 
-  await writeAuditLog(
-    {
-      actor: ctx.actor,
-      action: 'TEAM_CREATED',
-      entityType: 'teams',
-      entityId: created.id,
-      newValue: { name: created.name, leaderId: created.leaderId },
-      ipAddress: ctx.ipAddress,
-    },
-    ctx.tx,
-  )
+    await writeAuditLog(
+      {
+        actor: ctx.actor,
+        action: 'TEAM_CREATED',
+        entityType: 'teams',
+        entityId: created.id,
+        newValue: { name: created.name, leaderId: created.leaderId },
+        ipAddress: ctx.ipAddress,
+      },
+      db,
+    )
 
-  return created
+    return created
+  })
 }
 
 export async function updateTeam(
@@ -80,30 +87,32 @@ export async function updateTeam(
   input: UpdateTeamInput,
   ctx: ServiceContext,
 ) {
-  const existing = await teamsRepo.getTeamById(id, ctx.tx)
-  if (!existing) {
-    throw new TeamNotFoundError(id)
-  }
+  return withRLS(ctx.actor, async (db) => {
+    const existing = await teamsRepo.getTeamById(id, db)
+    if (!existing) {
+      throw new TeamNotFoundError(id)
+    }
 
-  const updated = await teamsRepo.updateTeam(id, input, ctx.tx)
-  if (!updated) {
-    throw new TeamNotFoundError(id)
-  }
+    const updated = await teamsRepo.updateTeam(id, input, db)
+    if (!updated) {
+      throw new TeamNotFoundError(id)
+    }
 
-  await writeAuditLog(
-    {
-      actor: ctx.actor,
-      action: 'TEAM_UPDATED',
-      entityType: 'teams',
-      entityId: id,
-      oldValue: { name: existing.name, leaderId: existing.leaderId },
-      newValue: input,
-      ipAddress: ctx.ipAddress,
-    },
-    ctx.tx,
-  )
+    await writeAuditLog(
+      {
+        actor: ctx.actor,
+        action: 'TEAM_UPDATED',
+        entityType: 'teams',
+        entityId: id,
+        oldValue: { name: existing.name, leaderId: existing.leaderId },
+        newValue: input,
+        ipAddress: ctx.ipAddress,
+      },
+      db,
+    )
 
-  return updated
+    return updated
+  })
 }
 
 // Domain errors

@@ -1,11 +1,10 @@
-import { eq, and } from 'drizzle-orm'
-import { rewards, users } from '~/db/schema'
+import { eq } from 'drizzle-orm'
+import { rewards } from '~/db/schema'
 import * as redemptionsRepo from '../repositories/redemptions'
 import { writeAuditLog } from './audit'
 import { createNotification } from './notifications'
 import type { AuthUser } from '../middleware/auth'
-import type { DbClient } from '../repositories/base'
-import { getDb } from '../repositories/base'
+import { withRLS } from '../repositories/base'
 import type {
   RequestRedemptionInput,
   ListRedemptionsInput,
@@ -15,7 +14,6 @@ import type { BulkRedemptionActionInput, BulkResult, BulkResultItem } from '~/sh
 
 type ServiceContext = {
   readonly actor: AuthUser
-  readonly tx: DbClient
   readonly ipAddress?: string
 }
 
@@ -23,46 +21,46 @@ export async function requestRedemption(
   input: RequestRedemptionInput,
   ctx: ServiceContext,
 ) {
-  const db = getDb(ctx.tx)
+  return withRLS(ctx.actor, async (db) => {
+    const [reward] = await db
+      .select()
+      .from(rewards)
+      .where(eq(rewards.id, input.rewardId))
+      .limit(1)
 
-  const [reward] = await db
-    .select()
-    .from(rewards)
-    .where(eq(rewards.id, input.rewardId))
-    .limit(1)
+    if (!reward) throw new RewardNotFoundError(input.rewardId)
+    if (!reward.isActive) throw new RewardNotActiveError(input.rewardId)
 
-  if (!reward) throw new RewardNotFoundError(input.rewardId)
-  if (!reward.isActive) throw new RewardNotActiveError(input.rewardId)
-
-  const created = await redemptionsRepo.createRedemption(
-    {
-      branchId: ctx.actor.branchId,
-      userId: ctx.actor.id,
-      rewardId: input.rewardId,
-      pointsSpent: reward.pointCost,
-      notes: input.notes ?? null,
-      status: 'pending',
-    },
-    ctx.tx,
-  )
-
-  await writeAuditLog(
-    {
-      actor: ctx.actor,
-      action: 'REDEMPTION_REQUESTED',
-      entityType: 'redemptions',
-      entityId: created.id,
-      newValue: {
+    const created = await redemptionsRepo.createRedemption(
+      {
+        branchId: ctx.actor.branchId,
+        userId: ctx.actor.id,
         rewardId: input.rewardId,
         pointsSpent: reward.pointCost,
-        notes: input.notes,
+        notes: input.notes ?? null,
+        status: 'pending',
       },
-      ipAddress: ctx.ipAddress,
-    },
-    ctx.tx,
-  )
+      db,
+    )
 
-  return created
+    await writeAuditLog(
+      {
+        actor: ctx.actor,
+        action: 'REDEMPTION_REQUESTED',
+        entityType: 'redemptions',
+        entityId: created.id,
+        newValue: {
+          rewardId: input.rewardId,
+          pointsSpent: reward.pointCost,
+          notes: input.notes,
+        },
+        ipAddress: ctx.ipAddress,
+      },
+      db,
+    )
+
+    return created
+  })
 }
 
 export async function listRedemptions(
@@ -72,16 +70,18 @@ export async function listRedemptions(
   const forceOwn = ctx.actor.role === 'employee'
   const filterByUser = forceOwn || input.mine ? ctx.actor.id : undefined
 
-  const { rows, total } = await redemptionsRepo.listRedemptions(
-    { page: input.page, limit: input.limit },
-    {
-      status: input.status,
-      userId: filterByUser,
-      search: input.search,
-      dateFrom: input.dateFrom,
-      dateTo: input.dateTo,
-    },
-    ctx.tx,
+  const { rows, total } = await withRLS(ctx.actor, (db) =>
+    redemptionsRepo.listRedemptions(
+      { page: input.page, limit: input.limit },
+      {
+        status: input.status,
+        userId: filterByUser,
+        search: input.search,
+        dateFrom: input.dateFrom,
+        dateTo: input.dateTo,
+      },
+      db,
+    ),
   )
 
   return {
@@ -91,7 +91,9 @@ export async function listRedemptions(
 }
 
 export async function getRedemptionById(id: string, ctx: ServiceContext) {
-  const redemption = await redemptionsRepo.getRedemptionById(id, ctx.tx)
+  const redemption = await withRLS(ctx.actor, (db) =>
+    redemptionsRepo.getRedemptionById(id, db),
+  )
   if (!redemption) throw new RedemptionNotFoundError(id)
   return redemption
 }
@@ -101,46 +103,48 @@ export async function approveRedemption(id: string, ctx: ServiceContext) {
     throw new InsufficientRoleError()
   }
 
-  const redemption = await redemptionsRepo.getRedemptionById(id, ctx.tx)
-  if (!redemption) throw new RedemptionNotFoundError(id)
-  if (redemption.status !== 'pending') throw new RedemptionNotPendingError(id)
+  return withRLS(ctx.actor, async (db) => {
+    const redemption = await redemptionsRepo.getRedemptionById(id, db)
+    if (!redemption) throw new RedemptionNotFoundError(id)
+    if (redemption.status !== 'pending') throw new RedemptionNotPendingError(id)
 
-  const now = new Date()
-  const updated = await redemptionsRepo.updateRedemptionStatus(
-    id,
-    {
-      status: 'approved',
-      approvedBy: ctx.actor.id,
-      approvedAt: now,
-    },
-    ctx.tx,
-  )
+    const now = new Date()
+    const updated = await redemptionsRepo.updateRedemptionStatus(
+      id,
+      {
+        status: 'approved',
+        approvedBy: ctx.actor.id,
+        approvedAt: now,
+      },
+      db,
+    )
 
-  await writeAuditLog(
-    {
-      actor: ctx.actor,
-      action: 'REDEMPTION_APPROVED',
-      entityType: 'redemptions',
-      entityId: id,
-      newValue: { status: 'approved', approvedBy: ctx.actor.id },
-      ipAddress: ctx.ipAddress,
-    },
-    ctx.tx,
-  )
+    await writeAuditLog(
+      {
+        actor: ctx.actor,
+        action: 'REDEMPTION_APPROVED',
+        entityType: 'redemptions',
+        entityId: id,
+        newValue: { status: 'approved', approvedBy: ctx.actor.id },
+        ipAddress: ctx.ipAddress,
+      },
+      db,
+    )
 
-  await createNotification(
-    {
-      branchId: redemption.branchId,
-      userId: redemption.userId,
-      type: 'redemption_approved',
-      title: `Your redemption request for "${redemption.rewardName}" has been approved`,
-      entityType: 'redemptions',
-      entityId: id,
-    },
-    ctx.tx,
-  )
+    await createNotification(
+      {
+        branchId: redemption.branchId,
+        userId: redemption.userId,
+        type: 'redemption_approved',
+        title: `Your redemption request for "${redemption.rewardName}" has been approved`,
+        entityType: 'redemptions',
+        entityId: id,
+      },
+      db,
+    )
 
-  return updated
+    return updated
+  })
 }
 
 export async function rejectRedemption(
@@ -152,47 +156,49 @@ export async function rejectRedemption(
     throw new InsufficientRoleError()
   }
 
-  const redemption = await redemptionsRepo.getRedemptionById(id, ctx.tx)
-  if (!redemption) throw new RedemptionNotFoundError(id)
-  if (redemption.status !== 'pending') throw new RedemptionNotPendingError(id)
+  return withRLS(ctx.actor, async (db) => {
+    const redemption = await redemptionsRepo.getRedemptionById(id, db)
+    if (!redemption) throw new RedemptionNotFoundError(id)
+    if (redemption.status !== 'pending') throw new RedemptionNotPendingError(id)
 
-  const updated = await redemptionsRepo.updateRedemptionStatus(
-    id,
-    {
-      status: 'rejected',
-      rejectionReason: input.rejectionReason,
-    },
-    ctx.tx,
-  )
-
-  await writeAuditLog(
-    {
-      actor: ctx.actor,
-      action: 'REDEMPTION_REJECTED',
-      entityType: 'redemptions',
-      entityId: id,
-      newValue: {
+    const updated = await redemptionsRepo.updateRedemptionStatus(
+      id,
+      {
         status: 'rejected',
         rejectionReason: input.rejectionReason,
       },
-      ipAddress: ctx.ipAddress,
-    },
-    ctx.tx,
-  )
+      db,
+    )
 
-  await createNotification(
-    {
-      branchId: redemption.branchId,
-      userId: redemption.userId,
-      type: 'redemption_rejected',
-      title: `Your redemption request for "${redemption.rewardName}" has been rejected`,
-      entityType: 'redemptions',
-      entityId: id,
-    },
-    ctx.tx,
-  )
+    await writeAuditLog(
+      {
+        actor: ctx.actor,
+        action: 'REDEMPTION_REJECTED',
+        entityType: 'redemptions',
+        entityId: id,
+        newValue: {
+          status: 'rejected',
+          rejectionReason: input.rejectionReason,
+        },
+        ipAddress: ctx.ipAddress,
+      },
+      db,
+    )
 
-  return updated
+    await createNotification(
+      {
+        branchId: redemption.branchId,
+        userId: redemption.userId,
+        type: 'redemption_rejected',
+        title: `Your redemption request for "${redemption.rewardName}" has been rejected`,
+        entityType: 'redemptions',
+        entityId: id,
+      },
+      db,
+    )
+
+    return updated
+  })
 }
 
 export async function bulkResolveRedemptions(

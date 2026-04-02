@@ -6,17 +6,16 @@ import {
 import { paginationQuery } from './_query'
 import * as commentsService from '../services/comments'
 import type { AuthUser } from '../middleware/auth'
-import type { DbClient } from '../repositories/base'
 
-type Ctx = { authUser: AuthUser; tx: DbClient }
+type Ctx = { authUser: AuthUser }
 
 export const commentsRoute = new Elysia({ prefix: '/comments' })
 
   // GET /comments — list comments for an entity
   .get('/', async ({ query, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
 
-    const result = await commentsService.listComments(query, { actor, tx })
+    const result = await commentsService.listComments(query, { actor })
 
     return {
       success: true,
@@ -32,10 +31,10 @@ export const commentsRoute = new Elysia({ prefix: '/comments' })
 
   // POST /comments — create a comment
   .post('/', async ({ body, set, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
 
     try {
-      const created = await commentsService.createComment(body, { actor, tx })
+      const created = await commentsService.createComment(body, { actor })
       set.status = 201
       return { success: true, data: created, error: null }
     } catch (err) {
@@ -49,12 +48,11 @@ export const commentsRoute = new Elysia({ prefix: '/comments' })
 
   // PATCH /comments/:id — update own comment
   .patch('/:id', async ({ params, body, set, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
 
     try {
       const updated = await commentsService.updateComment(params.id, body, {
         actor,
-        tx,
       })
       return { success: true, data: updated, error: null }
     } catch (err) {

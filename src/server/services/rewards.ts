@@ -1,18 +1,16 @@
 import * as rewardsRepo from '../repositories/rewards'
 import type { AuthUser } from '../middleware/auth'
-import type { DbClient } from '../repositories/base'
+import { withRLS } from '../repositories/base'
 import type { CreateRewardInput, UpdateRewardInput, ListRewardsInput } from '~/shared/schemas/rewards'
 
 type ServiceContext = {
   readonly actor: AuthUser
-  readonly tx: DbClient
   readonly ipAddress?: string
 }
 
 export async function listRewards(input: ListRewardsInput, ctx: ServiceContext) {
-  const { rows, total } = await rewardsRepo.listRewards(
-    { page: input.page, limit: input.limit },
-    ctx.tx,
+  const { rows, total } = await withRLS(ctx.actor, (db) =>
+    rewardsRepo.listRewards({ page: input.page, limit: input.limit }, db),
   )
 
   return {
@@ -22,7 +20,9 @@ export async function listRewards(input: ListRewardsInput, ctx: ServiceContext) 
 }
 
 export async function getRewardById(id: string, ctx: ServiceContext) {
-  const reward = await rewardsRepo.getRewardById(id, ctx.tx)
+  const reward = await withRLS(ctx.actor, (db) =>
+    rewardsRepo.getRewardById(id, db),
+  )
   if (!reward) throw new RewardNotFoundError(id)
   return reward
 }
@@ -32,15 +32,17 @@ export async function createReward(input: CreateRewardInput, ctx: ServiceContext
     throw new InsufficientRoleError()
   }
 
-  const created = await rewardsRepo.createReward(
-    {
-      branchId: ctx.actor.branchId,
-      name: input.name,
-      description: input.description,
-      pointCost: input.pointCost,
-      imageUrl: input.imageUrl,
-    },
-    ctx.tx,
+  const created = await withRLS(ctx.actor, (db) =>
+    rewardsRepo.createReward(
+      {
+        branchId: ctx.actor.branchId,
+        name: input.name,
+        description: input.description,
+        pointCost: input.pointCost,
+        imageUrl: input.imageUrl,
+      },
+      db,
+    ),
   )
 
   return created
@@ -55,10 +57,13 @@ export async function updateReward(
     throw new InsufficientRoleError()
   }
 
-  const reward = await rewardsRepo.getRewardById(id, ctx.tx)
-  if (!reward) throw new RewardNotFoundError(id)
+  const updated = await withRLS(ctx.actor, async (db) => {
+    const reward = await rewardsRepo.getRewardById(id, db)
+    if (!reward) throw new RewardNotFoundError(id)
 
-  const updated = await rewardsRepo.updateReward(id, input, ctx.tx)
+    return rewardsRepo.updateReward(id, input, db)
+  })
+
   return updated
 }
 

@@ -37,6 +37,11 @@ resource "google_sql_database_instance" "main" {
     insights_config {
       query_insights_enabled = true
     }
+
+    database_flags {
+      name  = "max_connections"
+      value = "40"
+    }
   }
 }
 

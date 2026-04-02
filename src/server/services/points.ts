@@ -4,187 +4,187 @@ import * as pointsRepo from '../repositories/points'
 import { writeAuditLog } from './audit'
 import { createNotification } from './notifications'
 import type { AuthUser } from '../middleware/auth'
-import type { DbClient } from '../repositories/base'
-import { getDb } from '../repositories/base'
+import { withRLS } from '../repositories/base'
 import type { SubmitPointInput, ListPointsInput } from '~/shared/schemas/points'
 import type { PointCategoryCode } from '~/shared/constants'
 
 type ServiceContext = {
   readonly actor: AuthUser
-  readonly tx: DbClient
   readonly ipAddress?: string
 }
 
 export async function submitPoint(input: SubmitPointInput, ctx: ServiceContext) {
-  const db = getDb(ctx.tx)
+  return withRLS(ctx.actor, async (db) => {
+    // Resolve category by code
+    const [category] = await db
+      .select()
+      .from(pointCategories)
+      .where(eq(pointCategories.code, input.categoryCode))
+      .limit(1)
 
-  // Resolve category by code
-  const [category] = await db
-    .select()
-    .from(pointCategories)
-    .where(eq(pointCategories.code, input.categoryCode))
-    .limit(1)
-
-  if (!category) {
-    throw new CategoryNotFoundError(input.categoryCode)
-  }
-
-  if (!category.isActive) {
-    throw new CategoryDisabledError(input.categoryCode)
-  }
-
-  // Validate target user exists and is active
-  const [targetUser] = await db
-    .select()
-    .from(users)
-    .where(eq(users.id, input.userId))
-    .limit(1)
-
-  if (!targetUser || !targetUser.isActive) {
-    throw new TargetUserNotFoundError(input.userId)
-  }
-
-  // Screenshot required for Bintang and Penalti
-  if (
-    (input.categoryCode === 'BINTANG' || input.categoryCode === 'PENALTI') &&
-    !input.screenshotUrl
-  ) {
-    throw new ScreenshotRequiredError(input.categoryCode)
-  }
-
-  // Self-submission restrictions
-  const isSelfSubmission = ctx.actor.id === input.userId
-
-  if (isSelfSubmission && input.categoryCode === 'PENALTI') {
-    throw new SelfPenaltiError()
-  }
-
-  // Leaders cannot give Bintang/Poin AHA to themselves
-  if (isSelfSubmission && ctx.actor.role === 'leader') {
-    throw new LeaderSelfGiveError()
-  }
-
-  // Penalti can only be given by leader, hr, or admin
-  if (
-    input.categoryCode === 'PENALTI' &&
-    ctx.actor.role === 'employee'
-  ) {
-    throw new InsufficientRoleForPenaltiError()
-  }
-
-  // Determine status based on role and submission type
-  const status = resolveInitialStatus(ctx.actor.role, isSelfSubmission)
-
-  const created = await pointsRepo.createPoint(
-    {
-      branchId: ctx.actor.branchId,
-      userId: input.userId,
-      categoryId: category.id,
-      points: input.points,
-      reason: input.reason,
-      relatedStaff: input.relatedStaff ?? null,
-      screenshotUrl: input.screenshotUrl ?? null,
-      kittaComponent: input.kittaComponent ?? null,
-      status,
-      submittedBy: ctx.actor.id,
-    },
-    ctx.tx,
-  )
-
-  // Audit log
-  await writeAuditLog(
-    {
-      actor: ctx.actor,
-      action: 'POINT_SUBMITTED',
-      entityType: 'achievement_points',
-      entityId: created.id,
-      newValue: {
-        categoryCode: input.categoryCode,
-        points: input.points,
-        status,
-        userId: input.userId,
-        isSelfSubmission,
-      },
-      ipAddress: ctx.ipAddress,
-    },
-    ctx.tx,
-  )
-
-  // Notifications
-  if (status === 'pending') {
-    // Notify the submitter that their submission is pending
-    await createNotification(
-      {
-        branchId: ctx.actor.branchId,
-        userId: ctx.actor.id,
-        type: 'point_pending',
-        title: `Your ${getCategoryLabel(input.categoryCode)} submission is pending approval`,
-        entityType: 'achievement_points',
-        entityId: created.id,
-      },
-      ctx.tx,
-    )
-
-    // Notify team leaders for approval
-    if (targetUser.teamId) {
-      const teamLeaders = await db
-        .select({ id: users.id })
-        .from(users)
-        .where(
-          and(
-            eq(users.teamId, targetUser.teamId),
-            eq(users.role, 'leader'),
-            eq(users.isActive, true),
-          ),
-        )
-
-      for (const leader of teamLeaders) {
-        await createNotification(
-          {
-            branchId: ctx.actor.branchId,
-            userId: leader.id,
-            type: 'point_needs_approval',
-            title: `${ctx.actor.name} submitted ${getCategoryLabel(input.categoryCode)} — needs your approval`,
-            entityType: 'achievement_points',
-            entityId: created.id,
-          },
-          ctx.tx,
-        )
-      }
+    if (!category) {
+      throw new CategoryNotFoundError(input.categoryCode)
     }
-  } else if (!isSelfSubmission) {
-    // Notify the target user about the point they received
-    await createNotification(
+
+    if (!category.isActive) {
+      throw new CategoryDisabledError(input.categoryCode)
+    }
+
+    // Validate target user exists and is active
+    const [targetUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, input.userId))
+      .limit(1)
+
+    if (!targetUser || !targetUser.isActive) {
+      throw new TargetUserNotFoundError(input.userId)
+    }
+
+    // Screenshot required for Bintang and Penalti
+    if (
+      (input.categoryCode === 'BINTANG' || input.categoryCode === 'PENALTI') &&
+      !input.screenshotUrl
+    ) {
+      throw new ScreenshotRequiredError(input.categoryCode)
+    }
+
+    // Self-submission restrictions
+    const isSelfSubmission = ctx.actor.id === input.userId
+
+    if (isSelfSubmission && input.categoryCode === 'PENALTI') {
+      throw new SelfPenaltiError()
+    }
+
+    // Leaders cannot give Bintang/Poin AHA to themselves
+    if (isSelfSubmission && ctx.actor.role === 'leader') {
+      throw new LeaderSelfGiveError()
+    }
+
+    // Penalti can only be given by leader, hr, or admin
+    if (
+      input.categoryCode === 'PENALTI' &&
+      ctx.actor.role === 'employee'
+    ) {
+      throw new InsufficientRoleForPenaltiError()
+    }
+
+    // Determine status based on role and submission type
+    const status = resolveInitialStatus(ctx.actor.role, isSelfSubmission)
+
+    const created = await pointsRepo.createPoint(
       {
         branchId: ctx.actor.branchId,
         userId: input.userId,
-        type: 'point_received',
-        title: `You received ${input.points} ${getCategoryLabel(input.categoryCode)} from ${ctx.actor.name}`,
+        categoryId: category.id,
+        points: input.points,
+        reason: input.reason,
+        relatedStaff: input.relatedStaff ?? null,
+        screenshotUrl: input.screenshotUrl ?? null,
+        kittaComponent: input.kittaComponent ?? null,
+        status,
+        submittedBy: ctx.actor.id,
+      },
+      db,
+    )
+
+    // Audit log
+    await writeAuditLog(
+      {
+        actor: ctx.actor,
+        action: 'POINT_SUBMITTED',
         entityType: 'achievement_points',
         entityId: created.id,
+        newValue: {
+          categoryCode: input.categoryCode,
+          points: input.points,
+          status,
+          userId: input.userId,
+          isSelfSubmission,
+        },
+        ipAddress: ctx.ipAddress,
       },
-      ctx.tx,
+      db,
     )
-  }
 
-  return { ...created, categoryCode: input.categoryCode, status }
+    // Notifications
+    if (status === 'pending') {
+      // Notify the submitter that their submission is pending
+      await createNotification(
+        {
+          branchId: ctx.actor.branchId,
+          userId: ctx.actor.id,
+          type: 'point_pending',
+          title: `Your ${getCategoryLabel(input.categoryCode)} submission is pending approval`,
+          entityType: 'achievement_points',
+          entityId: created.id,
+        },
+        db,
+      )
+
+      // Notify team leaders for approval
+      if (targetUser.teamId) {
+        const teamLeaders = await db
+          .select({ id: users.id })
+          .from(users)
+          .where(
+            and(
+              eq(users.teamId, targetUser.teamId),
+              eq(users.role, 'leader'),
+              eq(users.isActive, true),
+            ),
+          )
+
+        for (const leader of teamLeaders) {
+          await createNotification(
+            {
+              branchId: ctx.actor.branchId,
+              userId: leader.id,
+              type: 'point_needs_approval',
+              title: `${ctx.actor.name} submitted ${getCategoryLabel(input.categoryCode)} — needs your approval`,
+              entityType: 'achievement_points',
+              entityId: created.id,
+            },
+            db,
+          )
+        }
+      }
+    } else if (!isSelfSubmission) {
+      // Notify the target user about the point they received
+      await createNotification(
+        {
+          branchId: ctx.actor.branchId,
+          userId: input.userId,
+          type: 'point_received',
+          title: `You received ${input.points} ${getCategoryLabel(input.categoryCode)} from ${ctx.actor.name}`,
+          entityType: 'achievement_points',
+          entityId: created.id,
+        },
+        db,
+      )
+    }
+
+    return { ...created, categoryCode: input.categoryCode, status }
+  })
 }
 
 export async function listPoints(input: ListPointsInput, ctx: ServiceContext) {
-  const { rows, total } = await pointsRepo.listPoints(
-    {
-      page: input.page,
-      limit: input.limit,
-      categoryCode: input.categoryCode,
-      status: input.status,
-      userId: input.userId,
-      teamId: input.teamId,
-      search: input.search,
-      submittedBy: input.submittedBy,
-      dateFrom: input.dateFrom,
-      dateTo: input.dateTo,
-    },
-    ctx.tx,
+  const { rows, total } = await withRLS(ctx.actor, (db) =>
+    pointsRepo.listPoints(
+      {
+        page: input.page,
+        limit: input.limit,
+        categoryCode: input.categoryCode,
+        status: input.status,
+        userId: input.userId,
+        teamId: input.teamId,
+        search: input.search,
+        submittedBy: input.submittedBy,
+        dateFrom: input.dateFrom,
+        dateTo: input.dateTo,
+      },
+      db,
+    ),
   )
 
   return {
@@ -194,31 +194,32 @@ export async function listPoints(input: ListPointsInput, ctx: ServiceContext) {
 }
 
 export async function getPointById(id: string, ctx: ServiceContext) {
-  const result = await pointsRepo.getPointWithDetails(id, ctx.tx)
-  if (!result) {
-    throw new PointNotFoundError(id)
-  }
+  return withRLS(ctx.actor, async (db) => {
+    const result = await pointsRepo.getPointWithDetails(id, db)
+    if (!result) {
+      throw new PointNotFoundError(id)
+    }
 
-  // Also fetch submitter info
-  const db = getDb(ctx.tx)
-  const [submitter] = await db
-    .select({
-      id: users.id,
-      name: users.name,
-      email: users.email,
-      role: users.role,
-      avatarUrl: users.avatarUrl,
-    })
-    .from(users)
-    .where(eq(users.id, result.point.submittedBy))
-    .limit(1)
+    // Also fetch submitter info
+    const [submitter] = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        role: users.role,
+        avatarUrl: users.avatarUrl,
+      })
+      .from(users)
+      .where(eq(users.id, result.point.submittedBy))
+      .limit(1)
 
-  return {
-    ...result.point,
-    category: result.category,
-    user: result.user,
-    submitter: submitter ?? null,
-  }
+    return {
+      ...result.point,
+      category: result.category,
+      user: result.user,
+      submitter: submitter ?? null,
+    }
+  })
 }
 
 function resolveInitialStatus(
