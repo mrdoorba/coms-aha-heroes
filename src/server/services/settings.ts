@@ -1,6 +1,7 @@
 import * as settingsRepo from '../repositories/settings'
 import type { AuthUser } from '../middleware/auth'
 import { withRLS } from '../repositories/base'
+import { invalidatePointImpactCache } from './settings-cache'
 import type { UpdateSettingInput } from '~/shared/schemas/settings'
 
 type ServiceContext = {
@@ -19,9 +20,11 @@ export async function updateSetting(input: UpdateSettingInput, ctx: ServiceConte
   if (ctx.actor.role !== 'admin') {
     throw new InsufficientRoleError()
   }
-  return withRLS(ctx.actor, (db) =>
+  const result = await withRLS(ctx.actor, (db) =>
     settingsRepo.upsertSetting(input.key, input.value, ctx.actor.id, db),
   )
+  invalidatePointImpactCache()
+  return result
 }
 
 export class InsufficientRoleError extends Error {

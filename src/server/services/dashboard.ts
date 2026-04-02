@@ -1,7 +1,8 @@
 import { eq, and, desc, count } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
-import { pointSummaries, systemSettings, achievementPoints, pointCategories, users } from '~/db/schema'
+import { pointSummaries, achievementPoints, pointCategories, users } from '~/db/schema'
 import { withRLS } from '../repositories/base'
+import { getPointImpactSettings } from './settings-cache'
 import type { AuthUser } from '../middleware/auth'
 
 type ServiceContext = {
@@ -30,14 +31,9 @@ export type ActivityItem = {
 }
 
 export async function getSummary(ctx: ServiceContext): Promise<DashboardSummary> {
-  return withRLS(ctx.actor, async (db) => {
-    const [bintangSetting, penaltiSetting] = await Promise.all([
-      db.select({ value: systemSettings.value }).from(systemSettings).where(eq(systemSettings.key, 'bintang_point_impact')).limit(1),
-      db.select({ value: systemSettings.value }).from(systemSettings).where(eq(systemSettings.key, 'penalti_point_impact')).limit(1),
-    ])
+  const { bintangPointImpact, penaltiPointImpact } = await getPointImpactSettings()
 
-    const bintangImpact = (bintangSetting[0]?.value as number) ?? 10
-    const penaltiImpact = (penaltiSetting[0]?.value as number) ?? 5
+  return withRLS(ctx.actor, async (db) => {
 
     const summaryRows = await db
       .select({
@@ -57,7 +53,7 @@ export async function getSummary(ctx: ServiceContext): Promise<DashboardSummary>
     const redeemedTotal = summary?.redeemedTotal ?? 0
 
     const poinAhaBalance =
-      directPoinAha + bintangCount * bintangImpact - penaltiPointsSum * penaltiImpact - redeemedTotal
+      directPoinAha + bintangCount * bintangPointImpact - penaltiPointsSum * penaltiPointImpact - redeemedTotal
 
     const pendingCount = await getPendingCount(ctx, db)
 
