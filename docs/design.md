@@ -326,4 +326,34 @@ Create a complete mobile-first PWA web application called "AHA HEROES" — an in
 
 ## Tech Context
 
-This will be built with TanStack Start v1, TanStack Router, TypeScript, Tailwind CSS 4 (via @tailwindcss/vite), and shadcn/ui components. Hono embedded for API routes. Paraglide JS for i18n (ID/EN/TH). Design with Tailwind utility classes in mind. Mobile-first responsive. PWA installable (manual manifest + Workbox).
+Built with TanStack Start v1, TanStack Router, TypeScript, Tailwind CSS 4 (via @tailwindcss/vite), and shadcn/ui components. Elysia embedded for API routes. Paraglide JS for i18n (ID/EN/TH). Design with Tailwind utility classes in mind. Mobile-first responsive. PWA installable (manual manifest + Workbox).
+
+### Implementation Status
+
+| Screen | Status | Notes |
+|--------|--------|-------|
+| Login | Done | Multi-language, email/password + Google OAuth |
+| Force Change Password | Not started | |
+| Forgot Password | Not started | No email provider configured yet |
+| Dashboard | Done | Summary cards, recent activity, quick actions, mini leaderboard |
+| Points List | Done | Tabbed by category, filterable by status |
+| Submit Bintang | Done | |
+| Submit Penalti | Done | KITTA categories, violation levels |
+| Submit Poin AHA | Done | |
+| Point Detail | Done | Actions contextual by role |
+| Challenge Modal | Done | |
+| Appeal Modal | Done | |
+| Resolve Modal | Done | |
+| Leaderboard | Done | Bintang + Poin AHA tabs, team filter |
+| Rewards Catalog | Done | HR/Admin CRUD |
+| Redeem Points | Done | Balance check |
+| Redemptions List | Done | Tabs: My Requests / Pending Approval |
+| Notifications | Not started | |
+| User Profile | Not started | |
+| User Management | Done | Data table with search, filters, bulk actions |
+| Team Management | Done | |
+| Admin Settings | Done | Point impact values |
+| Audit Log | Done | Filterable data table |
+| Reports Dashboard | Done | Summary cards, by-category bars, by-team bars, submissions over time chart (no Recharts — custom bar charts) |
+| 404 Page | Not started | |
+| Offline Indicator | Not started | |

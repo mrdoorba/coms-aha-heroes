@@ -1,8 +1,8 @@
 # AHA HEROES - Architecture Document
 
-> **Status:** DRAFT - Under Refinement
-> **Last Updated:** 2026-03-24
-> **Version:** 0.9.0
+> **Status:** Production — deployed and seeded
+> **Last Updated:** 2026-04-01
+> **Version:** 1.0.0
 
 ---
 
@@ -24,6 +24,22 @@
 14. [Implementation Roadmap](#14-implementation-roadmap)
 15. [Decision Log](#15-decision-log)
 16. [Open Questions](#16-open-questions)
+
+---
+
+## Production Deployment
+
+| Property | Value |
+|----------|-------|
+| **URL** | `https://coms-aha-heroes-app-45tyczfska-et.a.run.app` |
+| **GCP Project** | `fbi-dev-484410` |
+| **Region** | `asia-southeast2` (Jakarta) |
+| **Cloud SQL Instance** | `fbi-dev-484410:asia-southeast2:coms-aha-heroes-db` |
+| **Production Database** | `coms_aha_heroes_production` |
+| **Staging Database** | `coms_aha_heroes_staging` |
+| **Container Runtime** | Bun (oven/bun:1-slim), Port 8080 |
+| **Deployed** | 2026-04-01 |
+| **Seeded** | 2 branches, 4 teams, 20 users, 50 points, 5 rewards. See `docs/seed-users.md` for login credentials. |
 
 ---
 
@@ -231,18 +247,18 @@ Balance = (5 + 3) + (3 × 10) - (2 × 5) - 20 = 8 + 30 - 10 - 20 = 8
 | **TanStack Table** | v8 | Headless, type-safe data tables with sorting, filtering, pagination | AG Grid (paid license), MUI DataGrid (MUI lock-in) |
 | **TanStack Query** | v5 | Server state management, caching, background refetching | SWR (less features), raw fetch |
 | **Zustand** | latest | Minimal client-side global state (theme, sidebar) | Redux (boilerplate), Jotai (overkill for this scope) |
-| **Recharts** | v2 | Composable charting library (line, bar, pie, donut) built on D3 + React. Used for Reports Dashboard | Chart.js (imperative API), Nivo (heavier), Victory (less maintained) |
+| ~~Recharts~~ | — | **Not used.** Reports Dashboard uses custom bar charts built with Tailwind CSS instead. | Chart.js, Nivo, Victory |
 
 ### Backend
 
 | Technology | Version | Purpose | Chosen Over |
 |-----------|---------|---------|-------------|
-| **Hono** | >=4.12.4 | Ultra-lightweight API framework (14KB), Web Standards, middleware-first. Embedded in TanStack Start via API wildcard route (`/api/$`). Pin >=4.12.4 to avoid CVE-2026-29045 (serveStatic auth bypass) | Express (legacy), FastAPI (two-language stack), NestJS (heavy), TanStack Start server functions alone (no streaming uploads, no OpenAPI, no external API testing) |
+| **Elysia** | ^1.3.0 | Bun-native API framework, end-to-end type safety via Eden Treaty, middleware-first. Embedded in TanStack Start via API wildcard route (`/api/$`). | Hono (switched to Elysia for Eden Treaty type safety + Bun-native performance), Express (legacy), FastAPI (two-language stack), NestJS (heavy) |
 | **TypeScript** | 6.0 | Same language as frontend = shared types, schemas, constants | Python (no shared types with frontend) |
 | **Drizzle ORM** | 0.45.x | Type-safe SQL, zero-overhead (compiles to raw SQL), PostgreSQL-native. Pin to stable 0.45.x — v1.0 beta has breaking changes | Prisma (query engine binary, slower cold starts), SQLAlchemy (different language) |
-| **Resend** | latest | Transactional email (auth only: password reset, future invites). Free tier: 100 emails/day | SendGrid (overkill), SES (complex setup) |
+| ~~Resend~~ | — | **Not yet implemented.** Planned for transactional email (password reset, future invites). No email provider configured. | — |
 | **Zod** | latest | Runtime validation + static type inference, shared with frontend | Joi (no TS inference), Pydantic (Python only) |
-| **Hono RPC** | latest | End-to-end type safety between backend routes and frontend client. TanStack Start server functions used selectively for SSR loaders and simple component-colocated mutations | tRPC (heavier), GraphQL (overkill for CRUD-heavy app), OpenAPI codegen (extra step) |
+| **Eden Treaty** | latest | End-to-end type safety between Elysia backend and frontend client. TanStack Start server functions used selectively for SSR loaders and simple component-colocated mutations | Hono RPC (switched to Elysia/Eden), tRPC (heavier), GraphQL (overkill for CRUD-heavy app) |
 | **Better Auth** | >=1.5.6 | Self-hosted auth with built-in RBAC plugin, sessions in your DB. v1.5 adds `dash()` plugin for auth-specific audit logs (sign-ups, sign-ins, password changes) — complements but does not replace our custom `audit_logs` table for business events. TanStack Start integration via `tanstackStartCookies` plugin (must be last plugin). Auth checks via `beforeLoad` route guards + server function middleware (cache sessions with TanStack Query `staleTime` to avoid per-navigation round-trips) | NextAuth (limited RBAC), Firebase Auth (weak RBAC, vendor lock), Clerk (SaaS cost) |
 
 ### Database
@@ -283,11 +299,10 @@ Balance = (5 + 3) + (3 × 10) - (2 × 5) - 20 = 8 + 30 - 10 - 20 = 8
 
 ### Transactional Email (Auth Only)
 
-- **Resend** (free tier: 100 emails/day) — used only for auth transactional emails:
-  - Password reset links
-  - (Future) Account invite emails
+- **Not yet implemented** — no email provider configured
+- Planned for: password reset links, account invite emails
 - Not used for notifications — those remain in-app only
-- Resend API key stored in Secret Manager
+- Will need API key stored in Secret Manager when implemented
 
 ---
 
@@ -305,14 +320,14 @@ All GCP resources use the prefix `coms-aha-heroes-`.
 
 | Service | Resource Name | Purpose | Spec |
 |---------|--------------|---------|------|
-| **Cloud Run** | `coms-aha-heroes-app` | TanStack Start + Hono (single service) | 1 vCPU, 512MB, min 0 instances |
+| **Cloud Run** | `coms-aha-heroes-app` | TanStack Start + Elysia (single service) | 1 vCPU, 512MB, min 0 instances |
 | **Cloud SQL** | `coms-aha-heroes-db` | PostgreSQL 18 (2 databases: `coms_aha_heroes_production` + `coms_aha_heroes_staging`) | db-f1-micro, 10GB SSD |
 | **Cloud Storage** | `coms-aha-heroes-uploads` | File uploads (achievement evidence) | Standard storage |
 | **Cloud Storage** | `coms-aha-heroes-exports` | Cached export files | Standard storage |
 | **Cloud Storage** | `coms-aha-heroes-tfstate` | OpenTofu remote state | Standard storage |
 | **Secret Manager** | `coms-aha-heroes-*` | DB credentials, OAuth secrets, Resend API key | < 10 secrets |
 | **Cloud Scheduler** | `coms-aha-heroes-*` | Scheduled Sheets exports, report generation | 2-3 jobs |
-| **Artifact Registry** | `coms-aha-heroes-registry` | Container images for Cloud Run | asia-southeast1 |
+| **Artifact Registry** | `coms-aha-heroes-registry` | Container images for Cloud Run | asia-southeast2 |
 | **IAM** | `coms-aha-heroes-sa-*` | Service accounts for app + Sheets API | Free |
 | **Cloud Logging** | Automatic | Application logs from Cloud Run | Included |
 | **Cloud Monitoring** | `coms-aha-heroes-*` | Uptime checks + alert policies | Basic tier (free) |
@@ -347,7 +362,7 @@ All GCP resources use the prefix `coms-aha-heroes-`.
 
 ### Region
 
-**asia-southeast1 (Jakarta)** — Closest to Indonesia (majority of users). Acceptable latency (~30-40ms) to Thailand.
+**asia-southeast2 (Jakarta)** — Closest to Indonesia (majority of users). Acceptable latency (~30-40ms) to Thailand.
 
 ### Resource Cleanup Policies
 
@@ -370,16 +385,16 @@ Old revisions, images, and files accumulate over time. All cleanup is automated 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                GCP Project: fbi-dev-484410 (Single Billing)             │
-│                        Region: asia-southeast1                          │
+│                        Region: asia-southeast2                          │
 │                                                                         │
 │  ┌──────────────┐       ┌──────────────────────────────────────────┐   │
 │  │  Cloud CDN /  │       │     Cloud Run: coms-aha-heroes-app        │   │
-│  │  Cloud LB     │──────>│     (asia-southeast1)                    │   │
+│  │  Cloud LB     │──────>│     (asia-southeast2)                    │   │
 │  │  (HTTPS)      │       │                                          │   │
 │  └──────────────┘       │  ┌──────────────────────────────────┐    │   │
-│                          │  │  TanStack Start v1 + Hono        │    │   │
+│                          │  │  TanStack Start v1 + Elysia      │    │   │
 │                          │  │  (SSR + API routes)              │    │   │
-│                          │  │  Single container, Port 3000     │    │   │
+│                          │  │  Single container, Port 8080     │    │   │
 │                          │  └──────────────┬───────────────────┘    │   │
 │                          └─────────────────┼───────────────────────┘   │
 │                                             │                          │
@@ -419,7 +434,7 @@ Old revisions, images, and files accumulate over time. All cleanup is automated 
 
 ```
 coms_aha_heroes/
-├── app/                            # TanStack Start application
+├── src/
 │   ├── routes/                     # File-based routing (TanStack Router)
 │   │   ├── __root.tsx              # Root layout (html, body, providers)
 │   │   ├── _authed.tsx             # Auth layout (middleware: session check)
@@ -437,8 +452,6 @@ coms_aha_heroes/
 │   │   │   │   ├── index.tsx
 │   │   │   │   └── $id.redeem.tsx
 │   │   │   ├── redemptions.tsx
-│   │   │   ├── notifications.tsx
-│   │   │   ├── profile.tsx
 │   │   │   ├── users/              # HR/Admin only
 │   │   │   │   └── index.tsx
 │   │   │   ├── teams/              # HR/Admin only
@@ -447,40 +460,37 @@ coms_aha_heroes/
 │   │   │   ├── settings.tsx        # Admin only
 │   │   │   └── admin/
 │   │   │       └── audit-log.tsx   # Admin/HR only
+│   │   ├── api/
+│   │   │   └── $.ts                # Elysia app mounted via API catch-all route
 │   │   ├── login.tsx
-│   │   ├── change-password.tsx
-│   │   └── forgot-password.tsx
-│   ├── api.ts                      # Hono app mounted via API wildcard route
-│   ├── client.tsx                  # Client entry
-│   ├── router.tsx                  # Router configuration
-│   └── ssr.tsx                     # SSR entry
-│
-├── src/
+│   │   └── index.tsx               # Redirects to /dashboard
+│   │
 │   ├── components/                 # UI components (shadcn/ui)
 │   │   ├── ui/                     # shadcn/ui primitives
-│   │   └── ...                     # App-specific components
-│   ├── lib/                        # Utilities, api client (Hono RPC)
-│   ├── server/                     # Backend (Hono)
-│   │   ├── routes/                 # Hono route handlers
+│   │   ├── dashboard/              # Dashboard-specific components
+│   │   ├── points/                 # Point-related components
+│   │   ├── layout/                 # Sidebar, header, bottom nav
+│   │   └── ...                     # Other app-specific components
+│   ├── lib/                        # Utilities, api client (Eden Treaty)
+│   ├── server/                     # Backend (Elysia)
+│   │   ├── routes/                 # Elysia route handlers
 │   │   ├── services/               # Business logic
 │   │   ├── repositories/           # Data access (Drizzle)
-│   │   ├── middleware/             # auth, branch guard, team, RLS
-│   │   ├── jobs/                   # Sheets sync, scheduled tasks
-│   │   └── index.ts                # Hono app entry
+│   │   ├── functions/              # TanStack server functions (SSR loaders)
+│   │   ├── middleware/             # auth, branch guard, team, RLS, RBAC
+│   │   ├── auth.ts                 # Better Auth configuration
+│   │   └── index.ts                # Elysia app entry
 │   ├── db/                         # Drizzle schema + migrations
 │   │   ├── schema/                 # Table definitions
 │   │   ├── migrations/
-│   │   └── seed/
-│   └── shared/                     # Shared types, Zod schemas, constants
-│       ├── schemas/                # Zod validation schemas
-│       ├── types/                  # TypeScript interfaces
-│       └── constants/              # Enums, config values
+│   │   └── seed/                   # base.ts + dev.ts + auth.ts
+│   └── shared/                     # Shared types, constants
+│       └── constants/              # Roles, enums
 │
-├── src/paraglide/                  # Paraglide JS (generated + messages)
-│   └── messages/
-│       ├── en.json
-│       ├── id.json
-│       └── th.json
+├── messages/                       # Paraglide JS message files
+│   ├── en.json
+│   ├── id.json
+│   └── th.json
 │
 ├── project.inlang/                 # Paraglide / inlang config
 │   └── settings.json
@@ -1325,8 +1335,8 @@ Users may upload a file via signed URL but never submit the form. These orphaned
 
 - Self-hosted — all session data stored in our PostgreSQL
 - Built-in RBAC plugin for role management
-- Phase 1: email/password only
-- Phase 3: add Google OAuth
+- Email/password login
+- Google OAuth login (implemented)
 - TypeScript-native, runs on any runtime
 
 ### Session Configuration
@@ -1426,9 +1436,9 @@ Request
 
 ## 8. API Design
 
-### Approach: REST + Hono RPC
+### Approach: REST + Eden Treaty
 
-RESTful resource naming with Hono RPC client for end-to-end TypeScript type safety. No code generation needed.
+RESTful resource naming with Elysia Eden Treaty client for end-to-end TypeScript type safety. No code generation needed.
 
 ### Endpoints
 
@@ -1822,7 +1832,7 @@ PR opened / updated
   ├── 4. Lint (ESLint + Prettier)
   ├── 5. Type check (tsc --noEmit)
   ├── 6. Unit tests + integration tests
-  ├── 7. Build (vinxi build) — catches build errors early
+  ├── 7. Build (vite build) — catches build errors early
   └── 8. Post results as PR comment
 
   ❌ If ANY step fails → PR cannot be merged (branch protection)
@@ -1920,7 +1930,7 @@ All changes merge via PR → CI runs → review → merge → auto-deploy to sta
 | PostgreSQL (not Firestore) | Can add `pgvector` extension without migrating |
 | `metadata JSONB` column | Store AI tags, classification scores without schema change |
 | `audit_logs` table | Training data for approval pattern learning |
-| Hono middleware chain | Insert AI middleware (auto-classify) without changing routes |
+| Elysia middleware chain | Insert AI middleware (auto-classify) without changing routes |
 | Project structure | Add separate `ai-worker/` Cloud Run service when needed |
 | GCP hosting | Vertex AI is native, same VPC, no cross-cloud networking |
 
@@ -1947,7 +1957,7 @@ All changes merge via PR → CI runs → review → merge → auto-deploy to sta
 
 | Week | Deliverables |
 |------|-------------|
-| 1 | Project setup (TanStack Start + Hono + Drizzle + docker-compose), **integration spike** (auth + one protected route + Hono API + Paraglide locale switch — validates stack compatibility), OpenTofu infra provisioning, Cloud SQL + Drizzle schema (all tables), CI/CD pipeline, PWA manifest + service worker, seed scripts (base + dev) |
+| 1 | Project setup (TanStack Start + Elysia + Drizzle + docker-compose), **integration spike** (auth + one protected route + Elysia API + Paraglide locale switch — validates stack compatibility), OpenTofu infra provisioning, Cloud SQL + Drizzle schema (all tables), CI/CD pipeline, PWA manifest + service worker, seed scripts (base + dev) |
 | 2 | Better Auth integration (email/password), RBAC middleware for 4 roles (admin/hr/leader/employee), branch guard, team middleware, RLS policies for all tables |
 | 3 | Users CRUD, Teams CRUD, Point Categories setup (4 types seeded), Achievement Points submission (immediate-active for leader/hr, pending for employee self-submit) |
 | 4 | Leader approval of self-submissions, basic leaderboard (Bintang + Poin AHA, filterable by team), mobile-responsive layout with bottom navigation, deploy to Cloud Run staging |
@@ -1991,18 +2001,18 @@ All changes merge via PR → CI runs → review → merge → auto-deploy to sta
 
 | # | Decision | Chosen | Rejected | Rationale |
 |---|----------|--------|----------|-----------|
-| 1 | Frontend framework | TanStack Start v1 | Next.js 16, Nuxt | TanStack Start now stable v1 with official Paraglide i18n + shadcn/ui support; type-safe routing + search params; lighter runtime; Hono embedded via API wildcard route. Previously chose Next.js when Start was beta — revisited 2026-03-26 |
-| 2 | Backend framework | Hono (TypeScript) | FastAPI (Python), Express, NestJS | Shared language with frontend = shared types/schemas; fastest cold starts on Cloud Run; Hono RPC for e2e type safety |
+| 1 | Frontend framework | TanStack Start v1 | Next.js 16, Nuxt | TanStack Start now stable v1 with official Paraglide i18n + shadcn/ui support; type-safe routing + search params; lighter runtime; Elysia embedded via API wildcard route. Previously chose Next.js when Start was beta — revisited 2026-03-26 |
+| 2 | Backend framework | Elysia (TypeScript) | Hono, FastAPI (Python), Express, NestJS | Bun-native with Eden Treaty for e2e type safety; shared language with frontend = shared types/schemas; fastest cold starts on Cloud Run. Switched from Hono for better type inference |
 | 3 | Database | PostgreSQL 18 | MySQL, Firestore, MongoDB | RLS for multi-tenancy, pgvector for future AI, JSONB for flexible metadata, strongest SQL features |
 | 4 | Multi-tenancy | Shared DB + RLS | Separate DBs, Schema-per-tenant | 2 branches doesn't justify operational complexity; RLS enforces isolation at DB level |
 | 5 | Auth | Better Auth | NextAuth, Firebase Auth, Clerk | Self-hosted (data in own DB), TypeScript-native RBAC, no SaaS cost, stays within GCP |
 | 6 | ORM | Drizzle | Prisma, TypeORM, SQLAlchemy | No binary engine (fast cold starts), SQL-level control, type-safe without codegen |
 | 7 | Hosting | Cloud Run (single service) | GKE, App Engine, Compute Engine, Firebase Hosting | Scale-to-zero = cheapest for 100 users; simplest ops; no K8s overhead; single service sufficient at this scale |
 | 8 | i18n | Paraglide JS | next-intl, i18next, Lingui, typesafe-i18n | Official TanStack Start integration with built-in locale routing + SSR middleware; compile-time typed functions (~2KB vs i18next 22KB); ICU via plugin. Previously chose next-intl (Next.js-specific) — revisited 2026-03-26 |
-| 9 | API style | REST + Hono RPC | GraphQL, tRPC | REST is simpler for CRUD-heavy app; Hono RPC gives type safety without GraphQL complexity |
+| 9 | API style | REST + Eden Treaty | GraphQL, tRPC, Hono RPC | REST is simpler for CRUD-heavy app; Elysia Eden Treaty gives type safety without GraphQL complexity |
 | 10 | IaC | OpenTofu | Terraform (BSL license), Pulumi, gcloud CLI scripts | Fully open source (MPL 2.0), same HCL syntax as Terraform, built-in state encryption via GCP KMS, Linux Foundation governance |
 | 11 | Project structure | Single TanStack Start project | Turborepo monorepo, separate repos | Single service = no need for monorepo tooling; simpler DX; split later if needed |
-| 12 | GCP region | asia-southeast1 (Jakarta) | asia-southeast2 (Singapore) | Majority of users in Indonesia; acceptable latency (~30-40ms) to Thailand |
+| 12 | GCP region | asia-southeast2 (Jakarta) | asia-southeast1 (Singapore) | Majority of users in Indonesia; acceptable latency (~30-40ms) to Thailand |
 | 13 | Role system | 4 roles (admin, hr, leader, employee) | 3 roles (super_admin, admin, employee) | Need distinct Leader (team-scoped approval) and HR (branch-scoped resolution) roles; admin is developer-only |
 | 14 | Point activation | Immediate-active (Leader/HR submit) | Approval-first | Reduces friction; challenges/appeals handle disputes after the fact |
 | 15 | Challenge/Appeal model | Separate tables | Single dispute table | Different authorization rules (anyone can challenge, only penalized employee can appeal); clearer data model |
@@ -2033,16 +2043,18 @@ All changes merge via PR → CI runs → review → merge → auto-deploy to sta
 | 40 | Account creation | HR/Admin only (no self-registration) | Self-registration | Internal tool; HR controls who gets access; temp password + force change on first login |
 | 41 | Password reset email | Resend (free tier) | No email, SendGrid, SES | Need email for password reset; Resend free tier (100/day) is sufficient; minimal setup; not used for notifications |
 | 42 | Self-registration removed | No `/auth/register` endpoint | Allow self-registration | Internal HR tool; all accounts created by HR/Admin; prevents unauthorized access |
-| 43 | Backend API integration | Hono embedded in TanStack Start (API wildcard) | Server functions only, separate Hono service | Keep existing Hono middleware chains (auth, RLS, RBAC, uploads) intact; server functions lack streaming uploads + OpenAPI; single container avoids infra complexity. Use server functions selectively for SSR loaders + simple mutations |
+| 43 | Backend API integration | Elysia embedded in TanStack Start (API wildcard) | Server functions only, separate Elysia service | Keep existing Elysia middleware chains (auth, RLS, RBAC, uploads) intact; server functions lack streaming uploads + OpenAPI; single container avoids infra complexity. Use server functions selectively for SSR loaders + simple mutations |
 | 44 | Client state | Keep Zustand | TanStack Store | TanStack Store is pre-1.0 (v0.9); Zustand is stable with persist middleware; client state is minimal (theme, sidebar) — low impact either way |
 | 45 | PWA tooling | Manual (static manifest + Workbox post-build) | vite-plugin-pwa, Serwist | vite-plugin-pwa incompatible with TanStack Start production builds (issue #4988); manual approach is reliable for minimal PWA needs (A2HS + offline indicator) |
 | 46 | Build tooling | Vite (bundled with TanStack Start) | Turbopack (Next.js) | Vite is TanStack Start's bundler; Tailwind via `@tailwindcss/vite`; mature plugin ecosystem |
 | 47 | Challengeable submissions | Penalti only, by Leaders only | Any submission by anyone | Bintang is positive recognition — no reason to dispute. Poin AHA is direct points — same. Only Penalti (negative) warrants a challenge by a Leader. Penalized employees use Appeal instead. Enforced via RLS policy on challenges table |
 | 48 | Locale routing strategy | Cookie-based (no URL prefix) | URL prefix (`/id/dashboard`, `/en/dashboard`) | Internal tool with ~100 users — SEO irrelevant; cookie-based is simpler (no locale segment in every route definition); Paraglide middleware reads `locale_pref` from session → sets cookie → serves correct messages. User switches language via profile dropdown, stored in `users.locale_pref`. |
 | 49 | `system_settings` change auditing | Log to `audit_logs` + confirmation modal | No auditing, simple save | Changing impact values retroactively affects all balances. `PATCH /settings/:key` writes old/new values to `audit_logs` (action: `SETTING_CHANGED`). Admin UI shows confirmation modal: "This will affect N employees' Poin AHA balances. Continue?" where N is count of users with relevant active points. |
-| 50 | Charting library | Recharts v2 | Chart.js, Nivo, Victory | React-native composable API, lightweight, works well with Tailwind. Needed for Reports Dashboard (line/bar/pie/donut charts). |
+| 50 | Charting library | Custom Tailwind CSS charts | Recharts, Chart.js, Nivo, Victory | Reports Dashboard uses simple bar charts built with Tailwind utility classes. No charting library dependency needed for the current visualization requirements. |
 | 51 | Notification delivery | Polling (TanStack Query, 30s interval) | SSE, WebSocket | Simplest approach for ~100 users. Unread count query is indexed. SSE/WebSocket adds infra complexity with no user-perceptible benefit at this scale. |
 | 52 | Orphaned upload cleanup | Accept orphans (Phase 1); lifecycle rule later | Immediate cleanup job | Storage cost negligible at this scale (~$0.02/GB/month). Add Cloud Storage lifecycle rule via OpenTofu if uploads exceed 1GB. |
+| 53 | API framework switch | Elysia | Hono | Switched from Hono to Elysia for Eden Treaty's end-to-end type safety (infers response types directly from route definitions) and Bun-native performance. Same middleware pattern, simpler client integration. |
+| 54 | Google OAuth | Implemented in Phase 1 | Deferred to Phase 3 | Better Auth makes it trivial; Google Workspace already in use by all employees. Implemented via `socialProviders.google` config in Better Auth. |
 
 ---
 
