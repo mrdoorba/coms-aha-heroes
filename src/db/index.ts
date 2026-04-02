@@ -20,6 +20,7 @@ const client = postgres(cleanedUrl, {
   ...(socketDir?.startsWith('/') && {
     path: socketDir + '/.s.PGSQL.5432',
   }),
+  max: Number(process.env.DB_POOL_MAX) || 9,
   idle_timeout: 20,
   connect_timeout: 10,
   max_lifetime: 1800,
