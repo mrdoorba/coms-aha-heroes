@@ -78,6 +78,7 @@ function DashboardPage() {
           iconBg="bg-[#F4C144]/15"
           iconColor="text-[#F4C144]"
           variant="gold"
+          href="/points?category=BINTANG"
         />
         <SummaryCard
           title={m.dashboard_poin_aha_balance()}
@@ -86,6 +87,7 @@ function DashboardPage() {
           iconBg="bg-[#325FEC]/10"
           iconColor="text-[#325FEC]"
           variant="blue"
+          href="/points?category=POIN_AHA"
         />
         <SummaryCard
           title={m.dashboard_penalti_points()}
@@ -94,6 +96,7 @@ function DashboardPage() {
           iconBg="bg-[#6D50B8]/10"
           iconColor="text-[#6D50B8]"
           variant="purple"
+          href="/points?category=PENALTI"
         />
         <SummaryCard
           title={m.dashboard_pending_actions()}
@@ -102,6 +105,7 @@ function DashboardPage() {
           iconBg="bg-[#F4C144]/15"
           iconColor="text-[#F4C144]"
           variant="pending"
+          href="/points?status=pending"
         />
       </div>
 
