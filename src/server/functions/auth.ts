@@ -18,6 +18,7 @@ export const getSessionFn = createServerFn({ method: 'GET' }).handler(
     const [appUser] = await db
       .select({
         id: users.id,
+        name: users.name,
         role: users.role,
         mustChangePassword: users.mustChangePassword,
         branchId: users.branchId,

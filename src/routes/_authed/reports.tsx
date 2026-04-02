@@ -305,7 +305,7 @@ function ReportsPage() {
               <div className="flex items-end gap-1.5 min-w-0" style={{ minWidth: `${overTime.length * 36}px` }}>
                 {overTime.map((point) => {
                   const heightPct = Math.max(8, Math.round((point.count / maxTimeCount) * 100))
-                  const dateStr = point.date instanceof Date ? point.date.toISOString().slice(0, 10) : String(point.date)
+                  const dateStr = String(point.date)
                   const shortDate = dateStr.slice(5) // MM-DD
                   return (
                     <div key={dateStr} className="flex flex-1 flex-col items-center gap-1">

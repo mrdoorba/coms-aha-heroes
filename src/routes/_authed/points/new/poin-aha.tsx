@@ -142,11 +142,6 @@ function PoinAhaForm() {
           />
         </div>
 
-        {isSelfSubmission && userRole === 'employee' && (
-          <p className="text-sm text-muted-foreground bg-blue-50 border border-blue-200 rounded-lg p-3">
-            {m.form_pending_approval()}
-          </p>
-        )}
 
         {error && (
           <p className="text-sm text-destructive">{error}</p>
