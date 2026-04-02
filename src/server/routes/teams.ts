@@ -11,12 +11,8 @@ import type { AuthUser } from '../middleware/auth'
 type Ctx = { authUser: AuthUser }
 
 export const teamsRoute = new Elysia({ prefix: '/teams' })
-  // All team routes require admin or hr
-  .onBeforeHandle((ctx) => {
-    requireRole('admin', 'hr')(ctx as any)
-  })
 
-  // GET /teams — list with search + pagination
+  // GET /teams — list with search + pagination (all authenticated users)
   .get('/', async ({ query, ...c }) => {
     const { authUser: actor } = c as unknown as Ctx
 
@@ -49,8 +45,9 @@ export const teamsRoute = new Elysia({ prefix: '/teams' })
     }
   })
 
-  // POST /teams — create new team
+  // POST /teams — create new team (admin/hr only)
   .post('/', async ({ body, headers, set, ...c }) => {
+    requireRole('admin', 'hr')(c as any)
     const { authUser: actor } = c as unknown as Ctx
     const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
@@ -59,8 +56,9 @@ export const teamsRoute = new Elysia({ prefix: '/teams' })
     return { success: true, data: created, error: null }
   }, { body: createTeamSchema })
 
-  // PATCH /teams/:id — update team
+  // PATCH /teams/:id — update team (admin/hr only)
   .patch('/:id', async ({ params, body, headers, set, ...c }) => {
+    requireRole('admin', 'hr')(c as any)
     const { authUser: actor } = c as unknown as Ctx
     const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
