@@ -53,3 +53,4 @@ infra/*.tfstate.backup
 # Logs
 *.log
 npm-debug.log*
+.gstack/
