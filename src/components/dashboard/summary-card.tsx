@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Link } from '@tanstack/react-router'
 import { cn } from '~/lib/utils'
 
 type SummaryCardProps = {
@@ -8,6 +9,7 @@ type SummaryCardProps = {
   iconBg: string
   iconColor: string
   variant?: 'gold' | 'blue' | 'purple' | 'pending'
+  href?: string
 }
 
 const VARIANT_STYLES = {
@@ -37,16 +39,16 @@ const VARIANT_STYLES = {
   },
 }
 
-export function SummaryCard({ title, value, icon, variant = 'blue' }: SummaryCardProps) {
+export function SummaryCard({ title, value, icon, variant = 'blue', href }: SummaryCardProps) {
   const styles = VARIANT_STYLES[variant]
   const isColoredTop = variant !== 'pending'
 
-  return (
-    <div className="group overflow-hidden rounded-xl bg-card shadow-card transition-all duration-200 hover:shadow-modal hover:-translate-y-0.5">
-      {/* Gradient header */}
+  const content = (
+    <>
+      {/* Gradient header — icon + title stacked */}
       <div
         className={cn(
-          'flex items-center gap-2.5 px-4 py-3 bg-gradient-to-r',
+          'flex flex-col items-start gap-1.5 px-4 py-3 bg-gradient-to-r',
           styles.gradient,
         )}
       >
@@ -60,7 +62,7 @@ export function SummaryCard({ title, value, icon, variant = 'blue' }: SummaryCar
         </div>
         <p
           className={cn(
-            'truncate text-xs font-semibold',
+            'text-xs font-semibold leading-tight',
             isColoredTop ? 'text-white/90' : 'text-[#1D388B]',
           )}
         >
@@ -73,6 +75,18 @@ export function SummaryCard({ title, value, icon, variant = 'blue' }: SummaryCar
           {value.toLocaleString()}
         </p>
       </div>
-    </div>
+    </>
   )
+
+  const className = 'group overflow-hidden rounded-xl bg-card shadow-card transition-all duration-200 hover:shadow-modal hover:-translate-y-0.5'
+
+  if (href) {
+    return (
+      <Link to={href} className={cn(className, 'block')}>
+        {content}
+      </Link>
+    )
+  }
+
+  return <div className={className}>{content}</div>
 }

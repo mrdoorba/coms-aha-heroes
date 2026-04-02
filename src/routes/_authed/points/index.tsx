@@ -46,12 +46,14 @@ type PointRow = {
 type PointsSearch = {
   status?: string
   q?: string
+  category?: string
 }
 
 export const Route = createFileRoute('/_authed/points/')({
   validateSearch: (search: Record<string, unknown>): PointsSearch => ({
     status: typeof search.status === 'string' ? search.status : undefined,
     q: typeof search.q === 'string' ? search.q : undefined,
+    category: typeof search.category === 'string' ? search.category : undefined,
   }),
   loader: async ({ deps }: { deps?: unknown }) => {
     const data = await listPointsFn({ data: { page: 1, limit: 20 } })
@@ -69,16 +71,20 @@ function PointsPage() {
   ]
 
   const initialData = Route.useLoaderData()
-  const { status: searchStatus } = Route.useSearch()
+  const { status: searchStatus, category: searchCategory } = Route.useSearch()
   const { session } = Route.useRouteContext()
   const userRole = (session?.appUser?.role ?? 'employee') as UserRole
 
   const bulk = useBulkSelection()
 
   const initialStatus = searchStatus ?? ''
+  const validCategories = ['BINTANG', 'PENALTI', 'POIN_AHA'] as const
+  const initialCategory = validCategories.includes(searchCategory as any)
+    ? (searchCategory as PointCategoryCode)
+    : 'ALL'
   const [points, setPoints] = useState<PointRow[]>(initialData.points as PointRow[])
   const [meta, setMeta] = useState(initialData.meta)
-  const [activeTab, setActiveTab] = useState<PointCategoryCode | 'ALL'>('ALL')
+  const [activeTab, setActiveTab] = useState<PointCategoryCode | 'ALL'>(initialCategory)
   const [statusFilter, setStatusFilter] = useState<string>(initialStatus)
   const [searchFilter, setSearchFilter] = useState('')
   const [dateFrom, setDateFrom] = useState('')
@@ -88,8 +94,8 @@ function PointsPage() {
   const [showTypeSelector, setShowTypeSelector] = useState(false)
 
   useEffect(() => {
-    if (initialStatus) {
-      fetchPoints({ status: initialStatus, pg: 1 })
+    if (initialStatus || initialCategory !== 'ALL') {
+      fetchPoints({ status: initialStatus, category: initialCategory, pg: 1 })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
