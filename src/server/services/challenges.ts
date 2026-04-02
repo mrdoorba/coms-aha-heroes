@@ -5,13 +5,11 @@ import * as pointsRepo from '../repositories/points'
 import { writeAuditLog } from './audit'
 import { createNotification } from './notifications'
 import type { AuthUser } from '../middleware/auth'
-import type { DbClient } from '../repositories/base'
-import { getDb } from '../repositories/base'
+import { withRLS } from '../repositories/base'
 import type { FileChallengeInput, ResolveChallengeInput, ListChallengesInput } from '~/shared/schemas/challenges'
 
 type ServiceContext = {
   readonly actor: AuthUser
-  readonly tx: DbClient
   readonly ipAddress?: string
 }
 
@@ -20,99 +18,100 @@ export async function fileChallenge(
   input: FileChallengeInput,
   ctx: ServiceContext,
 ) {
-  const result = await pointsRepo.getPointWithDetails(achievementId, ctx.tx)
-  if (!result) throw new AchievementNotFoundError(achievementId)
+  return withRLS(ctx.actor, async (db) => {
+    const result = await pointsRepo.getPointWithDetails(achievementId, db)
+    if (!result) throw new AchievementNotFoundError(achievementId)
 
-  const { point, category, user: penalizedUser } = result
+    const { point, category, user: penalizedUser } = result
 
-  // Only Penalti can be challenged
-  if (category.code !== 'PENALTI') throw new NotPenaltiError()
+    // Only Penalti can be challenged
+    if (category.code !== 'PENALTI') throw new NotPenaltiError()
 
-  // Only leaders can file challenges
-  if (ctx.actor.role !== 'leader' && ctx.actor.role !== 'admin' && ctx.actor.role !== 'hr') {
-    throw new InsufficientRoleError()
-  }
+    // Only leaders can file challenges
+    if (ctx.actor.role !== 'leader' && ctx.actor.role !== 'admin' && ctx.actor.role !== 'hr') {
+      throw new InsufficientRoleError()
+    }
 
-  // Cannot challenge your own penalty
-  if (ctx.actor.id === penalizedUser.id) {
-    throw new CannotChallengeSelfError()
-  }
+    // Cannot challenge your own penalty
+    if (ctx.actor.id === penalizedUser.id) {
+      throw new CannotChallengeSelfError()
+    }
 
-  const created = await challengesRepo.create(
-    {
-      branchId: ctx.actor.branchId,
-      achievementId,
-      challengerId: ctx.actor.id,
-      reason: input.reason,
-      status: 'open',
-    },
-    ctx.tx,
-  )
-
-  // Freeze the point during challenge
-  await pointsRepo.updatePointStatus(
-    achievementId,
-    { status: 'challenged' },
-    ctx.tx,
-  )
-
-  await writeAuditLog(
-    {
-      actor: ctx.actor,
-      action: 'CHALLENGE_FILED',
-      entityType: 'challenges',
-      entityId: created.id,
-      newValue: {
+    const created = await challengesRepo.create(
+      {
+        branchId: ctx.actor.branchId,
         achievementId,
+        challengerId: ctx.actor.id,
         reason: input.reason,
-        penalizedUserId: penalizedUser.id,
+        status: 'open',
       },
-      ipAddress: ctx.ipAddress,
-    },
-    ctx.tx,
-  )
-
-  // Notify penalized user
-  await createNotification(
-    {
-      branchId: ctx.actor.branchId,
-      userId: penalizedUser.id,
-      type: 'challenge_filed',
-      title: `Your Penalti has been challenged by ${ctx.actor.name}`,
-      entityType: 'challenges',
-      entityId: created.id,
-    },
-    ctx.tx,
-  )
-
-  // Notify HR users in branch for resolution
-  const db = getDb(ctx.tx)
-  const hrUsers = await db
-    .select({ id: users.id })
-    .from(users)
-    .where(
-      and(
-        eq(users.branchId, ctx.actor.branchId),
-        eq(users.role, 'hr'),
-        eq(users.isActive, true),
-      ),
+      db,
     )
 
-  for (const hr of hrUsers) {
+    // Freeze the point during challenge
+    await pointsRepo.updatePointStatus(
+      achievementId,
+      { status: 'challenged' },
+      db,
+    )
+
+    await writeAuditLog(
+      {
+        actor: ctx.actor,
+        action: 'CHALLENGE_FILED',
+        entityType: 'challenges',
+        entityId: created.id,
+        newValue: {
+          achievementId,
+          reason: input.reason,
+          penalizedUserId: penalizedUser.id,
+        },
+        ipAddress: ctx.ipAddress,
+      },
+      db,
+    )
+
+    // Notify penalized user
     await createNotification(
       {
         branchId: ctx.actor.branchId,
-        userId: hr.id,
-        type: 'challenge_needs_resolution',
-        title: `A Penalti challenge has been filed by ${ctx.actor.name} — needs resolution`,
+        userId: penalizedUser.id,
+        type: 'challenge_filed',
+        title: `Your Penalti has been challenged by ${ctx.actor.name}`,
         entityType: 'challenges',
         entityId: created.id,
       },
-      ctx.tx,
+      db,
     )
-  }
 
-  return created
+    // Notify HR users in branch for resolution
+    const hrUsers = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(
+        and(
+          eq(users.branchId, ctx.actor.branchId),
+          eq(users.role, 'hr'),
+          eq(users.isActive, true),
+        ),
+      )
+
+    for (const hr of hrUsers) {
+      await createNotification(
+        {
+          branchId: ctx.actor.branchId,
+          userId: hr.id,
+          type: 'challenge_needs_resolution',
+          title: `A Penalti challenge has been filed by ${ctx.actor.name} — needs resolution`,
+          entityType: 'challenges',
+          entityId: created.id,
+        },
+        db,
+      )
+    }
+
+    return created
+  })
 }
 
 export async function resolveChallenge(
@@ -120,95 +119,97 @@ export async function resolveChallenge(
   input: ResolveChallengeInput,
   ctx: ServiceContext,
 ) {
-  const result = await challengesRepo.getByIdWithDetails(challengeId, ctx.tx)
-  if (!result) throw new ChallengeNotFoundError(challengeId)
+  return withRLS(ctx.actor, async (db) => {
+    const result = await challengesRepo.getByIdWithDetails(challengeId, db)
+    if (!result) throw new ChallengeNotFoundError(challengeId)
 
-  const { challenge, challenger } = result
+    const { challenge, challenger } = result
 
-  if (challenge.status !== 'open') throw new ChallengeNotOpenError(challengeId)
+    if (challenge.status !== 'open') throw new ChallengeNotOpenError(challengeId)
 
-  // Only HR or admin can resolve
-  if (ctx.actor.role !== 'hr' && ctx.actor.role !== 'admin') {
-    throw new InsufficientRoleError()
-  }
+    // Only HR or admin can resolve
+    if (ctx.actor.role !== 'hr' && ctx.actor.role !== 'admin') {
+      throw new InsufficientRoleError()
+    }
 
-  const now = new Date()
-  const updated = await challengesRepo.resolve(
-    challengeId,
-    {
-      status: input.status,
-      resolvedBy: ctx.actor.id,
-      resolvedAt: now,
-      resolutionNote: input.resolutionNote,
-    },
-    ctx.tx,
-  )
-
-  // Update achievement point status based on resolution
-  const newPointStatus = input.status === 'upheld' ? 'revoked' : 'active'
-  await pointsRepo.updatePointStatus(
-    challenge.achievementId,
-    {
-      status: newPointStatus,
-      ...(input.status === 'upheld'
-        ? { revokedBy: ctx.actor.id, revokedAt: now, revokeReason: `Challenge upheld: ${input.resolutionNote}` }
-        : {}),
-    },
-    ctx.tx,
-  )
-
-  await writeAuditLog(
-    {
-      actor: ctx.actor,
-      action: 'CHALLENGE_RESOLVED',
-      entityType: 'challenges',
-      entityId: challengeId,
-      newValue: {
+    const now = new Date()
+    const updated = await challengesRepo.resolve(
+      challengeId,
+      {
         status: input.status,
+        resolvedBy: ctx.actor.id,
+        resolvedAt: now,
         resolutionNote: input.resolutionNote,
-        achievementId: challenge.achievementId,
-        newPointStatus,
       },
-      ipAddress: ctx.ipAddress,
-    },
-    ctx.tx,
-  )
+      db,
+    )
 
-  // Fetch penalized user for notification
-  const pointResult = await pointsRepo.getPointWithDetails(challenge.achievementId, ctx.tx)
-  const penalizedUserId = pointResult?.user.id
+    // Update achievement point status based on resolution
+    const newPointStatus = input.status === 'upheld' ? 'revoked' : 'active'
+    await pointsRepo.updatePointStatus(
+      challenge.achievementId,
+      {
+        status: newPointStatus,
+        ...(input.status === 'upheld'
+          ? { revokedBy: ctx.actor.id, revokedAt: now, revokeReason: `Challenge upheld: ${input.resolutionNote}` }
+          : {}),
+      },
+      db,
+    )
 
-  const statusLabel = input.status === 'upheld' ? 'upheld (Penalti removed)' : 'overturned (Penalti stands)'
+    await writeAuditLog(
+      {
+        actor: ctx.actor,
+        action: 'CHALLENGE_RESOLVED',
+        entityType: 'challenges',
+        entityId: challengeId,
+        newValue: {
+          status: input.status,
+          resolutionNote: input.resolutionNote,
+          achievementId: challenge.achievementId,
+          newPointStatus,
+        },
+        ipAddress: ctx.ipAddress,
+      },
+      db,
+    )
 
-  // Notify challenger
-  await createNotification(
-    {
-      branchId: ctx.actor.branchId,
-      userId: challenger.id,
-      type: 'challenge_resolved',
-      title: `Your challenge has been ${statusLabel}`,
-      entityType: 'challenges',
-      entityId: challengeId,
-    },
-    ctx.tx,
-  )
+    // Fetch penalized user for notification
+    const pointResult = await pointsRepo.getPointWithDetails(challenge.achievementId, db)
+    const penalizedUserId = pointResult?.user.id
 
-  // Notify penalized user
-  if (penalizedUserId && penalizedUserId !== challenger.id) {
+    const statusLabel = input.status === 'upheld' ? 'upheld (Penalti removed)' : 'overturned (Penalti stands)'
+
+    // Notify challenger
     await createNotification(
       {
         branchId: ctx.actor.branchId,
-        userId: penalizedUserId,
+        userId: challenger.id,
         type: 'challenge_resolved',
-        title: `Challenge on your Penalti has been ${statusLabel}`,
+        title: `Your challenge has been ${statusLabel}`,
         entityType: 'challenges',
         entityId: challengeId,
       },
-      ctx.tx,
+      db,
     )
-  }
 
-  return updated
+    // Notify penalized user
+    if (penalizedUserId && penalizedUserId !== challenger.id) {
+      await createNotification(
+        {
+          branchId: ctx.actor.branchId,
+          userId: penalizedUserId,
+          type: 'challenge_resolved',
+          title: `Challenge on your Penalti has been ${statusLabel}`,
+          entityType: 'challenges',
+          entityId: challengeId,
+        },
+        db,
+      )
+    }
+
+    return updated
+  })
 }
 
 export async function listChallenges(
@@ -216,10 +217,12 @@ export async function listChallenges(
   input: ListChallengesInput,
   ctx: ServiceContext,
 ) {
-  const { rows, total } = await challengesRepo.listByAchievement(
-    achievementId,
-    { page: input.page, limit: input.limit },
-    ctx.tx,
+  const { rows, total } = await withRLS(ctx.actor, (db) =>
+    challengesRepo.listByAchievement(
+      achievementId,
+      { page: input.page, limit: input.limit },
+      db,
+    ),
   )
 
   return {

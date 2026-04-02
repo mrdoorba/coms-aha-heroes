@@ -2,7 +2,7 @@ import { auth } from '../auth'
 import * as usersRepo from '../repositories/users'
 import { writeAuditLog } from './audit'
 import type { AuthUser } from '../middleware/auth'
-import type { DbClient } from '../repositories/base'
+import { withRLS } from '../repositories/base'
 import type {
   CreateUserInput,
   UpdateUserInput,
@@ -12,24 +12,25 @@ import type { BulkUserActionInput, BulkResult, BulkResultItem } from '~/shared/s
 
 type ServiceContext = {
   readonly actor: AuthUser
-  readonly tx: DbClient
   readonly ipAddress?: string
 }
 
 export async function listUsers(input: ListUsersInput, ctx: ServiceContext) {
-  const { rows, total } = await usersRepo.listUsers(
-    {
-      page: input.page,
-      limit: input.limit,
-      role: input.role,
-      teamId: input.teamId,
-      search: input.search,
-      isActive: input.isActive,
-      department: input.department,
-      position: input.position,
-      branchId: input.branchId,
-    },
-    ctx.tx,
+  const { rows, total } = await withRLS(ctx.actor, (db) =>
+    usersRepo.listUsers(
+      {
+        page: input.page,
+        limit: input.limit,
+        role: input.role,
+        teamId: input.teamId,
+        search: input.search,
+        isActive: input.isActive,
+        department: input.department,
+        position: input.position,
+        branchId: input.branchId,
+      },
+      db,
+    ),
   )
 
   return {
@@ -39,7 +40,7 @@ export async function listUsers(input: ListUsersInput, ctx: ServiceContext) {
 }
 
 export async function getUserById(id: string, ctx: ServiceContext) {
-  const user = await usersRepo.getUserById(id, ctx.tx)
+  const user = await withRLS(ctx.actor, (db) => usersRepo.getUserById(id, db))
   if (!user) {
     throw new UserNotFoundError(id)
   }
@@ -47,23 +48,39 @@ export async function getUserById(id: string, ctx: ServiceContext) {
 }
 
 export async function createUser(input: CreateUserInput, ctx: ServiceContext) {
-  const existing = await usersRepo.getUserByEmail(input.email, ctx.tx)
-  if (existing) {
-    throw new EmailAlreadyExistsError(input.email)
-  }
+  const created = await withRLS(ctx.actor, async (db) => {
+    const existing = await usersRepo.getUserByEmail(input.email, db)
+    if (existing) {
+      throw new EmailAlreadyExistsError(input.email)
+    }
 
-  const created = await usersRepo.createUser(
-    {
-      email: input.email,
-      name: input.name,
-      role: input.role,
-      branchId: input.branchId,
-      teamId: input.teamId ?? null,
-      department: input.department ?? null,
-      position: input.position ?? null,
-    },
-    ctx.tx,
-  )
+    const user = await usersRepo.createUser(
+      {
+        email: input.email,
+        name: input.name,
+        role: input.role,
+        branchId: input.branchId,
+        teamId: input.teamId ?? null,
+        department: input.department ?? null,
+        position: input.position ?? null,
+      },
+      db,
+    )
+
+    await writeAuditLog(
+      {
+        actor: ctx.actor,
+        action: 'USER_CREATED',
+        entityType: 'users',
+        entityId: user.id,
+        newValue: { email: user.email, role: user.role, name: user.name },
+        ipAddress: ctx.ipAddress,
+      },
+      db,
+    )
+
+    return user
+  })
 
   // Create Better Auth account so the user can log in
   // Default password = changeme123 — mustChangePassword is true by default
@@ -79,18 +96,6 @@ export async function createUser(input: CreateUserInput, ctx: ServiceContext) {
     // Better Auth account may already exist if re-creating a previously archived user
   }
 
-  await writeAuditLog(
-    {
-      actor: ctx.actor,
-      action: 'USER_CREATED',
-      entityType: 'users',
-      entityId: created.id,
-      newValue: { email: created.email, role: created.role, name: created.name },
-      ipAddress: ctx.ipAddress,
-    },
-    ctx.tx,
-  )
-
   return created
 }
 
@@ -99,36 +104,38 @@ export async function updateUser(
   input: UpdateUserInput,
   ctx: ServiceContext,
 ) {
-  const existing = await usersRepo.getUserById(id, ctx.tx)
-  if (!existing) {
-    throw new UserNotFoundError(id)
-  }
+  return withRLS(ctx.actor, async (db) => {
+    const existing = await usersRepo.getUserById(id, db)
+    if (!existing) {
+      throw new UserNotFoundError(id)
+    }
 
-  const updated = await usersRepo.updateUser(id, input, ctx.tx)
-  if (!updated) {
-    throw new UserNotFoundError(id)
-  }
+    const updated = await usersRepo.updateUser(id, input, db)
+    if (!updated) {
+      throw new UserNotFoundError(id)
+    }
 
-  await writeAuditLog(
-    {
-      actor: ctx.actor,
-      action: 'USER_UPDATED',
-      entityType: 'users',
-      entityId: id,
-      oldValue: {
-        name: existing.name,
-        role: existing.role,
-        teamId: existing.teamId,
-        department: existing.department,
-        position: existing.position,
+    await writeAuditLog(
+      {
+        actor: ctx.actor,
+        action: 'USER_UPDATED',
+        entityType: 'users',
+        entityId: id,
+        oldValue: {
+          name: existing.name,
+          role: existing.role,
+          teamId: existing.teamId,
+          department: existing.department,
+          position: existing.position,
+        },
+        newValue: input,
+        ipAddress: ctx.ipAddress,
       },
-      newValue: input,
-      ipAddress: ctx.ipAddress,
-    },
-    ctx.tx,
-  )
+      db,
+    )
 
-  return updated
+    return updated
+  })
 }
 
 export async function archiveUser(id: string, ctx: ServiceContext) {
@@ -136,31 +143,33 @@ export async function archiveUser(id: string, ctx: ServiceContext) {
     throw new CannotArchiveSelfError()
   }
 
-  const existing = await usersRepo.getUserById(id, ctx.tx)
-  if (!existing) {
-    throw new UserNotFoundError(id)
-  }
+  return withRLS(ctx.actor, async (db) => {
+    const existing = await usersRepo.getUserById(id, db)
+    if (!existing) {
+      throw new UserNotFoundError(id)
+    }
 
-  if (!existing.isActive) {
-    throw new UserAlreadyArchivedError(id)
-  }
+    if (!existing.isActive) {
+      throw new UserAlreadyArchivedError(id)
+    }
 
-  const archived = await usersRepo.archiveUser(id, ctx.tx)
+    const archived = await usersRepo.archiveUser(id, db)
 
-  await writeAuditLog(
-    {
-      actor: ctx.actor,
-      action: 'USER_ARCHIVED',
-      entityType: 'users',
-      entityId: id,
-      oldValue: { isActive: true },
-      newValue: { isActive: false, archivedAt: archived?.archivedAt },
-      ipAddress: ctx.ipAddress,
-    },
-    ctx.tx,
-  )
+    await writeAuditLog(
+      {
+        actor: ctx.actor,
+        action: 'USER_ARCHIVED',
+        entityType: 'users',
+        entityId: id,
+        oldValue: { isActive: true },
+        newValue: { isActive: false, archivedAt: archived?.archivedAt },
+        ipAddress: ctx.ipAddress,
+      },
+      db,
+    )
 
-  return archived
+    return archived
+  })
 }
 
 export async function activateUser(id: string, ctx: ServiceContext) {
@@ -168,26 +177,28 @@ export async function activateUser(id: string, ctx: ServiceContext) {
     throw new CannotModifySelfError()
   }
 
-  const existing = await usersRepo.getUserById(id, ctx.tx)
-  if (!existing) throw new UserNotFoundError(id)
-  if (existing.isActive) throw new UserAlreadyActiveError(id)
+  return withRLS(ctx.actor, async (db) => {
+    const existing = await usersRepo.getUserById(id, db)
+    if (!existing) throw new UserNotFoundError(id)
+    if (existing.isActive) throw new UserAlreadyActiveError(id)
 
-  const activated = await usersRepo.activateUser(id, ctx.tx)
+    const activated = await usersRepo.activateUser(id, db)
 
-  await writeAuditLog(
-    {
-      actor: ctx.actor,
-      action: 'USER_ACTIVATED',
-      entityType: 'users',
-      entityId: id,
-      oldValue: { isActive: false },
-      newValue: { isActive: true },
-      ipAddress: ctx.ipAddress,
-    },
-    ctx.tx,
-  )
+    await writeAuditLog(
+      {
+        actor: ctx.actor,
+        action: 'USER_ACTIVATED',
+        entityType: 'users',
+        entityId: id,
+        oldValue: { isActive: false },
+        newValue: { isActive: true },
+        ipAddress: ctx.ipAddress,
+      },
+      db,
+    )
 
-  return activated
+    return activated
+  })
 }
 
 export async function bulkToggleUsers(

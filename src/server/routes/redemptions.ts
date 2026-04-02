@@ -8,21 +8,19 @@ import { paginationQuery } from './_query'
 import { bulkRedemptionActionSchema } from '~/shared/schemas/bulk'
 import * as redemptionsService from '../services/redemptions'
 import type { AuthUser } from '../middleware/auth'
-import type { DbClient } from '../repositories/base'
 
-type Ctx = { authUser: AuthUser; tx: DbClient }
+type Ctx = { authUser: AuthUser }
 
 export const redemptionsRoute = new Elysia({ prefix: '/redemptions' })
 
   // POST / — request a redemption (any authenticated user)
   .post('/', async ({ body, headers, set, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
     const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
     try {
       const created = await redemptionsService.requestRedemption(body, {
         actor,
-        tx,
         ipAddress,
       })
       set.status = 201
@@ -46,11 +44,11 @@ export const redemptionsRoute = new Elysia({ prefix: '/redemptions' })
 
   // POST /bulk — bulk approve/reject redemptions (HR/Admin only)
   .post('/bulk', async ({ body, headers, set, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
     const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
     try {
-      const result = await redemptionsService.bulkResolveRedemptions(body, { actor, tx, ipAddress })
+      const result = await redemptionsService.bulkResolveRedemptions(body, { actor, ipAddress })
       return { success: true, data: result, error: null }
     } catch (err) {
       if (err instanceof redemptionsService.InsufficientRoleError) {
@@ -71,9 +69,9 @@ export const redemptionsRoute = new Elysia({ prefix: '/redemptions' })
 
   // GET / — list redemptions (with optional mine filter)
   .get('/', async ({ query, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
 
-    const result = await redemptionsService.listRedemptions(query, { actor, tx })
+    const result = await redemptionsService.listRedemptions(query, { actor })
 
     return {
       success: true,
@@ -92,12 +90,11 @@ export const redemptionsRoute = new Elysia({ prefix: '/redemptions' })
 
   // GET /:id — get redemption by id
   .get('/:id', async ({ params, set, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
 
     try {
       const redemption = await redemptionsService.getRedemptionById(params.id, {
         actor,
-        tx,
       })
       return { success: true, data: redemption, error: null }
     } catch (err) {
@@ -111,13 +108,12 @@ export const redemptionsRoute = new Elysia({ prefix: '/redemptions' })
 
   // PATCH /:id/approve — approve a redemption (HR/Admin only)
   .patch('/:id/approve', async ({ params, headers, set, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
     const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
     try {
       const updated = await redemptionsService.approveRedemption(params.id, {
         actor,
-        tx,
         ipAddress,
       })
       return { success: true, data: updated, error: null }
@@ -140,13 +136,12 @@ export const redemptionsRoute = new Elysia({ prefix: '/redemptions' })
 
   // PATCH /:id/reject — reject a redemption (HR/Admin only)
   .patch('/:id/reject', async ({ params, body, headers, set, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
     const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
     try {
       const updated = await redemptionsService.rejectRedemption(params.id, body, {
         actor,
-        tx,
         ipAddress,
       })
       return { success: true, data: updated, error: null }

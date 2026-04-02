@@ -2,18 +2,17 @@ import { Elysia, t } from 'elysia'
 import { paginationQuery50 } from './_query'
 import * as auditLogsService from '../services/audit-logs'
 import type { AuthUser } from '../middleware/auth'
-import type { DbClient } from '../repositories/base'
 
-type Ctx = { authUser: AuthUser; tx: DbClient }
+type Ctx = { authUser: AuthUser }
 
 export const auditLogsRoute = new Elysia({ prefix: '/audit-logs' })
 
   // GET / — list audit logs (HR/Admin)
   .get('/', async ({ query, set, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
 
     try {
-      const result = await auditLogsService.listAuditLogs(query, { actor, tx })
+      const result = await auditLogsService.listAuditLogs(query, { actor })
       return {
         success: true,
         data: result.logs,

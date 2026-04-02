@@ -4,7 +4,7 @@ import { health } from './routes/health'
 import { healthz } from './routes/healthz'
 import { authRoute } from './routes/auth'
 import { authPlugin } from './middleware/auth'
-import { rlsPlugin } from './middleware/rls'
+// RLS is now handled per-query via withRLS() in repositories/base.ts
 import { errorHandler } from './middleware/error-handler'
 import { usersRoute } from './routes/users'
 import { teamsRoute } from './routes/teams'
@@ -39,7 +39,6 @@ const app = new Elysia({ prefix: '/api' })
   .group('/v1', (app) =>
     app
       .use(authPlugin)
-      .use(rlsPlugin)
       .use(usersRoute)
       .use(teamsRoute)
       .use(categoriesRoute)

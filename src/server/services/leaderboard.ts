@@ -1,12 +1,10 @@
-import { eq, and } from 'drizzle-orm'
+import { eq, and, count, sql, desc } from 'drizzle-orm'
 import { pointSummaries, systemSettings, users } from '~/db/schema'
-import { getDb } from '../repositories/base'
+import { withRLS } from '../repositories/base'
 import type { AuthUser } from '../middleware/auth'
-import type { DbClient } from '../repositories/base'
 
 type ServiceContext = {
   readonly actor: AuthUser
-  readonly tx: DbClient
   readonly ipAddress?: string
 }
 
@@ -31,88 +29,88 @@ export async function getLeaderboard(
   input: LeaderboardInput,
   ctx: ServiceContext,
 ): Promise<{ entries: LeaderboardEntry[]; meta: { total: number; page: number; limit: number } }> {
-  const db = getDb(ctx.tx)
+  return withRLS(ctx.actor, async (db) => {
+    const [bintangSetting, penaltiSetting] = await Promise.all([
+      db
+        .select({ value: systemSettings.value })
+        .from(systemSettings)
+        .where(eq(systemSettings.key, 'bintang_point_impact'))
+        .limit(1),
+      db
+        .select({ value: systemSettings.value })
+        .from(systemSettings)
+        .where(eq(systemSettings.key, 'penalti_point_impact'))
+        .limit(1),
+    ])
 
-  const [bintangSetting, penaltiSetting] = await Promise.all([
-    db
-      .select({ value: systemSettings.value })
-      .from(systemSettings)
-      .where(eq(systemSettings.key, 'bintang_point_impact'))
-      .limit(1),
-    db
-      .select({ value: systemSettings.value })
-      .from(systemSettings)
-      .where(eq(systemSettings.key, 'penalti_point_impact'))
-      .limit(1),
-  ])
+    const bintangPointImpact = (bintangSetting[0]?.value as number) ?? 10
+    const penaltiPointImpact = (penaltiSetting[0]?.value as number) ?? 5
 
-  const bintangPointImpact = (bintangSetting[0]?.value as number) ?? 10
-  const penaltiPointImpact = (penaltiSetting[0]?.value as number) ?? 5
+    const whereConditions = input.teamId
+      ? and(
+          eq(pointSummaries.branchId, ctx.actor.branchId),
+          eq(users.isActive, true),
+          eq(users.teamId, input.teamId),
+        )
+      : and(
+          eq(pointSummaries.branchId, ctx.actor.branchId),
+          eq(users.isActive, true),
+        )
 
-  const whereConditions = input.teamId
-    ? and(
-        eq(pointSummaries.branchId, ctx.actor.branchId),
-        eq(users.isActive, true),
-        eq(users.teamId, input.teamId),
-      )
-    : and(
-        eq(pointSummaries.branchId, ctx.actor.branchId),
-        eq(users.isActive, true),
-      )
+    // Compute poinAhaBalance in SQL so we can ORDER BY and LIMIT/OFFSET in the DB
+    const poinAhaBalanceExpr = sql<number>`(
+      ${pointSummaries.directPoinAha}
+      + ${pointSummaries.bintangCount} * ${bintangPointImpact}
+      - ${pointSummaries.penaltiPointsSum} * ${penaltiPointImpact}
+      - ${pointSummaries.redeemedTotal}
+    )`.as('poin_aha_balance')
 
-  const rows = await db
-    .select({
-      userId: pointSummaries.userId,
-      name: users.name,
-      avatarUrl: users.avatarUrl,
-      teamId: users.teamId,
-      bintangCount: pointSummaries.bintangCount,
-      penaltiPointsSum: pointSummaries.penaltiPointsSum,
-      directPoinAha: pointSummaries.directPoinAha,
-      redeemedTotal: pointSummaries.redeemedTotal,
-    })
-    .from(pointSummaries)
-    .innerJoin(users, eq(pointSummaries.userId, users.id))
-    .where(whereConditions)
+    const orderExpr = input.type === 'bintang'
+      ? desc(pointSummaries.bintangCount)
+      : desc(poinAhaBalanceExpr)
 
-  const computed = rows.map((row) => {
-    const poinAhaBalance =
-      row.directPoinAha +
-      row.bintangCount * bintangPointImpact -
-      row.penaltiPointsSum * penaltiPointImpact -
-      row.redeemedTotal
+    const offset = (input.page - 1) * input.limit
 
-    return {
+    // Run count and paginated query in parallel
+    const [countResult, rows] = await Promise.all([
+      db
+        .select({ total: count() })
+        .from(pointSummaries)
+        .innerJoin(users, eq(pointSummaries.userId, users.id))
+        .where(whereConditions),
+
+      db
+        .select({
+          userId: pointSummaries.userId,
+          name: users.name,
+          avatarUrl: users.avatarUrl,
+          teamId: users.teamId,
+          bintangCount: pointSummaries.bintangCount,
+          poinAhaBalance: poinAhaBalanceExpr,
+        })
+        .from(pointSummaries)
+        .innerJoin(users, eq(pointSummaries.userId, users.id))
+        .where(whereConditions)
+        .orderBy(orderExpr)
+        .limit(input.limit)
+        .offset(offset),
+    ])
+
+    const total = Number(countResult[0]?.total ?? 0)
+
+    const entries: LeaderboardEntry[] = rows.map((row, index) => ({
+      rank: offset + index + 1,
       userId: row.userId,
       name: row.name,
       avatarUrl: row.avatarUrl,
       teamId: row.teamId,
+      score: input.type === 'bintang' ? row.bintangCount : Number(row.poinAhaBalance ?? 0),
       bintangCount: row.bintangCount,
-      poinAhaBalance,
+    }))
+
+    return {
+      entries,
+      meta: { total, page: input.page, limit: input.limit },
     }
   })
-
-  const sorted =
-    input.type === 'bintang'
-      ? [...computed].sort((a, b) => b.bintangCount - a.bintangCount)
-      : [...computed].sort((a, b) => b.poinAhaBalance - a.poinAhaBalance)
-
-  const total = sorted.length
-  const offset = (input.page - 1) * input.limit
-  const paginated = sorted.slice(offset, offset + input.limit)
-
-  const entries: LeaderboardEntry[] = paginated.map((item, index) => ({
-    rank: offset + index + 1,
-    userId: item.userId,
-    name: item.name,
-    avatarUrl: item.avatarUrl,
-    teamId: item.teamId,
-    score: input.type === 'bintang' ? item.bintangCount : item.poinAhaBalance,
-    bintangCount: item.bintangCount,
-  }))
-
-  return {
-    entries,
-    meta: { total, page: input.page, limit: input.limit },
-  }
 }

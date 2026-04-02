@@ -214,7 +214,7 @@ jobs:
             --add-cloudsql-instances "${{ env.DB_INSTANCE }}" \
             --set-secrets "DATABASE_URL=coms-aha-heroes-db-url-production:latest,BETTER_AUTH_SECRET=coms-aha-heroes-auth-secret:latest,BETTER_AUTH_URL=coms-aha-heroes-auth-url:latest,GOOGLE_CLIENT_ID=coms-aha-heroes-google-client-id:latest,GOOGLE_CLIENT_SECRET=coms-aha-heroes-google-client-secret:latest" \
             --max-instances 2 \
-            --set-env-vars "NODE_ENV=production,GCS_BUCKET=coms-aha-heroes-uploads,DB_POOL_MAX=9" \
+            --set-env-vars "NODE_ENV=production,GCS_BUCKET=coms-aha-heroes-uploads,DB_POOL_MAX=15" \
             --cpu-boost \
             --startup-probe="httpGet.path=/api/healthz,periodSeconds=5,failureThreshold=12,timeoutSeconds=3,initialDelaySeconds=0" \
             --quiet

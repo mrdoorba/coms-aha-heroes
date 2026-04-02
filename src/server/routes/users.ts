@@ -9,9 +9,8 @@ import { paginationQuery } from './_query'
 import { bulkUserActionSchema } from '~/shared/schemas/bulk'
 import * as usersService from '../services/users'
 import type { AuthUser } from '../middleware/auth'
-import type { DbClient } from '../repositories/base'
 
-type Ctx = { authUser: AuthUser; tx: DbClient }
+type Ctx = { authUser: AuthUser }
 
 export const usersRoute = new Elysia({ prefix: '/users' })
   // All user routes require admin or hr
@@ -21,18 +20,18 @@ export const usersRoute = new Elysia({ prefix: '/users' })
 
   // POST /users/bulk — bulk archive/activate users (Admin/HR only)
   .post('/bulk', async ({ body, headers, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
     const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
-    const result = await usersService.bulkToggleUsers(body, { actor, tx, ipAddress })
+    const result = await usersService.bulkToggleUsers(body, { actor, ipAddress })
     return { success: true, data: result, error: null }
   }, { body: bulkUserActionSchema })
 
   // GET /users — list with filtering + pagination
   .get('/', async ({ query, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
 
-    const result = await usersService.listUsers(query, { actor, tx })
+    const result = await usersService.listUsers(query, { actor })
 
     return {
       success: true,
@@ -53,10 +52,10 @@ export const usersRoute = new Elysia({ prefix: '/users' })
 
   // GET /users/:id — single user
   .get('/:id', async ({ params, set, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
 
     try {
-      const user = await usersService.getUserById(params.id, { actor, tx })
+      const user = await usersService.getUserById(params.id, { actor })
       return { success: true, data: user, error: null }
     } catch (err) {
       if (err instanceof usersService.UserNotFoundError) {
@@ -69,11 +68,11 @@ export const usersRoute = new Elysia({ prefix: '/users' })
 
   // POST /users — create new user
   .post('/', async ({ body, headers, set, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
     const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
     try {
-      const created = await usersService.createUser(body, { actor, tx, ipAddress })
+      const created = await usersService.createUser(body, { actor, ipAddress })
       set.status = 201
       return { success: true, data: created, error: null }
     } catch (err) {
@@ -87,11 +86,11 @@ export const usersRoute = new Elysia({ prefix: '/users' })
 
   // PATCH /users/:id — update user
   .patch('/:id', async ({ params, body, headers, set, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
     const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
     try {
-      const updated = await usersService.updateUser(params.id, body, { actor, tx, ipAddress })
+      const updated = await usersService.updateUser(params.id, body, { actor, ipAddress })
       return { success: true, data: updated, error: null }
     } catch (err) {
       if (err instanceof usersService.UserNotFoundError) {
@@ -104,11 +103,11 @@ export const usersRoute = new Elysia({ prefix: '/users' })
 
   // PATCH /users/:id/archive — soft-delete
   .patch('/:id/archive', async ({ params, headers, set, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
     const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
     try {
-      const archived = await usersService.archiveUser(params.id, { actor, tx, ipAddress })
+      const archived = await usersService.archiveUser(params.id, { actor, ipAddress })
       return { success: true, data: archived, error: null }
     } catch (err) {
       if (err instanceof usersService.UserNotFoundError) {

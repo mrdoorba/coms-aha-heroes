@@ -7,9 +7,8 @@ import {
 import { paginationQuery } from './_query'
 import * as teamsService from '../services/teams'
 import type { AuthUser } from '../middleware/auth'
-import type { DbClient } from '../repositories/base'
 
-type Ctx = { authUser: AuthUser; tx: DbClient }
+type Ctx = { authUser: AuthUser }
 
 export const teamsRoute = new Elysia({ prefix: '/teams' })
   // All team routes require admin or hr
@@ -19,9 +18,9 @@ export const teamsRoute = new Elysia({ prefix: '/teams' })
 
   // GET /teams — list with search + pagination
   .get('/', async ({ query, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
 
-    const result = await teamsService.listTeams(query, { actor, tx })
+    const result = await teamsService.listTeams(query, { actor })
 
     return {
       success: true,
@@ -36,10 +35,10 @@ export const teamsRoute = new Elysia({ prefix: '/teams' })
 
   // GET /teams/:id — single team with members
   .get('/:id', async ({ params, set, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
 
     try {
-      const team = await teamsService.getTeamById(params.id, { actor, tx })
+      const team = await teamsService.getTeamById(params.id, { actor })
       return { success: true, data: team, error: null }
     } catch (err) {
       if (err instanceof teamsService.TeamNotFoundError) {
@@ -52,21 +51,21 @@ export const teamsRoute = new Elysia({ prefix: '/teams' })
 
   // POST /teams — create new team
   .post('/', async ({ body, headers, set, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
     const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
-    const created = await teamsService.createTeam(body, { actor, tx, ipAddress })
+    const created = await teamsService.createTeam(body, { actor, ipAddress })
     set.status = 201
     return { success: true, data: created, error: null }
   }, { body: createTeamSchema })
 
   // PATCH /teams/:id — update team
   .patch('/:id', async ({ params, body, headers, set, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
     const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
     try {
-      const updated = await teamsService.updateTeam(params.id, body, { actor, tx, ipAddress })
+      const updated = await teamsService.updateTeam(params.id, body, { actor, ipAddress })
       return { success: true, data: updated, error: null }
     } catch (err) {
       if (err instanceof teamsService.TeamNotFoundError) {

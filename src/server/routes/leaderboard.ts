@@ -2,17 +2,16 @@ import { Elysia, t } from 'elysia'
 import { paginationQuery } from './_query'
 import * as leaderboardService from '../services/leaderboard'
 import type { AuthUser } from '../middleware/auth'
-import type { DbClient } from '../repositories/base'
 
-type Ctx = { authUser: AuthUser; tx: DbClient }
+type Ctx = { authUser: AuthUser }
 
 export const leaderboardRoute = new Elysia({ prefix: '/leaderboard' })
 
   // GET /leaderboard — ranked list by bintang or poin_aha
   .get('/', async ({ query, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
 
-    const result = await leaderboardService.getLeaderboard(query, { actor, tx })
+    const result = await leaderboardService.getLeaderboard(query, { actor })
 
     return {
       success: true,

@@ -112,8 +112,8 @@ resource "google_cloud_run_v2_service" "app" {
   template {
     service_account = google_service_account.cloud_run.email
 
-    # 250 concurrent requests per instance before a new instance spins up
-    max_instance_request_concurrency = 250
+    # ~3.3x pool size — safe ceiling for db-f1-micro shared vCPU
+    max_instance_request_concurrency = 50
 
     scaling {
       min_instance_count = 0

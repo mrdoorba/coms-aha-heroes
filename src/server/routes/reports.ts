@@ -1,18 +1,17 @@
 import { Elysia, t } from 'elysia'
 import * as reportsService from '../services/reports'
 import type { AuthUser } from '../middleware/auth'
-import type { DbClient } from '../repositories/base'
 
-type Ctx = { authUser: AuthUser; tx: DbClient }
+type Ctx = { authUser: AuthUser }
 
 export const reportsRoute = new Elysia({ prefix: '/reports' })
 
   // GET / — get dashboard stats (HR/Admin)
   .get('/', async ({ query, set, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
 
     try {
-      const data = await reportsService.getDashboardStats(query, { actor, tx })
+      const data = await reportsService.getDashboardStats(query, { actor })
       return { success: true, data, error: null }
     } catch (err) {
       if (err instanceof reportsService.InsufficientRoleError) {

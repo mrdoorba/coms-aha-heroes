@@ -6,21 +6,19 @@ import { bulkPointActionSchema } from '~/shared/schemas/bulk'
 import * as pointsService from '../services/points'
 import * as approvalService from '../services/approval'
 import type { AuthUser } from '../middleware/auth'
-import type { DbClient } from '../repositories/base'
 
-type Ctx = { authUser: AuthUser; tx: DbClient }
+type Ctx = { authUser: AuthUser }
 
 export const pointsRoute = new Elysia({ prefix: '/points' })
 
   // POST /points — submit a new point
   .post('/', async ({ body, headers, set, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
     const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
     try {
       const created = await pointsService.submitPoint(body, {
         actor,
-        tx,
         ipAddress,
       })
       set.status = 201
@@ -72,18 +70,18 @@ export const pointsRoute = new Elysia({ prefix: '/points' })
 
   // POST /points/bulk — bulk approve/reject points (HR/Admin/Leader)
   .post('/bulk', async ({ body, headers, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
     const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
-    const result = await approvalService.bulkResolvePoints(body, { actor, tx, ipAddress })
+    const result = await approvalService.bulkResolvePoints(body, { actor, ipAddress })
     return { success: true, data: result, error: null }
   }, { body: bulkPointActionSchema })
 
   // GET /points — paginated list with filters
   .get('/', async ({ query, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
 
-    const result = await pointsService.listPoints(query, { actor, tx })
+    const result = await pointsService.listPoints(query, { actor })
 
     return {
       success: true,
@@ -105,10 +103,10 @@ export const pointsRoute = new Elysia({ prefix: '/points' })
 
   // GET /points/:id — detail with submitter info
   .get('/:id', async ({ params, set, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
 
     try {
-      const point = await pointsService.getPointById(params.id, { actor, tx })
+      const point = await pointsService.getPointById(params.id, { actor })
       return { success: true, data: point, error: null }
     } catch (err) {
       if (err instanceof pointsService.PointNotFoundError) {
@@ -121,11 +119,11 @@ export const pointsRoute = new Elysia({ prefix: '/points' })
 
   // PATCH /points/:id/approve — approve a pending point
   .patch('/:id/approve', async ({ params, body, headers, set, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
     const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
     try {
-      const updated = await approvalService.approvePoint(params.id, body, { actor, tx, ipAddress })
+      const updated = await approvalService.approvePoint(params.id, body, { actor, ipAddress })
       return { success: true, data: updated, error: null }
     } catch (err) {
       if (err instanceof approvalService.PointNotFoundError) {
@@ -146,11 +144,11 @@ export const pointsRoute = new Elysia({ prefix: '/points' })
 
   // PATCH /points/:id/reject — reject a pending point
   .patch('/:id/reject', async ({ params, body, headers, set, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
     const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
     try {
-      const updated = await approvalService.rejectPoint(params.id, body, { actor, tx, ipAddress })
+      const updated = await approvalService.rejectPoint(params.id, body, { actor, ipAddress })
       return { success: true, data: updated, error: null }
     } catch (err) {
       if (err instanceof approvalService.PointNotFoundError) {
@@ -171,11 +169,11 @@ export const pointsRoute = new Elysia({ prefix: '/points' })
 
   // PATCH /points/:id/revoke — revoke an active point (HR/Admin only)
   .patch('/:id/revoke', async ({ params, body, headers, set, ...c }) => {
-    const { authUser: actor, tx } = c as unknown as Ctx
+    const { authUser: actor } = c as unknown as Ctx
     const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
     try {
-      const updated = await approvalService.revokePoint(params.id, body, { actor, tx, ipAddress })
+      const updated = await approvalService.revokePoint(params.id, body, { actor, ipAddress })
       return { success: true, data: updated, error: null }
     } catch (err) {
       if (err instanceof approvalService.PointNotFoundError) {

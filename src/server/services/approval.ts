@@ -2,13 +2,12 @@ import * as pointsRepo from '../repositories/points'
 import { writeAuditLog } from './audit'
 import { createNotification } from './notifications'
 import type { AuthUser } from '../middleware/auth'
-import type { DbClient } from '../repositories/base'
+import { withRLS } from '../repositories/base'
 import type { ApproveRejectInput } from '~/shared/schemas/points'
 import type { BulkPointActionInput, BulkResult, BulkResultItem } from '~/shared/schemas/bulk'
 
 type ServiceContext = {
   readonly actor: AuthUser
-  readonly tx: DbClient
   readonly ipAddress?: string
 }
 
@@ -17,63 +16,65 @@ export async function approvePoint(
   input: ApproveRejectInput,
   ctx: ServiceContext,
 ) {
-  const result = await pointsRepo.getPointWithDetails(id, ctx.tx)
-  if (!result) throw new PointNotFoundError(id)
+  return withRLS(ctx.actor, async (db) => {
+    const result = await pointsRepo.getPointWithDetails(id, db)
+    if (!result) throw new PointNotFoundError(id)
 
-  const { point, category, user: targetUser } = result
+    const { point, category, user: targetUser } = result
 
-  if (point.status !== 'pending') throw new PointNotPendingError(id)
+    if (point.status !== 'pending') throw new PointNotPendingError(id)
 
-  assertCanApproveReject(ctx.actor, targetUser)
+    assertCanApproveReject(ctx.actor, targetUser)
 
-  const now = new Date()
-  const updated = await pointsRepo.updatePointStatus(
-    id,
-    { status: 'active', approvedBy: ctx.actor.id, approvedAt: now },
-    ctx.tx,
-  )
+    const now = new Date()
+    const updated = await pointsRepo.updatePointStatus(
+      id,
+      { status: 'active', approvedBy: ctx.actor.id, approvedAt: now },
+      db,
+    )
 
-  await writeAuditLog(
-    {
-      actor: ctx.actor,
-      action: 'POINT_APPROVED',
-      entityType: 'achievement_points',
-      entityId: id,
-      newValue: { status: 'active', reason: input.reason ?? null },
-      ipAddress: ctx.ipAddress,
-    },
-    ctx.tx,
-  )
+    await writeAuditLog(
+      {
+        actor: ctx.actor,
+        action: 'POINT_APPROVED',
+        entityType: 'achievement_points',
+        entityId: id,
+        newValue: { status: 'active', reason: input.reason ?? null },
+        ipAddress: ctx.ipAddress,
+      },
+      db,
+    )
 
-  const categoryLabel = category.defaultName
+    const categoryLabel = category.defaultName
 
-  await createNotification(
-    {
-      branchId: ctx.actor.branchId,
-      userId: targetUser.id,
-      type: 'point_approved',
-      title: `Your ${categoryLabel} submission has been approved`,
-      entityType: 'achievement_points',
-      entityId: id,
-    },
-    ctx.tx,
-  )
-
-  if (point.submittedBy !== targetUser.id) {
     await createNotification(
       {
         branchId: ctx.actor.branchId,
-        userId: point.submittedBy,
+        userId: targetUser.id,
         type: 'point_approved',
         title: `Your ${categoryLabel} submission has been approved`,
         entityType: 'achievement_points',
         entityId: id,
       },
-      ctx.tx,
+      db,
     )
-  }
 
-  return updated
+    if (point.submittedBy !== targetUser.id) {
+      await createNotification(
+        {
+          branchId: ctx.actor.branchId,
+          userId: point.submittedBy,
+          type: 'point_approved',
+          title: `Your ${categoryLabel} submission has been approved`,
+          entityType: 'achievement_points',
+          entityId: id,
+        },
+        db,
+      )
+    }
+
+    return updated
+  })
 }
 
 export async function rejectPoint(
@@ -81,64 +82,66 @@ export async function rejectPoint(
   input: ApproveRejectInput,
   ctx: ServiceContext,
 ) {
-  const result = await pointsRepo.getPointWithDetails(id, ctx.tx)
-  if (!result) throw new PointNotFoundError(id)
+  return withRLS(ctx.actor, async (db) => {
+    const result = await pointsRepo.getPointWithDetails(id, db)
+    if (!result) throw new PointNotFoundError(id)
 
-  const { point, category, user: targetUser } = result
+    const { point, category, user: targetUser } = result
 
-  if (point.status !== 'pending') throw new PointNotPendingError(id)
+    if (point.status !== 'pending') throw new PointNotPendingError(id)
 
-  assertCanApproveReject(ctx.actor, targetUser)
+    assertCanApproveReject(ctx.actor, targetUser)
 
-  const now = new Date()
-  const updated = await pointsRepo.updatePointStatus(
-    id,
-    { status: 'rejected', approvedBy: ctx.actor.id, approvedAt: now },
-    ctx.tx,
-  )
+    const now = new Date()
+    const updated = await pointsRepo.updatePointStatus(
+      id,
+      { status: 'rejected', approvedBy: ctx.actor.id, approvedAt: now },
+      db,
+    )
 
-  await writeAuditLog(
-    {
-      actor: ctx.actor,
-      action: 'POINT_REJECTED',
-      entityType: 'achievement_points',
-      entityId: id,
-      newValue: { status: 'rejected', reason: input.reason ?? null },
-      ipAddress: ctx.ipAddress,
-    },
-    ctx.tx,
-  )
+    await writeAuditLog(
+      {
+        actor: ctx.actor,
+        action: 'POINT_REJECTED',
+        entityType: 'achievement_points',
+        entityId: id,
+        newValue: { status: 'rejected', reason: input.reason ?? null },
+        ipAddress: ctx.ipAddress,
+      },
+      db,
+    )
 
-  const categoryLabel = category.defaultName
-  const rejectionSuffix = input.reason ? `: ${input.reason}` : ''
+    const categoryLabel = category.defaultName
+    const rejectionSuffix = input.reason ? `: ${input.reason}` : ''
 
-  await createNotification(
-    {
-      branchId: ctx.actor.branchId,
-      userId: targetUser.id,
-      type: 'point_rejected',
-      title: `Your ${categoryLabel} submission has been rejected${rejectionSuffix}`,
-      entityType: 'achievement_points',
-      entityId: id,
-    },
-    ctx.tx,
-  )
-
-  if (point.submittedBy !== targetUser.id) {
     await createNotification(
       {
         branchId: ctx.actor.branchId,
-        userId: point.submittedBy,
+        userId: targetUser.id,
         type: 'point_rejected',
         title: `Your ${categoryLabel} submission has been rejected${rejectionSuffix}`,
         entityType: 'achievement_points',
         entityId: id,
       },
-      ctx.tx,
+      db,
     )
-  }
 
-  return updated
+    if (point.submittedBy !== targetUser.id) {
+      await createNotification(
+        {
+          branchId: ctx.actor.branchId,
+          userId: point.submittedBy,
+          type: 'point_rejected',
+          title: `Your ${categoryLabel} submission has been rejected${rejectionSuffix}`,
+          entityType: 'achievement_points',
+          entityId: id,
+        },
+        db,
+      )
+    }
+
+    return updated
+  })
 }
 
 export async function revokePoint(
@@ -146,52 +149,54 @@ export async function revokePoint(
   input: ApproveRejectInput,
   ctx: ServiceContext,
 ) {
-  const result = await pointsRepo.getPointWithDetails(id, ctx.tx)
-  if (!result) throw new PointNotFoundError(id)
-
-  const { point, category, user: targetUser } = result
-
-  if (point.status !== 'active') throw new PointNotActiveError(id)
-
   if (ctx.actor.role !== 'hr' && ctx.actor.role !== 'admin') {
     throw new UnauthorizedApprovalError('Only HR or Admin can revoke points')
   }
 
-  const now = new Date()
-  const updated = await pointsRepo.updatePointStatus(
-    id,
-    { status: 'revoked', approvedBy: ctx.actor.id, approvedAt: now },
-    ctx.tx,
-  )
+  return withRLS(ctx.actor, async (db) => {
+    const result = await pointsRepo.getPointWithDetails(id, db)
+    if (!result) throw new PointNotFoundError(id)
 
-  await writeAuditLog(
-    {
-      actor: ctx.actor,
-      action: 'POINT_REVOKED',
-      entityType: 'achievement_points',
-      entityId: id,
-      newValue: { status: 'revoked', reason: input.reason ?? null },
-      ipAddress: ctx.ipAddress,
-    },
-    ctx.tx,
-  )
+    const { point, category, user: targetUser } = result
 
-  const categoryLabel = category.defaultName
-  const revokeSuffix = input.reason ? `: ${input.reason}` : ''
+    if (point.status !== 'active') throw new PointNotActiveError(id)
 
-  await createNotification(
-    {
-      branchId: ctx.actor.branchId,
-      userId: targetUser.id,
-      type: 'point_rejected',
-      title: `Your ${categoryLabel} point has been revoked${revokeSuffix}`,
-      entityType: 'achievement_points',
-      entityId: id,
-    },
-    ctx.tx,
-  )
+    const now = new Date()
+    const updated = await pointsRepo.updatePointStatus(
+      id,
+      { status: 'revoked', approvedBy: ctx.actor.id, approvedAt: now },
+      db,
+    )
 
-  return updated
+    await writeAuditLog(
+      {
+        actor: ctx.actor,
+        action: 'POINT_REVOKED',
+        entityType: 'achievement_points',
+        entityId: id,
+        newValue: { status: 'revoked', reason: input.reason ?? null },
+        ipAddress: ctx.ipAddress,
+      },
+      db,
+    )
+
+    const categoryLabel = category.defaultName
+    const revokeSuffix = input.reason ? `: ${input.reason}` : ''
+
+    await createNotification(
+      {
+        branchId: ctx.actor.branchId,
+        userId: targetUser.id,
+        type: 'point_rejected',
+        title: `Your ${categoryLabel} point has been revoked${revokeSuffix}`,
+        entityType: 'achievement_points',
+        entityId: id,
+      },
+      db,
+    )
+
+    return updated
+  })
 }
 
 function assertCanApproveReject(
