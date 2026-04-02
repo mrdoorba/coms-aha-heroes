@@ -103,7 +103,7 @@ export async function verifyUpload(fileKey: string): Promise<boolean> {
 }
 
 /**
- * Stores uploaded file data to local filesystem (dev mode only).
+ * Stores uploaded file data to GCS (production) or local filesystem (dev).
  */
 export async function storeFile(
   fileKey: string,
@@ -114,6 +114,12 @@ export async function storeFile(
 
   if (data.length > MAX_FILE_SIZE) {
     throw new FileTooLargeError(data.length)
+  }
+
+  if (bucket) {
+    const file = bucket.file(fileKey)
+    await file.save(data, { contentType, resumable: false })
+    return `/api/v1/uploads/${fileKey}`
   }
 
   const filePath = join(UPLOAD_DIR, fileKey)
