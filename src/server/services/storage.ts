@@ -25,7 +25,7 @@ function validateContentType(contentType: string): void {
   }
 }
 
-function generateFileKey(originalName: string): string {
+export function generateFileKey(originalName: string): string {
   const ext = originalName.split('.').pop() ?? 'jpg'
   const now = new Date()
   const year = now.getFullYear()

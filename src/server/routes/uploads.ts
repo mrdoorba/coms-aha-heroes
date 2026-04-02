@@ -58,10 +58,11 @@ export const uploadsRoute = new Elysia({ prefix: '/uploads' })
 
     try {
       const buffer = Buffer.from(await file.arrayBuffer())
-      const url = await storage.storeFile(file.name, buffer, file.type)
+      const fileKey = storage.generateFileKey(file.name)
+      const url = await storage.storeFile(fileKey, buffer, file.type)
 
       set.status = 201
-      return { success: true, data: { url, fileKey: file.name }, error: null }
+      return { success: true, data: { url, fileKey }, error: null }
     } catch (err) {
       if (err instanceof storage.InvalidFileTypeError) {
         set.status = 422
@@ -79,12 +80,18 @@ export const uploadsRoute = new Elysia({ prefix: '/uploads' })
     }),
   })
 
-  // GET /uploads/:fileKey — serve file (dev) or redirect to signed URL (prod)
-  .get('/:fileKey', async ({ params, set }) => {
+  // GET /uploads/* — serve file (dev) or redirect to signed URL (prod)
+  .get('/*', async ({ params, set }) => {
+    const fileKey = (params as Record<string, string>)['*']
+    if (!fileKey) {
+      set.status = 400
+      return { success: false, data: null, error: { code: 'BAD_REQUEST', message: 'Missing file key' } }
+    }
+
     // In GCS mode, generate a signed read URL
     if (process.env.GCS_BUCKET) {
       try {
-        const url = await storage.generateSignedReadUrl(params.fileKey)
+        const url = await storage.generateSignedReadUrl(fileKey)
         set.redirect = url
         return
       } catch {
@@ -94,7 +101,7 @@ export const uploadsRoute = new Elysia({ prefix: '/uploads' })
     }
 
     // Dev mode — serve from local filesystem
-    const filePath = storage.getFilePath(params.fileKey)
+    const filePath = storage.getFilePath(fileKey)
 
     try {
       const stats = await stat(filePath)
@@ -103,7 +110,7 @@ export const uploadsRoute = new Elysia({ prefix: '/uploads' })
         return { success: false, data: null, error: { code: 'NOT_FOUND', message: 'File not found' } }
       }
 
-      const ext = params.fileKey.split('.').pop()?.toLowerCase()
+      const ext = fileKey.split('.').pop()?.toLowerCase()
       const contentTypes: Record<string, string> = {
         jpg: 'image/jpeg',
         jpeg: 'image/jpeg',
