@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { Star } from 'lucide-react'
 import * as m from '~/paraglide/messages'
 import { Button } from '~/components/ui/button'
@@ -20,7 +20,7 @@ export const Route = createFileRoute('/_authed/points/new/bintang')({
 function BintangForm() {
   const { employees } = Route.useLoaderData()
   const { session } = Route.useRouteContext()
-  const navigate = useNavigate()
+  const router = useRouter()
   const userRole = (session?.appUser?.role ?? 'employee') as UserRole
 
   const [userId, setUserId] = useState('')
@@ -52,7 +52,8 @@ function BintangForm() {
           screenshotUrl,
         },
       })
-      navigate({ to: '/points' })
+      await router.invalidate()
+      router.navigate({ to: '/points' })
     } catch (err) {
       setError(err instanceof Error ? err.message : m.form_error_submission_failed())
     } finally {

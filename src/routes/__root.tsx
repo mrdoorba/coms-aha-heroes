@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import {
   Outlet,
   createRootRoute,
@@ -8,6 +8,7 @@ import {
   Link,
   useRouter,
 } from '@tanstack/react-router'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { FileQuestion, AlertTriangle } from 'lucide-react'
 import { PwaInstallBanner } from '~/components/pwa/install-banner'
 import { OfflineIndicator } from '~/components/pwa/offline-indicator'
@@ -49,10 +50,14 @@ export const Route = createRootRoute({
 })
 
 function RootComponent() {
+  const [queryClient] = useState(() => new QueryClient())
+
   return (
-    <RootDocument>
-      <Outlet />
-    </RootDocument>
+    <QueryClientProvider client={queryClient}>
+      <RootDocument>
+        <Outlet />
+      </RootDocument>
+    </QueryClientProvider>
   )
 }
 

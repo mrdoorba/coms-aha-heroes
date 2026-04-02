@@ -25,11 +25,14 @@ import { getDashboardActivityFn } from '~/server/functions/dashboard'
 type ProfileData = Awaited<ReturnType<typeof getProfileFn>>
 type ActivityItem = {
   id: string
-  type: string
-  description: string
-  createdAt: string
+  categoryCode: string
+  categoryName: string
+  points: number
   status: string
-  pointValue?: number
+  reason: string
+  userName: string
+  submitterName: string
+  createdAt: string
 }
 
 const ROLE_COLORS: Record<string, string> = {
@@ -198,7 +201,7 @@ function ProfilePage() {
                 className="flex items-center justify-between rounded-lg px-3 py-2 text-sm hover:bg-muted/50 transition-colors"
               >
                 <span className="text-muted-foreground line-clamp-1 flex-1">
-                  {item.description}
+                  {item.reason}
                 </span>
                 <span className="ml-2 shrink-0 text-xs text-muted-foreground">
                   {new Date(item.createdAt).toLocaleDateString('id-ID', {
