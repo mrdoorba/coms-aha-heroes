@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { AlertTriangle } from 'lucide-react'
 import * as m from '~/paraglide/messages'
 import { Button } from '~/components/ui/button'
@@ -37,7 +37,7 @@ function getViolationDescriptions(): Record<number, string> {
 function PenaltiForm() {
   const { employees } = Route.useLoaderData()
   const { session } = Route.useRouteContext()
-  const navigate = useNavigate()
+  const router = useRouter()
   const violationDescriptions = getViolationDescriptions()
 
   const [userId, setUserId] = useState('')
@@ -71,7 +71,8 @@ function PenaltiForm() {
           kittaComponent,
         },
       })
-      navigate({ to: '/points' })
+      await router.invalidate()
+      router.navigate({ to: '/points' })
     } catch (err) {
       setError(err instanceof Error ? err.message : m.form_error_submission_failed())
     } finally {

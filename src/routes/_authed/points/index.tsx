@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Plus, Filter, Search } from 'lucide-react'
 import * as m from '~/paraglide/messages'
@@ -43,8 +43,17 @@ type PointRow = {
   createdAt: string
 }
 
+type PointsSearch = {
+  status?: string
+  q?: string
+}
+
 export const Route = createFileRoute('/_authed/points/')({
-  loader: async () => {
+  validateSearch: (search: Record<string, unknown>): PointsSearch => ({
+    status: typeof search.status === 'string' ? search.status : undefined,
+    q: typeof search.q === 'string' ? search.q : undefined,
+  }),
+  loader: async ({ deps }: { deps?: unknown }) => {
     const data = await listPointsFn({ data: { page: 1, limit: 20 } })
     return data
   },
@@ -60,21 +69,30 @@ function PointsPage() {
   ]
 
   const initialData = Route.useLoaderData()
+  const { status: searchStatus } = Route.useSearch()
   const { session } = Route.useRouteContext()
   const userRole = (session?.appUser?.role ?? 'employee') as UserRole
 
   const bulk = useBulkSelection()
 
+  const initialStatus = searchStatus ?? ''
   const [points, setPoints] = useState<PointRow[]>(initialData.points as PointRow[])
   const [meta, setMeta] = useState(initialData.meta)
   const [activeTab, setActiveTab] = useState<PointCategoryCode | 'ALL'>('ALL')
-  const [statusFilter, setStatusFilter] = useState<string>('')
+  const [statusFilter, setStatusFilter] = useState<string>(initialStatus)
   const [searchFilter, setSearchFilter] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [page, setPage] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [showTypeSelector, setShowTypeSelector] = useState(false)
+
+  useEffect(() => {
+    if (initialStatus) {
+      fetchPoints({ status: initialStatus, pg: 1 })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function fetchPoints(opts?: {
     category?: PointCategoryCode | 'ALL'

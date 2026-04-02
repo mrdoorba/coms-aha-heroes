@@ -56,6 +56,7 @@ function DashboardPage() {
       {showPendingBanner && (
         <Link
           to="/points"
+          search={{ status: 'pending' }}
           className="group flex items-center justify-between rounded-xl bg-gradient-to-r from-[#F4C144]/15 to-[#FFD97D]/10 px-4 py-3 text-sm font-medium text-[#1D388B] ring-1 ring-[#F4C144]/30 hover:ring-[#F4C144]/60 hover:from-[#F4C144]/25 hover:to-[#FFD97D]/15 transition-all duration-200"
         >
           <span className="flex items-center gap-1.5">
