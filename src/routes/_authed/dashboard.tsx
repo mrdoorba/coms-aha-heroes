@@ -46,7 +46,7 @@ function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-[#1D388B]">{m.dashboard_welcome({ name })}</h1>
-          <span className="mt-1 inline-block rounded-full bg-[#325FEC] px-2.5 py-0.5 text-[11px] font-semibold capitalize text-white">
+          <span className="mt-1 inline-block rounded-full bg-gradient-to-r from-[#325FEC] to-[#759EEE] px-2.5 py-0.5 text-[11px] font-semibold capitalize text-white">
             {role}
           </span>
         </div>
@@ -56,13 +56,15 @@ function DashboardPage() {
       {showPendingBanner && (
         <Link
           to="/points"
-          className="flex items-center justify-between rounded-xl bg-[#F4C144]/10 px-4 py-3 text-sm font-medium text-[#1D388B] ring-1 ring-[#F4C144]/40 hover:bg-[#F4C144]/20 transition-colors"
+          className="group flex items-center justify-between rounded-xl bg-gradient-to-r from-[#F4C144]/15 to-[#FFD97D]/10 px-4 py-3 text-sm font-medium text-[#1D388B] ring-1 ring-[#F4C144]/30 hover:ring-[#F4C144]/60 hover:from-[#F4C144]/25 hover:to-[#FFD97D]/15 transition-all duration-200"
         >
-          <span>
-            <Clock className="mr-1.5 inline h-4 w-4 text-[#F4C144]" />
+          <span className="flex items-center gap-1.5">
+            <span className="pulse-gold flex h-7 w-7 items-center justify-center rounded-full bg-[#F4C144]/20">
+              <Clock className="h-3.5 w-3.5 text-[#F4C144]" />
+            </span>
             {m.dashboard_pending_review({ count: String(summary.pendingCount) })}
           </span>
-          <ChevronRight className="h-4 w-4 shrink-0" />
+          <ChevronRight className="h-4 w-4 shrink-0 text-[#F4C144] transition-transform group-hover:translate-x-0.5" />
         </Link>
       )}
 
@@ -74,6 +76,7 @@ function DashboardPage() {
           icon={<Star className="h-5 w-5" />}
           iconBg="bg-[#F4C144]/15"
           iconColor="text-[#F4C144]"
+          variant="gold"
         />
         <SummaryCard
           title={m.dashboard_poin_aha_balance()}
@@ -81,6 +84,7 @@ function DashboardPage() {
           icon={<Award className="h-5 w-5" />}
           iconBg="bg-[#325FEC]/10"
           iconColor="text-[#325FEC]"
+          variant="blue"
         />
         <SummaryCard
           title={m.dashboard_penalti_points()}
@@ -88,6 +92,7 @@ function DashboardPage() {
           icon={<AlertTriangle className="h-5 w-5" />}
           iconBg="bg-[#6D50B8]/10"
           iconColor="text-[#6D50B8]"
+          variant="purple"
         />
         <SummaryCard
           title={m.dashboard_pending_actions()}
@@ -95,6 +100,7 @@ function DashboardPage() {
           icon={<Clock className="h-5 w-5" />}
           iconBg="bg-[#F4C144]/15"
           iconColor="text-[#F4C144]"
+          variant="pending"
         />
       </div>
 

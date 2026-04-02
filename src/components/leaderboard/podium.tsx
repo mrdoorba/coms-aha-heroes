@@ -13,10 +13,25 @@ type PodiumProps = {
   scoreLabel: string
 }
 
-const RANK_COLORS: Record<number, { badge: string; ring: string }> = {
-  1: { badge: 'bg-[#F4C144] text-white', ring: 'ring-[#F4C144]' },
-  2: { badge: 'bg-[#C0C0C0] text-white', ring: 'ring-[#C0C0C0]' },
-  3: { badge: 'bg-[#CD7F32] text-white', ring: 'ring-[#CD7F32]' },
+const RANK_STYLES: Record<number, { badge: string; ring: string; glow: string; podium: string }> = {
+  1: {
+    badge: 'bg-gradient-to-br from-[#F4C144] to-[#FFD97D] text-white shadow-md',
+    ring: 'ring-[3px] ring-[#F4C144] glow-gold',
+    glow: 'bg-gradient-to-b from-[#F4C144]/10 to-transparent',
+    podium: 'bg-gradient-to-t from-[#F4C144]/30 to-[#F4C144]/5',
+  },
+  2: {
+    badge: 'bg-gradient-to-br from-[#C0C0C0] to-[#E8E8E8] text-white shadow-md',
+    ring: 'ring-[3px] ring-[#C0C0C0]',
+    glow: '',
+    podium: 'bg-gradient-to-t from-[#C0C0C0]/20 to-[#C0C0C0]/5',
+  },
+  3: {
+    badge: 'bg-gradient-to-br from-[#CD7F32] to-[#E8A862] text-white shadow-md',
+    ring: 'ring-[3px] ring-[#CD7F32]',
+    glow: '',
+    podium: 'bg-gradient-to-t from-[#CD7F32]/20 to-[#CD7F32]/5',
+  },
 }
 
 function PodiumItem({
@@ -26,11 +41,11 @@ function PodiumItem({
   entry: PodiumEntry
   size: 'lg' | 'md'
 }) {
-  const colors = RANK_COLORS[entry.rank] ?? { badge: 'bg-muted text-foreground', ring: 'ring-border' }
+  const styles = RANK_STYLES[entry.rank] ?? { badge: 'bg-muted text-foreground', ring: 'ring-border', glow: '', podium: 'bg-muted' }
   const avatarSize = size === 'lg' ? 'h-20 w-20 text-2xl' : 'h-16 w-16 text-lg'
   const nameSize = size === 'lg' ? 'text-sm font-bold' : 'text-xs font-semibold'
-  const scoreSize = size === 'lg' ? 'text-lg font-bold' : 'text-sm font-bold'
-  const podiumHeight = size === 'lg' ? 'h-16' : 'h-10'
+  const scoreSize = size === 'lg' ? 'text-lg font-extrabold' : 'text-sm font-bold'
+  const podiumHeight = size === 'lg' ? 'h-20' : 'h-12'
 
   const initials = entry.name
     .split(' ')
@@ -40,23 +55,23 @@ function PodiumItem({
     .toUpperCase()
 
   return (
-    <div className="flex flex-col items-center gap-1 flex-1">
+    <div className={cn('flex flex-col items-center gap-1.5 flex-1 relative', styles.glow, 'rounded-t-2xl pt-2')}>
       {/* Rank badge */}
       <div
         className={cn(
-          'flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold',
-          colors.badge,
+          'flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold',
+          styles.badge,
         )}
       >
-        {entry.rank === 1 ? <Trophy className="h-3 w-3" /> : entry.rank}
+        {entry.rank === 1 ? <Trophy className="h-3.5 w-3.5" /> : entry.rank}
       </div>
 
       {/* Avatar */}
       <div
         className={cn(
-          'flex items-center justify-center rounded-full ring-2 bg-muted overflow-hidden shrink-0',
+          'flex items-center justify-center rounded-full bg-muted overflow-hidden shrink-0',
           avatarSize,
-          colors.ring,
+          styles.ring,
         )}
       >
         {entry.avatarUrl ? (
@@ -77,7 +92,7 @@ function PodiumItem({
       <p className={cn('text-[#325FEC]', scoreSize)}>{entry.score}</p>
 
       {/* Podium base */}
-      <div className={cn('w-full rounded-t-md bg-muted', podiumHeight)} />
+      <div className={cn('w-full rounded-t-lg', podiumHeight, styles.podium)} />
     </div>
   )
 }
