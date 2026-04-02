@@ -7,6 +7,7 @@ import { Label } from '~/components/ui/label'
 import { EmployeeSelector } from '~/components/points/employee-selector'
 import { FileUpload } from '~/components/ui/file-upload'
 import { getPointsLookupDataFn, submitPointFn } from '~/server/functions/points'
+import { uploadFile } from '~/lib/upload'
 import type { UserRole } from '~/shared/constants'
 
 export const Route = createFileRoute('/_authed/points/new/poin-aha')({
@@ -27,7 +28,7 @@ function PoinAhaForm() {
   const [level, setLevel] = useState(1)
   const [reason, setReason] = useState('')
   const [relatedStaff, setRelatedStaff] = useState('')
-  const [screenshotUrl, setScreenshotUrl] = useState<string | undefined>()
+  const [screenshotFile, setScreenshotFile] = useState<File | undefined>()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -51,6 +52,7 @@ function PoinAhaForm() {
 
     setIsSubmitting(true)
     try {
+      const screenshotUrl = screenshotFile ? await uploadFile(screenshotFile) : undefined
       await submitPointFn({
         data: {
           userId,
@@ -137,8 +139,8 @@ function PoinAhaForm() {
         <div className="space-y-2">
           <Label>{m.form_screenshot_optional()}</Label>
           <FileUpload
-            value={screenshotUrl}
-            onChange={setScreenshotUrl}
+            value={screenshotFile}
+            onChange={setScreenshotFile}
           />
         </div>
 

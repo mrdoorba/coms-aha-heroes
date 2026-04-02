@@ -1,11 +1,11 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react'
+import { Upload, X, Image as ImageIcon } from 'lucide-react'
 import { Button } from './button'
 import { cn } from '~/lib/utils'
 
 type FileUploadProps = {
-  readonly value?: string
-  readonly onChange: (url: string | undefined) => void
+  readonly value?: File
+  readonly onChange: (file: File | undefined) => void
   readonly required?: boolean
   readonly maxSizeMB?: number
   readonly className?: string
@@ -21,17 +21,28 @@ export function FileUpload({
   className,
 }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false)
-  const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [preview, setPreview] = useState<string | null>(value ?? null)
+  const [preview, setPreview] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // Generate preview from file
+  useEffect(() => {
+    if (!value) {
+      setPreview(null)
+      return
+    }
+    const url = URL.createObjectURL(value)
+    setPreview(url)
+    return () => URL.revokeObjectURL(url)
+  }, [value])
+
   const resizeImage = useCallback(
-    (file: File): Promise<Blob> =>
+    (file: File): Promise<File> =>
       new Promise((resolve, reject) => {
         const img = new window.Image()
         img.onload = () => {
           let { width, height } = img
+          URL.revokeObjectURL(img.src)
 
           if (width <= MAX_DIMENSION && height <= MAX_DIMENSION) {
             resolve(file)
@@ -54,7 +65,7 @@ export function FileUpload({
           ctx.drawImage(img, 0, 0, width, height)
           canvas.toBlob(
             (blob) => {
-              if (blob) resolve(blob)
+              if (blob) resolve(new File([blob], file.name, { type: file.type }))
               else reject(new Error('Failed to resize image'))
             },
             file.type,
@@ -67,7 +78,7 @@ export function FileUpload({
     [],
   )
 
-  const uploadFile = useCallback(
+  const handleFile = useCallback(
     async (file: File) => {
       setError(null)
 
@@ -82,39 +93,11 @@ export function FileUpload({
         return
       }
 
-      setIsUploading(true)
-
       try {
         const resized = await resizeImage(file)
-
-        // Show local preview immediately (no server round-trip needed)
-        const localPreview = URL.createObjectURL(resized)
-        setPreview(localPreview)
-
-        const formData = new FormData()
-        formData.append('file', resized, file.name)
-
-        const response = await fetch('/api/v1/uploads', {
-          method: 'POST',
-          body: formData,
-          credentials: 'include',
-        })
-
-        const result = await response.json()
-
-        if (!response.ok) {
-          // Revert preview on failure
-          URL.revokeObjectURL(localPreview)
-          setPreview(null)
-          throw new Error(result.error?.message ?? 'Upload failed')
-        }
-
-        const url = result.data.url as string
-        onChange(url)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Upload failed')
-      } finally {
-        setIsUploading(false)
+        onChange(resized)
+      } catch {
+        setError('Failed to process image')
       }
     },
     [maxSizeMB, onChange, resizeImage],
@@ -125,44 +108,42 @@ export function FileUpload({
       e.preventDefault()
       setIsDragging(false)
       const file = e.dataTransfer.files[0]
-      if (file) uploadFile(file)
+      if (file) handleFile(file)
     },
-    [uploadFile],
+    [handleFile],
   )
 
   const handleFileSelect = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0]
-      if (file) uploadFile(file)
+      if (file) handleFile(file)
     },
-    [uploadFile],
+    [handleFile],
   )
 
   useEffect(() => {
     function handlePaste(e: ClipboardEvent) {
-      if (preview) return
+      if (value) return
       const items = e.clipboardData?.items
       if (!items) return
       for (const item of items) {
         if (item.type.startsWith('image/')) {
           e.preventDefault()
           const file = item.getAsFile()
-          if (file) uploadFile(file)
+          if (file) handleFile(file)
           return
         }
       }
     }
     document.addEventListener('paste', handlePaste)
     return () => document.removeEventListener('paste', handlePaste)
-  }, [preview, uploadFile])
+  }, [value, handleFile])
 
   const handleRemove = useCallback(() => {
-    if (preview?.startsWith('blob:')) URL.revokeObjectURL(preview)
-    setPreview(null)
     onChange(undefined)
     setError(null)
     if (inputRef.current) inputRef.current.value = ''
-  }, [onChange, preview])
+  }, [onChange])
 
   if (preview) {
     return (
@@ -193,7 +174,6 @@ export function FileUpload({
           isDragging
             ? 'border-primary bg-primary/5'
             : 'border-border hover:border-primary/50 hover:bg-muted/50',
-          isUploading && 'pointer-events-none opacity-60',
         )}
         onDragOver={(e) => {
           e.preventDefault()
@@ -211,26 +191,17 @@ export function FileUpload({
           onChange={handleFileSelect}
         />
 
-        {isUploading ? (
-          <>
-            <Loader2 className="h-8 w-8 text-primary animate-spin mb-2" />
-            <p className="text-sm text-muted-foreground">Uploading...</p>
-          </>
+        {isDragging ? (
+          <ImageIcon className="h-8 w-8 text-primary mb-2" />
         ) : (
-          <>
-            {isDragging ? (
-              <ImageIcon className="h-8 w-8 text-primary mb-2" />
-            ) : (
-              <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-            )}
-            <p className="text-sm font-medium">
-              {isDragging ? 'Drop image here' : 'Click, drag, or paste image'}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              JPEG, PNG, WebP, or GIF — max {maxSizeMB}MB
-            </p>
-          </>
+          <Upload className="h-8 w-8 text-muted-foreground mb-2" />
         )}
+        <p className="text-sm font-medium">
+          {isDragging ? 'Drop image here' : 'Click, drag, or paste image'}
+        </p>
+        <p className="text-xs text-muted-foreground mt-1">
+          JPEG, PNG, WebP, or GIF — max {maxSizeMB}MB
+        </p>
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
