@@ -28,6 +28,7 @@ Thumbs.db
 .omc/
 CLAUDE.md
 GEMINI.md
+AGENTS.md
 .playwright-cli/
 
 # Design files (local only)
