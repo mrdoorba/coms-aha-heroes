@@ -1,9 +1,9 @@
 import { readFile } from 'fs/promises'
-import { google } from 'googleapis'
+import { auth as gauth, sheets } from '@googleapis/sheets'
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 
-let authClient: Awaited<ReturnType<typeof google.auth.getClient>> | null = null
+let authClient: InstanceType<typeof gauth.GoogleAuth> | null = null
 
 async function getAuthClient() {
   if (authClient) return authClient
@@ -17,19 +17,16 @@ async function getAuthClient() {
 
   // Detect base64-encoded JSON (does not start with '{' or '/')
   if (!saKeyEnv.trimStart().startsWith('{') && !saKeyEnv.startsWith('/')) {
-    const decoded = Buffer.from(saKeyEnv.trim(), 'base64').toString('utf-8')
-    keyJson = decoded
+    keyJson = Buffer.from(saKeyEnv.trim(), 'base64').toString('utf-8')
   } else if (saKeyEnv.startsWith('/')) {
-    // File path
     keyJson = await readFile(saKeyEnv.trim(), 'utf-8')
   } else {
-    // Inline JSON
     keyJson = saKeyEnv.trim()
   }
 
   const credentials = JSON.parse(keyJson)
 
-  authClient = await google.auth.getClient({
+  authClient = new gauth.GoogleAuth({
     credentials,
     scopes: SCOPES,
   })
@@ -37,22 +34,17 @@ async function getAuthClient() {
   return authClient
 }
 
-/**
- * Reads all rows from a tab in a Google Sheet.
- * Returns an array of rows; each row is an array of cell values.
- * The first row is the header row.
- */
 export async function readSheet(
   sheetId: string,
   tabName: string,
   range = 'A:ZZ',
 ): Promise<string[][]> {
   const auth = await getAuthClient()
-  const sheets = google.sheets({ version: 'v4', auth })
+  const client = sheets({ version: 'v4', auth })
 
   const fullRange = `${tabName}!${range}`
 
-  const response = await sheets.spreadsheets.values.get({
+  const response = await client.spreadsheets.values.get({
     spreadsheetId: sheetId,
     range: fullRange,
     valueRenderOption: 'UNFORMATTED_VALUE',
@@ -64,15 +56,11 @@ export async function readSheet(
   )
 }
 
-/**
- * Returns just the header row (first row) of a tab.
- */
 export async function getSheetHeaders(sheetId: string, tabName: string): Promise<string[]> {
   const rows = await readSheet(sheetId, tabName, 'A1:ZZ1')
   return rows[0] ?? []
 }
 
-// Domain errors
 export class GoogleSheetsConfigError extends Error {
   constructor(message: string) {
     super(message)
