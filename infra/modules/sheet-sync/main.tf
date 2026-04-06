@@ -1,7 +1,7 @@
 # Service account with read-only access to Google Sheets (shared explicitly per sheet)
 resource "google_service_account" "sheet_sync" {
   project      = var.project_id
-  account_id   = "sheet-sync-reader"
+  account_id   = "coms-aha-heroes-sheet-reader"
   display_name = "Sheet Sync Reader (read-only access to Google Sheets)"
 }
 
@@ -13,7 +13,7 @@ resource "google_service_account_key" "sheet_sync_key" {
 # Secret to hold the SA key JSON
 resource "google_secret_manager_secret" "sheet_sync_sa_key" {
   project   = var.project_id
-  secret_id = "sheet-sync-sa-key"
+  secret_id = "coms-aha-heroes-sheet-sync-sa-key"
   replication {
     auto {}
   }
