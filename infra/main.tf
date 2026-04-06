@@ -36,7 +36,7 @@ module "sheet_sync" {
 
 resource "google_service_account" "sheet_sync_scheduler" {
   project      = var.project_id
-  account_id   = "sheet-sync-scheduler"
+  account_id   = "coms-aha-heroes-sheet-sched"
   display_name = "Sheet Sync Scheduler (invokes Cloud Run)"
 }
 
@@ -53,7 +53,7 @@ resource "google_cloud_run_v2_service_iam_member" "scheduler_invoker" {
 resource "google_cloud_scheduler_job" "sheet_sync_daily" {
   project          = var.project_id
   region           = var.region
-  name             = "sheet-sync-daily"
+  name             = "coms-aha-heroes-sheet-sync-daily"
   description      = "Triggers daily Google Sheets sync at 6 AM WIB"
   schedule         = "0 6 * * *"
   time_zone        = "Asia/Jakarta"
