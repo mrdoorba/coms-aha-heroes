@@ -263,6 +263,74 @@
   animation: float-slower 8s ease-in-out infinite;
 }
 
+/* ───── Login Starry Background ───── */
+
+/* Rotating star field using radial-gradient dots */
+.login-stars {
+  background:
+    radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.8) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 25% 55%, rgba(255,255,255,0.6) 50%, transparent 100%),
+    radial-gradient(1px 1px at 40% 15%, rgba(255,255,255,0.7) 50%, transparent 100%),
+    radial-gradient(1.2px 1.2px at 55% 80%, rgba(200,220,255,0.5) 50%, transparent 100%),
+    radial-gradient(1px 1px at 70% 35%, rgba(255,255,255,0.6) 50%, transparent 100%),
+    radial-gradient(0.8px 0.8px at 85% 60%, rgba(255,255,255,0.9) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 15% 75%, rgba(200,220,255,0.4) 50%, transparent 100%),
+    radial-gradient(1px 1px at 60% 45%, rgba(255,255,255,0.5) 50%, transparent 100%),
+    radial-gradient(0.8px 0.8px at 80% 10%, rgba(255,255,255,0.7) 50%, transparent 100%),
+    radial-gradient(1.2px 1.2px at 35% 90%, rgba(200,220,255,0.6) 50%, transparent 100%),
+    radial-gradient(1px 1px at 90% 85%, rgba(255,255,255,0.5) 50%, transparent 100%),
+    radial-gradient(0.6px 0.6px at 5% 50%, rgba(255,255,255,0.8) 50%, transparent 100%),
+    radial-gradient(1px 1px at 48% 65%, rgba(200,220,255,0.5) 50%, transparent 100%),
+    radial-gradient(0.8px 0.8px at 72% 72%, rgba(255,255,255,0.6) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 20% 40%, rgba(255,255,255,0.4) 50%, transparent 100%);
+  animation: login-rotate-stars 120s linear infinite;
+}
+
+@keyframes login-rotate-stars {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Radial light burst glow */
+.login-glow {
+  background: radial-gradient(
+    circle,
+    rgba(150, 200, 255, 0.25) 0%,
+    rgba(100, 160, 255, 0.12) 30%,
+    rgba(60, 120, 255, 0.05) 55%,
+    transparent 75%
+  );
+  animation: login-pulse-glow 6s ease-in-out infinite;
+}
+
+@keyframes login-pulse-glow {
+  0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+}
+
+/* Floating particles */
+@keyframes login-drift {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translateY(-80px) translateX(20px); opacity: 0; }
+}
+
+.login-particle {
+  animation: login-drift 7s ease-in-out infinite;
+}
+
+/* Fade-in for content */
+@keyframes login-fade-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.login-fade-in {
+  opacity: 0;
+  animation: login-fade-in 0.6s ease-out forwards;
+}
+
 /* Gradient button base */
 .btn-gradient-blue {
   background: linear-gradient(135deg, #325FEC 0%, #759EEE 100%);
@@ -318,8 +386,16 @@
   .pulse-gold,
   .glow-gold,
   .float-slow,
-  .float-slower {
+  .float-slower,
+  .login-stars,
+  .login-glow,
+  .login-particle,
+  .login-fade-in {
     animation: none;
+  }
+
+  .login-fade-in {
+    opacity: 1;
   }
 
   .card-hover:hover {
