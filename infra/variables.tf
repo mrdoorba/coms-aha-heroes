@@ -39,6 +39,18 @@ variable "alert_email" {
   type        = string
 }
 
+variable "sheet_id_points" {
+  description = "Google Spreadsheet ID for points and redeem tabs"
+  type        = string
+  default     = ""
+}
+
+variable "sheet_id_employees" {
+  description = "Google Spreadsheet ID for employee list tab"
+  type        = string
+  default     = ""
+}
+
 variable "app_image" {
   description = "Full Docker image URI for Cloud Run (overridden per deploy)"
   type        = string

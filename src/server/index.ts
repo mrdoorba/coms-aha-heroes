@@ -22,6 +22,7 @@ import { redemptionsRoute } from './routes/redemptions'
 import { settingsRoute } from './routes/settings'
 import { auditLogsRoute } from './routes/audit-logs'
 import { reportsRoute } from './routes/reports'
+import { sheetSyncRoute, sheetSyncTriggerRoute } from './routes/sheet-sync'
 
 const app = new Elysia({ prefix: '/api' })
   .onError(errorHandler)
@@ -35,6 +36,7 @@ const app = new Elysia({ prefix: '/api' })
   .use(health)
   .use(healthz)
   .use(authRoute)
+  .use(sheetSyncTriggerRoute)
   // Protected routes — auth + RLS middleware chain
   .group('/v1', (app) =>
     app
@@ -54,7 +56,8 @@ const app = new Elysia({ prefix: '/api' })
       .use(redemptionsRoute)
       .use(settingsRoute)
       .use(auditLogsRoute)
-      .use(reportsRoute),
+      .use(reportsRoute)
+      .use(sheetSyncRoute),
   )
 
 export type App = typeof app

@@ -27,6 +27,9 @@ export const users = pgTable(
     role: userRoleEnum('role').notNull().default('employee'),
     department: varchar('department', { length: 100 }),
     position: varchar('position', { length: 100 }),
+    phone: varchar('phone', { length: 20 }),
+    employmentStatus: varchar('employment_status', { length: 20 }),
+    talentaId: varchar('talenta_id', { length: 50 }),
     avatarUrl: text('avatar_url'),
     localePref: varchar('locale_pref', { length: 10 }),
     mustChangePassword: boolean('must_change_password').notNull().default(true),
@@ -40,6 +43,7 @@ export const users = pgTable(
     index('idx_users_team').on(t.teamId),
     index('idx_users_email').on(t.email),
     index('idx_users_attendance_name').on(t.attendanceName),
+    uniqueIndex('idx_users_talenta_id').on(t.talentaId),
   ],
 )
 
