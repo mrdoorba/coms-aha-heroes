@@ -43,6 +43,13 @@
       "when": 1775102468931,
       "tag": "0005_hard_nebula",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1775464669544,
+      "tag": "0006_loud_cassandra_nova",
+      "breakpoints": true
     }
   ]
 }

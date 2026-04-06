@@ -27,3 +27,8 @@ output "wif_service_account" {
   description = "Deployer SA email — set as WIF_SERVICE_ACCOUNT GitHub secret"
   value       = module.github_wif.deployer_service_account_email
 }
+
+output "sheet_sync_service_account_email" {
+  description = "Share your Google Sheet with this email to enable sync"
+  value       = module.sheet_sync.service_account_email
+}

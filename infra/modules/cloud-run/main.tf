@@ -168,6 +168,36 @@ resource "google_cloud_run_v2_service" "app" {
         }
       }
 
+      dynamic "env" {
+        for_each = var.sheet_sync_sa_key_secret_id != "" ? [var.sheet_sync_sa_key_secret_id] : []
+        content {
+          name = "GOOGLE_SHEETS_SA_KEY"
+          value_source {
+            secret_key_ref {
+              secret  = env.value
+              version = "latest"
+            }
+          }
+        }
+      }
+
+      dynamic "env" {
+        for_each = var.sheet_sync_config.sheet_id_points != "" ? {
+          GOOGLE_SHEET_ID_POINTS    = var.sheet_sync_config.sheet_id_points
+          GOOGLE_SHEET_ID_EMPLOYEES = var.sheet_sync_config.sheet_id_employees
+          SHEET_TAB_EMPLOYEES       = var.sheet_sync_config.tab_employees
+          SHEET_TAB_BINTANG         = var.sheet_sync_config.tab_bintang
+          SHEET_TAB_PENALTI         = var.sheet_sync_config.tab_penalti
+          SHEET_TAB_POIN_AHA        = var.sheet_sync_config.tab_poin_aha
+          SHEET_TAB_REDEEM          = var.sheet_sync_config.tab_redeem
+          SHEET_SYNC_INTERVAL_MS    = var.sheet_sync_config.sync_interval_ms
+        } : {}
+        content {
+          name  = env.key
+          value = env.value
+        }
+      }
+
       startup_probe {
         http_get {
           path = "/api/healthz"

@@ -35,3 +35,33 @@ variable "exports_bucket_name" {
   description = "GCS bucket name for report exports"
   type        = string
 }
+
+variable "sheet_sync_sa_key_secret_id" {
+  description = "Secret Manager secret ID for the Google Sheets sync SA key"
+  type        = string
+  default     = ""
+}
+
+variable "sheet_sync_config" {
+  description = "Google Sheets sync configuration (Sheet IDs and tab names)"
+  type = object({
+    sheet_id_points    = string
+    sheet_id_employees = string
+    tab_employees      = string
+    tab_bintang        = string
+    tab_penalti        = string
+    tab_poin_aha       = string
+    tab_redeem         = string
+    sync_interval_ms   = string
+  })
+  default = {
+    sheet_id_points    = ""
+    sheet_id_employees = ""
+    tab_employees      = "HEROES - Fulltime Staff"
+    tab_bintang        = "Poin Bintang"
+    tab_penalti        = "Poin Penalti"
+    tab_poin_aha       = "Poin AHA"
+    tab_redeem         = "Redeem Poin AHA"
+    sync_interval_ms   = "600000"
+  }
+}
