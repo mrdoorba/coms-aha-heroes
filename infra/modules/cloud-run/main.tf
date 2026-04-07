@@ -109,6 +109,14 @@ resource "google_cloud_run_v2_service" "app" {
 
   deletion_protection = false
 
+  # Image is managed by the GitHub Actions deploy workflow, not OpenTofu.
+  # Without this, tofu apply resets the image to the placeholder default.
+  lifecycle {
+    ignore_changes = [
+      template[0].containers[0].image,
+    ]
+  }
+
   template {
     service_account = google_service_account.cloud_run.email
 
@@ -219,7 +227,7 @@ resource "google_cloud_run_v2_service" "app" {
       resources {
         limits = {
           cpu    = "1"
-          memory = "512Mi"
+          memory = "1Gi"
         }
         # Release CPU when not handling requests (cost saving)
         cpu_idle = true
