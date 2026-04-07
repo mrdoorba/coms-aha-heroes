@@ -16,7 +16,7 @@ export function AppShell({ user, unreadCount, children }: AppShellProps) {
 
   return (
     <div className="app-bg min-h-screen">
-      <TopBar user={user} unreadCount={unreadCount} className="md:hidden" />
+      <TopBar user={{ name: user.name, role: user.role, avatarUrl: user.avatarUrl }} unreadCount={unreadCount} className="md:hidden" />
       <Sidebar
         user={user}
         collapsed={sidebarCollapsed}
