@@ -25,7 +25,7 @@ export function BottomNav({ className }: BottomNavProps) {
     <nav
       className={cn(
         'fixed bottom-0 left-0 right-0 z-50 flex h-16 items-stretch',
-        'bg-[#151C3B] border-t border-white/8',
+        'bg-[#0d1229]/85 backdrop-blur-xl border-t border-white/10',
         className,
       )}
     >

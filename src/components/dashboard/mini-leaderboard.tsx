@@ -39,7 +39,7 @@ const RANK_NUM_STYLE: Record<number, string> = {
 
 export function MiniLeaderboard({ entries, currentUserId }: MiniLeaderboardProps) {
   return (
-    <div className="overflow-hidden rounded-2xl bg-white border border-[#325FEC]/8 shadow-[0_2px_12px_rgba(29,56,139,0.08)]">
+    <div className="overflow-hidden rounded-2xl bg-white border border-[#F4C144]/15 shadow-[0_2px_12px_rgba(244,193,68,0.12)]">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#325FEC]/8">
         <div className="flex items-center gap-2">
@@ -69,7 +69,7 @@ export function MiniLeaderboard({ entries, currentUserId }: MiniLeaderboardProps
               <li
                 key={entry.userId}
                 className={cn(
-                  'flex items-center gap-2.5 px-4 py-2.5 transition-colors',
+                  'tap-active flex items-center gap-2.5 px-4 py-2.5 transition-colors',
                   isCurrentUser
                     ? 'bg-gradient-to-r from-[#325FEC]/6 to-transparent'
                     : 'hover:bg-[#325FEC]/3',

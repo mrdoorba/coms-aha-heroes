@@ -35,7 +35,7 @@ export function PointCard({
     <Link
       to="/points/$id"
       params={{ id }}
-      className="flex items-center gap-3 rounded-2xl bg-white border border-[#325FEC]/8 px-4 py-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(29,56,139,0.10)] group"
+      className="tap-active flex items-center gap-3 rounded-2xl bg-white border border-[#325FEC]/8 px-4 py-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(29,56,139,0.10)] group"
     >
       <CategoryIcon code={categoryCode} size="md" />
 

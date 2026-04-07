@@ -19,7 +19,7 @@ type RewardCardProps = {
 
 export function RewardCard({ reward, isAdmin, onRedeem, onEdit }: RewardCardProps) {
   return (
-    <div className="card-hover group flex flex-col overflow-hidden rounded-2xl bg-white border border-[#325FEC]/8 shadow-[0_2px_12px_rgba(29,56,139,0.07)]">
+    <div className="card-hover shine-on-hover group flex flex-col overflow-hidden rounded-2xl bg-white border border-[#325FEC]/8 shadow-[0_2px_12px_rgba(29,56,139,0.07)]">
       {/* Image / icon area */}
       <div className="relative aspect-square w-full overflow-hidden bg-gradient-to-br from-[#EDF1FA] to-[#E2E8F4]">
         {reward.imageUrl ? (
