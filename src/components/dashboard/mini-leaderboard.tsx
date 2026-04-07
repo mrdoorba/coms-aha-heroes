@@ -86,7 +86,15 @@ export function MiniLeaderboard({ entries, currentUserId }: MiniLeaderboardProps
                   medal?.ring,
                 )}>
                   {entry.avatarUrl ? (
-                    <img src={entry.avatarUrl} alt={entry.name} className="h-full w-full object-cover" />
+                    <img
+                      src={entry.avatarUrl}
+                      alt={entry.name}
+                      className="h-full w-full object-cover"
+                      width={32}
+                      height={32}
+                      loading="lazy"
+                      decoding="async"
+                    />
                   ) : (
                     <span className="text-[10px] font-bold text-[#325FEC]">{getInitials(entry.name)}</span>
                   )}

@@ -117,7 +117,15 @@ function ProfilePage() {
             <div className="relative">
               <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-white text-2xl font-bold text-[#325FEC] ring-4 ring-white shadow-lg">
                 {user.avatarUrl ? (
-                  <img src={user.avatarUrl} alt={user.name} className="h-full w-full object-cover" />
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.name}
+                    className="h-full w-full object-cover"
+                    width={80}
+                    height={80}
+                    loading="lazy"
+                    decoding="async"
+                  />
                 ) : (
                   initials || <User className="h-8 w-8" />
                 )}

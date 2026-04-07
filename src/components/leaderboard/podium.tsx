@@ -69,6 +69,7 @@ function PodiumItem({
   }
 
   const avatarSize = size === 'lg' ? 'h-20 w-20' : 'h-14 w-14'
+  const avatarPx = size === 'lg' ? 80 : 56
   const textSize = size === 'lg' ? 'text-sm font-bold' : 'text-xs font-semibold'
   const scoreTextSize = size === 'lg' ? 'text-base' : 'text-sm'
 
@@ -103,7 +104,15 @@ function PodiumItem({
         )}
       >
         {entry.avatarUrl ? (
-          <img src={entry.avatarUrl} alt={entry.name} className="h-full w-full object-cover" />
+          <img
+            src={entry.avatarUrl}
+            alt={entry.name}
+            className="h-full w-full object-cover"
+            width={avatarPx}
+            height={avatarPx}
+            loading="lazy"
+            decoding="async"
+          />
         ) : (
           <span className="font-bold text-[#325FEC] text-lg">{initials}</span>
         )}

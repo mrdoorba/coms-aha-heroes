@@ -107,6 +107,10 @@ export function Header({ user, unreadCount, className }: HeaderProps) {
                   src={user.avatarUrl}
                   alt={user.name}
                   className="h-full w-full object-cover"
+                  width={28}
+                  height={28}
+                  loading="lazy"
+                  decoding="async"
                 />
               ) : (
                 <span>{initials || <User className="h-3.5 w-3.5" />}</span>

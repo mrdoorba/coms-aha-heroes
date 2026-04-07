@@ -41,6 +41,10 @@ export function LeaderboardRow({ entry, isCurrentUser }: LeaderboardRowProps) {
             src={entry.avatarUrl}
             alt={entry.name}
             className="h-full w-full object-cover"
+            width={40}
+            height={40}
+            loading="lazy"
+            decoding="async"
           />
         ) : (
           <span className="text-sm font-bold text-[#325FEC]">{initials}</span>

@@ -136,6 +136,10 @@ export function Sidebar({ user, collapsed, onMouseEnter, onMouseLeave, className
                 src={user.avatarUrl}
                 alt={user.name}
                 className="h-full w-full object-cover"
+                width={32}
+                height={32}
+                loading="lazy"
+                decoding="async"
               />
             ) : (
               <span>{initials || <User className="h-4 w-4" />}</span>
