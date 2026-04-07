@@ -19,12 +19,15 @@ export const Route = createFileRoute('/_authed/settings')({
 function SettingsSkeleton() {
   return (
     <div className="mx-auto max-w-2xl space-y-6 p-4 pt-6 animate-pulse">
-      <div className="flex items-center gap-2">
-        <div className="h-6 w-6 rounded bg-muted" />
-        <div className="h-6 w-32 rounded bg-muted" />
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-10 rounded-xl bg-[#325FEC]/8" />
+        <div className="space-y-1.5">
+          <div className="h-5 w-28 rounded bg-[#325FEC]/8" />
+          <div className="h-3.5 w-20 rounded bg-[#325FEC]/5" />
+        </div>
       </div>
       {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="h-40 rounded-xl border border-gray-100 bg-white" />
+        <div key={i} className="h-40 rounded-xl border border-[#325FEC]/8 bg-white shadow-[0_2px_12px_rgba(29,56,139,0.07)]" />
       ))}
     </div>
   )
@@ -115,22 +118,30 @@ function SettingsForm({
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 p-4 pb-24 pt-6 md:pb-8">
+    <div className="mx-auto max-w-2xl space-y-6 p-4 pb-24 pt-6 md:pb-8 page-transition">
       {/* Header */}
-      <div className="flex items-center gap-2">
-        <Settings className="h-6 w-6 text-[#1D388B]" />
-        <h1 className="text-xl font-bold text-[#1D388B]">{m.settings_title()}</h1>
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#325FEC] to-[#759EEE] shadow-[0_4px_12px_rgba(50,95,236,0.25)]">
+          <Settings className="h-5 w-5 text-white" />
+        </div>
+        <div>
+          <h1 className="text-xl font-extrabold text-[#1D388B]">{m.settings_title()}</h1>
+          <p className="text-[13px] font-medium text-[#1D388B]/50">{m.settings_admin_only?.() ?? 'Admin configuration'}</p>
+        </div>
       </div>
 
       {/* Section 1: Point Impact Values */}
-      <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
-        <h2 className="mb-4 text-sm font-semibold text-[#1D388B]">
-          {m.settings_point_impact()}
-        </h2>
+      <div className="rounded-xl border border-[#325FEC]/8 bg-white p-5 shadow-[0_2px_12px_rgba(29,56,139,0.07)]">
+        <div className="mb-1 flex items-center gap-2">
+          <Tag className="h-4 w-4 text-[#325FEC]" />
+          <h2 className="text-[13px] font-bold uppercase tracking-wider text-[#1D388B]/60">
+            {m.settings_point_impact()}
+          </h2>
+        </div>
 
-        <div className="space-y-4">
+        <div className="mt-4 space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="bintang-impact" className="text-sm font-medium">
+            <Label htmlFor="bintang-impact" className="text-sm font-semibold text-[#1D388B]">
               {m.settings_bintang_impact()}
             </Label>
             <Input
@@ -138,13 +149,13 @@ function SettingsForm({
               type="number"
               value={bintangImpact}
               onChange={(e) => setBintangImpact(Number(e.target.value))}
-              className="w-full rounded-xl"
+              className="w-full rounded-xl border-[#325FEC]/15 focus:border-[#325FEC]/40"
               placeholder="+10"
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="penalti-impact" className="text-sm font-medium">
+            <Label htmlFor="penalti-impact" className="text-sm font-semibold text-[#1D388B]">
               {m.settings_penalti_impact()}
             </Label>
             <Input
@@ -152,14 +163,14 @@ function SettingsForm({
               type="number"
               value={penaltiImpact}
               onChange={(e) => setPenaltiImpact(Number(e.target.value))}
-              className="w-full rounded-xl"
+              className="w-full rounded-xl border-[#325FEC]/15 focus:border-[#325FEC]/40"
               placeholder="-5"
             />
           </div>
 
           {/* Warning */}
-          <div className="flex items-start gap-2 rounded-xl bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-yellow-500" />
+          <div className="flex items-start gap-2.5 rounded-xl bg-[#F4C144]/10 border border-[#F4C144]/25 px-4 py-3 text-sm text-[#7a5800]">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[#F4C144]" />
             <span>
               {m.settings_impact_warning()}
             </span>
@@ -167,16 +178,16 @@ function SettingsForm({
 
           {/* Feedback */}
           {saveError && (
-            <p className="text-sm text-red-600">{saveError}</p>
+            <p className="text-sm text-[#C73E3E] font-medium">{saveError}</p>
           )}
           {saveSuccess && (
-            <p className="text-sm text-green-600">{m.settings_saved()}</p>
+            <p className="text-sm text-[#22C55E] font-medium">{m.settings_saved()}</p>
           )}
 
           <Button
             onClick={handleSaveImpacts}
             disabled={saving}
-            className="w-full rounded-xl bg-[#325FEC] text-white hover:bg-[#1D388B]"
+            className="btn-gradient-blue w-full rounded-xl text-white font-semibold shadow-[0_2px_8px_rgba(50,95,236,0.25)]"
           >
             <Save className="mr-1.5 h-4 w-4" />
             {saving ? m.settings_saving() : m.common_save()}
@@ -185,10 +196,10 @@ function SettingsForm({
       </div>
 
       {/* Section 2: Branch Management */}
-      <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+      <div className="rounded-xl border border-[#325FEC]/8 bg-white p-5 shadow-[0_2px_12px_rgba(29,56,139,0.07)]">
         <div className="mb-4 flex items-center gap-2">
-          <Globe className="h-4 w-4 text-[#1D388B]" />
-          <h2 className="text-sm font-semibold text-[#1D388B]">
+          <Globe className="h-4 w-4 text-[#325FEC]" />
+          <h2 className="text-[13px] font-bold uppercase tracking-wider text-[#1D388B]/60">
             {m.settings_branch_management()}
           </h2>
         </div>
@@ -197,22 +208,22 @@ function SettingsForm({
           {BRANCHES.map((branch) => (
             <li
               key={branch.name}
-              className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3"
+              className="flex items-center justify-between rounded-xl bg-[#EDF1FA] border border-[#325FEC]/8 px-4 py-3"
             >
-              <span className="text-sm font-medium">
+              <span className="text-sm font-semibold text-[#1D388B]">
                 {branch.flag} {branch.name}
               </span>
-              <span className="text-xs text-gray-500">{branch.timezone}</span>
+              <span className="text-xs font-medium text-[#1D388B]/50">{branch.timezone}</span>
             </li>
           ))}
         </ul>
       </div>
 
       {/* Section 3: Point Categories */}
-      <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+      <div className="rounded-xl border border-[#325FEC]/8 bg-white p-5 shadow-[0_2px_12px_rgba(29,56,139,0.07)]">
         <div className="mb-4 flex items-center gap-2">
-          <Tag className="h-4 w-4 text-[#1D388B]" />
-          <h2 className="text-sm font-semibold text-[#1D388B]">
+          <Tag className="h-4 w-4 text-[#325FEC]" />
+          <h2 className="text-[13px] font-bold uppercase tracking-wider text-[#1D388B]/60">
             {m.settings_point_categories()}
           </h2>
         </div>
@@ -221,14 +232,14 @@ function SettingsForm({
           {POINT_CATEGORIES.map((cat) => (
             <li
               key={cat.type}
-              className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3"
+              className="flex items-center justify-between rounded-xl bg-[#EDF1FA] border border-[#325FEC]/8 px-4 py-3"
             >
-              <span className="text-sm font-medium">{cat.name}</span>
+              <span className="text-sm font-semibold text-[#1D388B]">{cat.name}</span>
               <span
                 className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
                   cat.active
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-gray-200 text-gray-500'
+                    ? 'bg-[#22C55E]/12 text-[#22C55E]'
+                    : 'bg-[#1D388B]/8 text-[#1D388B]/50'
                 }`}
               >
                 {cat.active ? m.status_active() : m.status_inactive()}

@@ -167,7 +167,7 @@ function ReportsPage() {
       </div>
 
       {/* Filter bar */}
-      <Card>
+      <Card className="border-[#325FEC]/8 shadow-[0_2px_12px_rgba(29,56,139,0.07)]">
         <CardContent className="flex flex-wrap items-center gap-3 p-4">
           <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-muted-foreground">{m.reports_start_date()}</label>
@@ -231,7 +231,7 @@ function ReportsPage() {
       </div>
 
       {/* By Category */}
-      <Card>
+      <Card className="border-[#325FEC]/8 shadow-[0_2px_12px_rgba(29,56,139,0.07)]">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold text-[#1D388B]">
             {m.reports_by_category()}
@@ -268,7 +268,7 @@ function ReportsPage() {
       </Card>
 
       {/* Top Teams */}
-      <Card>
+      <Card className="border-[#325FEC]/8 shadow-[0_2px_12px_rgba(29,56,139,0.07)]">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold text-[#1D388B]">
             {m.reports_top_teams()}
@@ -292,7 +292,7 @@ function ReportsPage() {
       </Card>
 
       {/* Submissions Over Time */}
-      <Card>
+      <Card className="border-[#325FEC]/8 shadow-[0_2px_12px_rgba(29,56,139,0.07)]">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold text-[#1D388B]">
             {m.reports_over_time()}

@@ -47,13 +47,13 @@ const redemptionStatusConfig: Record<
   { className: string }
 > = {
   pending: {
-    className: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+    className: 'bg-[#F4C144]/15 text-[#a07700] border-[#F4C144]/30',
   },
   approved: {
-    className: 'bg-green-100 text-green-700 border-green-200',
+    className: 'bg-[#22C55E]/12 text-[#22C55E] border-[#22C55E]/20',
   },
   rejected: {
-    className: 'bg-red-100 text-red-700 border-red-200',
+    className: 'bg-[#C73E3E]/10 text-[#C73E3E] border-[#C73E3E]/20',
   },
 }
 
@@ -101,14 +101,17 @@ export const Route = createFileRoute('/_authed/redemptions')({
 function RedemptionsSkeleton() {
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6 animate-pulse">
-      <div className="h-6 w-32 rounded bg-muted" />
-      <div className="flex gap-2 border-b border-border pb-2">
-        <div className="h-8 w-28 rounded bg-muted" />
-        <div className="h-8 w-36 rounded bg-muted" />
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-10 rounded-xl bg-[#325FEC]/8" />
+        <div className="h-6 w-32 rounded bg-[#325FEC]/8" />
+      </div>
+      <div className="flex gap-1.5 rounded-2xl border border-[#325FEC]/8 bg-white p-1.5">
+        <div className="h-10 flex-1 rounded-xl bg-[#325FEC]/8" />
+        <div className="h-10 flex-1 rounded-xl bg-[#325FEC]/5" />
       </div>
       <div className="space-y-3">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-24 rounded-xl border border-border bg-white" />
+          <div key={i} className="h-24 rounded-xl border border-[#325FEC]/8 bg-white shadow-[0_2px_12px_rgba(29,56,139,0.07)]" />
         ))}
       </div>
     </div>
@@ -244,34 +247,45 @@ function RedemptionsPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4 space-y-6">
-      <h1 className="text-xl font-bold text-[#1D388B]">{m.redemptions_title()}</h1>
+    <div className="max-w-2xl mx-auto p-4 space-y-5 page-transition">
+      {/* Header */}
+      <div className="flex items-center gap-3 pt-2">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#F4C144] to-[#FFD97D] shadow-[0_4px_12px_rgba(244,193,68,0.25)]">
+          <Gift className="h-5 w-5 text-[#7a5800]" />
+        </div>
+        <div>
+          <h1 className="text-xl font-extrabold text-[#1D388B]">{m.redemptions_title()}</h1>
+          <p className="text-[13px] font-medium text-[#1D388B]/50">{m.nav_redemptions?.() ?? 'Reward redemptions'}</p>
+        </div>
+      </div>
 
-      {/* Tab bar */}
-      <div className="flex gap-2 border-b border-border">
+      {/* Tab switcher — pill style matching leaderboard */}
+      <div className="flex gap-1.5 rounded-2xl bg-white border border-[#325FEC]/8 p-1.5 shadow-[0_2px_8px_rgba(29,56,139,0.06)]">
         <button
           type="button"
           className={cn(
-            'px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px',
+            'flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-bold transition-all duration-200 min-h-[44px]',
             activeTab === 'mine'
-              ? 'border-[#325FEC] text-[#325FEC]'
-              : 'border-transparent text-muted-foreground hover:text-foreground',
+              ? 'bg-gradient-to-br from-[#F4C144]/18 to-[#F4C144]/8 text-[#a07700] shadow-[0_2px_8px_rgba(244,193,68,0.20)] border border-[#F4C144]/30'
+              : 'text-muted-foreground hover:text-foreground',
           )}
           onClick={() => handleTabChange('mine')}
         >
+          <Gift className="h-4 w-4" />
           {m.redemptions_my_requests()}
         </button>
         {isHrOrAdmin && (
           <button
             type="button"
             className={cn(
-              'px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px',
+              'flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-bold transition-all duration-200 min-h-[44px]',
               activeTab === 'pending'
-                ? 'border-[#325FEC] text-[#325FEC]'
-                : 'border-transparent text-muted-foreground hover:text-foreground',
+                ? 'bg-gradient-to-br from-[#325FEC]/18 to-[#325FEC]/8 text-[#325FEC] shadow-[0_2px_8px_rgba(50,95,236,0.20)] border border-[#325FEC]/30'
+                : 'text-muted-foreground hover:text-foreground',
             )}
             onClick={() => handleTabChange('pending')}
           >
+            <Gift className="h-4 w-4" />
             {m.redemptions_pending_approval()}
           </button>
         )}
@@ -342,23 +356,25 @@ function RedemptionsPage() {
           Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="h-24 rounded-xl border border-border bg-muted/50 animate-pulse"
+              className="h-24 rounded-xl border border-[#325FEC]/8 bg-white shadow-[0_2px_12px_rgba(29,56,139,0.07)] animate-pulse"
             />
           ))
         ) : redemptions.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
-            <Gift className="h-10 w-10 text-muted-foreground/40" />
-            <p className="text-muted-foreground">{m.redemptions_empty()}</p>
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#F4C144]/12">
+              <Gift className="h-7 w-7 text-[#F4C144]" />
+            </div>
+            <p className="text-sm font-medium text-[#1D388B]/60">{m.redemptions_empty()}</p>
           </div>
         ) : (
           redemptions.map((item) => (
             <div
               key={item.id}
               className={cn(
-                'flex items-start gap-3 rounded-xl border bg-white px-4 py-3',
+                'flex items-start gap-3 rounded-xl border bg-white px-4 py-3 shadow-[0_2px_12px_rgba(29,56,139,0.07)] transition-all duration-200',
                 activeTab === 'pending' && bulk.selectedIds.has(item.id)
-                  ? 'border-[#325FEC] bg-blue-50/30'
-                  : 'border-border',
+                  ? 'border-[#325FEC]/40 bg-[#EDF1FA]/50 shadow-[0_2px_12px_rgba(50,95,236,0.12)]'
+                  : 'border-[#325FEC]/8 hover:border-[#325FEC]/20 hover:shadow-[0_4px_16px_rgba(29,56,139,0.10)]',
               )}
             >
               {activeTab === 'pending' && isHrOrAdmin && item.status === 'pending' && (
@@ -370,7 +386,7 @@ function RedemptionsPage() {
                 </div>
               )}
               {/* Thumbnail */}
-              <div className="shrink-0 h-12 w-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
+              <div className="shrink-0 h-12 w-12 rounded-xl bg-[#325FEC]/8 flex items-center justify-center overflow-hidden border border-[#325FEC]/10">
                 {item.rewardImageUrl ? (
                   <img
                     src={item.rewardImageUrl}
@@ -378,7 +394,7 @@ function RedemptionsPage() {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <Gift className="h-6 w-6 text-muted-foreground/60" />
+                  <Gift className="h-6 w-6 text-[#325FEC]/50" />
                 )}
               </div>
 
@@ -392,28 +408,28 @@ function RedemptionsPage() {
                 </div>
 
                 {activeTab === 'pending' && (
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="text-xs text-[#1D388B]/50 mt-0.5">
                     {m.redemptions_requested_by()}{' '}
-                    <span className="font-medium text-foreground">{item.userName}</span>
+                    <span className="font-semibold text-[#1D388B]/80">{item.userName}</span>
                   </p>
                 )}
 
-                <p className="text-xs font-medium text-[#325FEC] mt-0.5">
+                <p className="text-xs font-semibold text-[#325FEC] mt-0.5">
                   {item.pointsSpent} {m.points_poin_aha()}
                 </p>
 
                 <div className="flex items-center gap-2 mt-1 flex-wrap">
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-[#1D388B]/40">
                     {formatDate(item.createdAt)}
                   </span>
                   {item.approverName && item.status !== 'pending' && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-[#1D388B]/40">
                       · {item.status === 'approved' ? m.redemptions_approved_by() : m.redemptions_rejected_by()}{' '}
-                      <span className="font-medium text-foreground">{item.approverName}</span>
+                      <span className="font-medium text-[#1D388B]/70">{item.approverName}</span>
                     </span>
                   )}
                   {item.rejectionReason && (
-                    <span className="text-xs text-red-600 italic">
+                    <span className="text-xs text-[#C73E3E] italic">
                       "{item.rejectionReason}"
                     </span>
                   )}
@@ -424,7 +440,7 @@ function RedemptionsPage() {
                   <div className="flex gap-2 mt-2">
                     <Button
                       size="sm"
-                      className="h-7 px-3 text-xs bg-green-600 hover:bg-green-700 text-white"
+                      className="h-7 px-3 text-xs btn-gradient-blue text-white rounded-lg font-semibold"
                       disabled={isSubmitting}
                       onClick={() => handleApprove(item.id)}
                     >
@@ -433,7 +449,7 @@ function RedemptionsPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-7 px-3 text-xs border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                      className="h-7 px-3 text-xs border-[#C73E3E]/25 text-[#C73E3E] hover:bg-[#C73E3E]/8 hover:text-[#C73E3E] rounded-lg font-semibold"
                       disabled={isSubmitting}
                       onClick={() => openRejectDialog(item.id)}
                     >
@@ -497,7 +513,7 @@ function RedemptionsPage() {
             </Button>
             <Button
               size="sm"
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="btn-gradient-purple text-white rounded-lg font-semibold"
               disabled={isSubmitting}
               onClick={handleRejectConfirm}
             >

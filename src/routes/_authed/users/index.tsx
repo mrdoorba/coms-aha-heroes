@@ -264,8 +264,8 @@ function UsersPage() {
       header: () => m.users_col_name(),
       cell: (info) => (
         <div>
-          <div className="font-medium text-gray-900">{info.getValue()}</div>
-          <div className="text-xs text-gray-500">{info.row.original.email}</div>
+          <div className="font-semibold text-[#1D388B]">{info.getValue()}</div>
+          <div className="text-xs text-[#1D388B]/50">{info.row.original.email}</div>
         </div>
       ),
     }),
@@ -278,7 +278,7 @@ function UsersPage() {
       cell: (info) => {
         const tid = info.getValue()
         return (
-          <span className="text-gray-600">
+          <span className="text-[#1D388B]/60 text-sm">
             {tid ? teamMap.get(tid) ?? '-' : '-'}
           </span>
         )
@@ -287,17 +287,17 @@ function UsersPage() {
     columnHelper.accessor('department', {
       header: () => m.users_col_department(),
       cell: (info) => (
-        <span className="text-gray-600">{info.getValue() ?? '-'}</span>
+        <span className="text-[#1D388B]/60 text-sm">{info.getValue() ?? '-'}</span>
       ),
     }),
     columnHelper.accessor('isActive', {
       header: () => m.users_col_status(),
       cell: (info) => (
         <span
-          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
             info.getValue()
-              ? 'bg-green-100 text-green-700'
-              : 'bg-red-100 text-red-700'
+              ? 'bg-[#22C55E]/12 text-[#22C55E]'
+              : 'bg-[#C73E3E]/10 text-[#C73E3E]'
           }`}
         >
           {info.getValue() ? m.status_active() : m.status_archived()}
@@ -345,25 +345,33 @@ function UsersPage() {
   const totalPages = Math.ceil(meta.total / meta.limit)
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 page-transition">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[#1D388B]">{m.nav_users()}</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            {m.users_total({ count: String(meta.total) })}
-          </p>
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#325FEC] to-[#759EEE] shadow-[0_4px_12px_rgba(50,95,236,0.25)]">
+            <User className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-xl font-extrabold text-[#1D388B]">{m.nav_users()}</h1>
+            <p className="mt-0.5 text-[13px] font-medium text-[#1D388B]/50">
+              {m.users_total({ count: String(meta.total) })}
+            </p>
+          </div>
         </div>
-        <Button onClick={() => setCreateOpen(true)}>
+        <Button
+          onClick={() => setCreateOpen(true)}
+          className="btn-gradient-blue shrink-0 text-white h-9 px-4 rounded-xl font-semibold shadow-[0_2px_8px_rgba(50,95,236,0.25)]"
+        >
           <Plus className="size-4" data-icon="inline-start" />
           {m.users_add()}
         </Button>
       </div>
 
       {/* Filters */}
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="mb-4 flex flex-col gap-3 rounded-xl border border-[#325FEC]/8 bg-white px-4 py-3 shadow-[0_2px_12px_rgba(29,56,139,0.07)] sm:flex-row sm:items-center">
         <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+          <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-[#325FEC]/50" />
           <Input
             placeholder={m.users_search_placeholder()}
             value={search}
@@ -456,13 +464,13 @@ function UsersPage() {
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border bg-white">
+      <div className="rounded-xl border border-[#325FEC]/8 bg-white shadow-[0_2px_12px_rgba(29,56,139,0.07)] overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((hg) => (
-              <TableRow key={hg.id}>
+              <TableRow key={hg.id} className="bg-[#EDF1FA]/60 border-b border-[#325FEC]/8">
                 {hg.headers.map((header) => (
-                  <TableHead key={header.id} className="whitespace-nowrap">
+                  <TableHead key={header.id} className="whitespace-nowrap text-[13px] font-bold uppercase tracking-wider text-[#1D388B]/60">
                     {header.isPlaceholder
                       ? null
                       : flexRender(header.column.columnDef.header, header.getContext())}
@@ -473,20 +481,39 @@ function UsersPage() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="py-8 text-center text-gray-500">
-                  {m.common_loading()}
-                </TableCell>
-              </TableRow>
+              <>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i} className="border-b border-[#325FEC]/5">
+                    <TableCell><div className="h-4 w-4 rounded bg-[#325FEC]/8 animate-pulse" /></TableCell>
+                    <TableCell><div className="h-8 w-8 rounded-full bg-[#325FEC]/8 animate-pulse" /></TableCell>
+                    <TableCell>
+                      <div className="space-y-1.5">
+                        <div className="h-3.5 w-32 rounded bg-[#325FEC]/8 animate-pulse" />
+                        <div className="h-3 w-24 rounded bg-[#325FEC]/5 animate-pulse" />
+                      </div>
+                    </TableCell>
+                    <TableCell><div className="h-5 w-16 rounded-full bg-[#325FEC]/8 animate-pulse" /></TableCell>
+                    <TableCell><div className="h-3.5 w-20 rounded bg-[#325FEC]/5 animate-pulse" /></TableCell>
+                    <TableCell><div className="h-3.5 w-20 rounded bg-[#325FEC]/5 animate-pulse" /></TableCell>
+                    <TableCell><div className="h-5 w-14 rounded-full bg-[#325FEC]/8 animate-pulse" /></TableCell>
+                    <TableCell><div className="h-6 w-12 rounded bg-[#325FEC]/5 animate-pulse" /></TableCell>
+                  </TableRow>
+                ))}
+              </>
             ) : table.getRowModel().rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="py-8 text-center text-gray-500">
-                  {m.users_empty()}
+                <TableCell colSpan={columns.length} className="py-16">
+                  <div className="flex flex-col items-center gap-3 text-center">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#325FEC]/8">
+                      <User className="h-6 w-6 text-[#325FEC]/50" />
+                    </div>
+                    <p className="text-sm font-medium text-[#1D388B]/60">{m.users_empty()}</p>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow key={row.id} className="border-b border-[#325FEC]/5 hover:bg-[#EDF1FA]/40 transition-colors">
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -500,8 +527,8 @@ function UsersPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t px-4 py-3">
-            <p className="text-sm text-gray-500">
+          <div className="flex items-center justify-between border-t border-[#325FEC]/8 bg-[#EDF1FA]/40 px-4 py-3">
+            <p className="text-[13px] font-medium text-[#1D388B]/60">
               {m.common_page_of({ page: String(page), total: String(totalPages) })}
             </p>
             <div className="flex items-center gap-1">
@@ -510,6 +537,7 @@ function UsersPage() {
                 size="icon-sm"
                 disabled={page <= 1}
                 onClick={() => handlePageChange(page - 1)}
+                className="border-[#325FEC]/15 text-[#325FEC] hover:bg-[#325FEC]/8 disabled:opacity-40"
               >
                 <ChevronLeft className="size-4" />
               </Button>
@@ -518,6 +546,7 @@ function UsersPage() {
                 size="icon-sm"
                 disabled={page >= totalPages}
                 onClick={() => handlePageChange(page + 1)}
+                className="border-[#325FEC]/15 text-[#325FEC] hover:bg-[#325FEC]/8 disabled:opacity-40"
               >
                 <ChevronRight className="size-4" />
               </Button>
