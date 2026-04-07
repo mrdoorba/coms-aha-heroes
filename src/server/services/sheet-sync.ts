@@ -28,6 +28,46 @@ type SyncResult = {
   errors: Array<{ tab: string; row: number; name: string; error: string }>
 }
 
+// Find user by name (case-insensitive). If not found, auto-create as inactive.
+async function findOrCreateUser(
+  name: string,
+  branchId: string,
+  db: ReturnType<typeof getDb>,
+): Promise<{ id: string }> {
+  const [found] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(and(eq(users.branchId, branchId), sql`LOWER(${users.name}) = LOWER(${name})`))
+    .limit(1)
+
+  if (found) return found
+
+  const [created] = await db
+    .insert(users)
+    .values({
+      name,
+      email: `former-${name.toLowerCase().replace(/\s+/g, '.')}@placeholder.local`,
+      branchId,
+      role: 'employee',
+      isActive: false,
+      mustChangePassword: true,
+    })
+    .onConflictDoNothing()
+    .returning({ id: users.id })
+
+  if (created) return created
+
+  // If conflict on email (duplicate former employee name), try lookup again
+  const [existing] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(and(eq(users.branchId, branchId), sql`LOWER(${users.name}) = LOWER(${name})`))
+    .limit(1)
+
+  if (existing) return existing
+  throw new Error(`Could not create or find user: ${name}`)
+}
+
 type TabNames = {
   employees: string
   bintang: string
@@ -124,11 +164,13 @@ export async function syncEmployees(
         await db
           .update(users)
           .set({
+            name,
             ...(attendanceName && { attendanceName }),
             ...(phone && { phone }),
             ...(employmentStatus && { employmentStatus }),
             ...(talentaId && { talentaId }),
             ...(position && { position }),
+            isActive: true,
             updatedAt: new Date(),
           })
           .where(eq(users.id, existing.id))
@@ -284,16 +326,13 @@ export async function syncPoints(
       continue
     }
 
-    // Match user by name
-    const [matchedUser] = await db
-      .select({ id: users.id })
-      .from(users)
-      .where(and(eq(users.branchId, branchId), eq(users.name, nameRaw)))
-      .limit(1)
-
-    if (!matchedUser) {
+    // Match user by name (case-insensitive), auto-create inactive if not found
+    let matchedUser: { id: string }
+    try {
+      matchedUser = await findOrCreateUser(nameRaw, branchId, db)
+    } catch (err) {
       failed++
-      errors.push({ tab: tabName, row: i + 2, name: nameRaw, error: `User not found: ${nameRaw}` })
+      errors.push({ tab: tabName, row: i + 2, name: nameRaw, error: err instanceof Error ? err.message : String(err) })
       continue
     }
 
@@ -424,17 +463,10 @@ export async function syncRedemptions(
       continue
     }
 
-    // Match user by name, fallback by email
+    // Match user by email first, then name (case-insensitive), auto-create inactive if not found
     let matchedUser: { id: string } | undefined
-    const [byName] = await db
-      .select({ id: users.id })
-      .from(users)
-      .where(and(eq(users.branchId, branchId), eq(users.name, nameRaw)))
-      .limit(1)
 
-    matchedUser = byName
-
-    if (!matchedUser && emailRaw) {
+    if (emailRaw) {
       const [byEmail] = await db
         .select({ id: users.id })
         .from(users)
@@ -444,9 +476,13 @@ export async function syncRedemptions(
     }
 
     if (!matchedUser) {
-      failed++
-      errors.push({ tab: tabName, row: i + 2, name: nameRaw, error: `User not found: ${nameRaw}` })
-      continue
+      try {
+        matchedUser = await findOrCreateUser(nameRaw, branchId, db)
+      } catch (err) {
+        failed++
+        errors.push({ tab: tabName, row: i + 2, name: nameRaw, error: err instanceof Error ? err.message : String(err) })
+        continue
+      }
     }
 
     // Find-or-create reward

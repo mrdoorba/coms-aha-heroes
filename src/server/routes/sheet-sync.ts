@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia'
 import { paginationQuery } from './_query'
-import * as sync from '../services/sheet-sync-scheduler'
+import { triggerSyncInBackground, isSyncRunning } from '../services/sheet-sync-scheduler'
 import * as repo from '../repositories/sheet-sync'
 import { auth } from '../auth'
 import { db } from '~/db'
@@ -19,7 +19,7 @@ export const sheetSyncTriggerRoute = new Elysia()
     // If we got here with a Bearer token, the caller is authorized.
     const authHeader = request.headers.get('authorization')
     if (authHeader?.startsWith('Bearer ')) {
-      const job = await sync.triggerManualSync()
+      const job = triggerSyncInBackground()
       return { success: true, data: job, error: null }
     }
 
@@ -41,7 +41,7 @@ export const sheetSyncTriggerRoute = new Elysia()
       return { success: false, data: null, error: { code: 'FORBIDDEN', message: 'Admin access required' } }
     }
 
-    const job = await sync.triggerManualSync(appUser.id)
+    const job = triggerSyncInBackground(appUser.id)
     return { success: true, data: job, error: null }
   })
 
@@ -57,7 +57,7 @@ export const sheetSyncRoute = new Elysia({ prefix: '/sheet-sync' })
       return { success: false, data: null, error: { code: 'FORBIDDEN', message: 'Admin access required' } }
     }
 
-    const job = await sync.triggerManualSync(actor.id)
+    const job = triggerSyncInBackground(actor.id)
     return { success: true, data: job, error: null }
   })
 
@@ -105,7 +105,7 @@ export const sheetSyncRoute = new Elysia({ prefix: '/sheet-sync' })
       return { success: false, data: null, error: { code: 'FORBIDDEN', message: 'Admin access required' } }
     }
 
-    const isRunning = sync.isSyncRunning()
+    const isRunning = isSyncRunning()
     const lastJob = await repo.getLatestJob()
 
     return {

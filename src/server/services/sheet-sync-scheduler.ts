@@ -62,3 +62,9 @@ export async function triggerManualSync(startedBy?: string) {
     isSyncing = false
   }
 }
+
+export function triggerSyncInBackground(startedBy?: string) {
+  if (isSyncing) return { started: false, reason: 'Sync already in progress' }
+  void triggerManualSync(startedBy).catch(() => {})
+  return { started: true }
+}
