@@ -75,7 +75,7 @@ export function Sidebar({ user, collapsed, onToggleCollapse, className }: Sideba
           type="button"
           onClick={onToggleCollapse}
           className={cn(
-            'flex h-8 w-8 items-center justify-center rounded-lg text-white/40 hover:bg-white/8 hover:text-white/80 transition-colors',
+            'flex h-8 w-8 items-center justify-center rounded-lg text-white/80 hover:bg-white/12 hover:text-white transition-colors',
             collapsed && 'mx-auto',
           )}
           aria-label={collapsed ? m.sidebar_expand() : m.sidebar_collapse()}
