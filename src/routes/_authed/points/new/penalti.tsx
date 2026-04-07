@@ -85,8 +85,8 @@ function PenaltiForm() {
   return (
     <div className="max-w-lg mx-auto p-4 space-y-6">
       <div className="flex items-center gap-3">
-        <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-purple-50">
-          <AlertTriangle className="h-5 w-5 text-purple-500" />
+        <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-red-50">
+          <AlertTriangle className="h-5 w-5 text-[#C73E3E]" />
         </div>
         <h1 className="text-xl font-bold text-[#1D388B]">{m.penalti_form_title()}</h1>
       </div>
@@ -110,7 +110,7 @@ function PenaltiForm() {
                 key={code}
                 className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${
                   kittaComponent === code
-                    ? 'border-purple-400 bg-purple-50'
+                    ? 'border-[#C73E3E]/40 bg-red-50'
                     : 'border-border hover:bg-muted/50'
                 }`}
               >
@@ -120,7 +120,7 @@ function PenaltiForm() {
                   value={code}
                   checked={kittaComponent === code}
                   onChange={() => setKittaComponent(code)}
-                  className="mt-1 accent-purple-600"
+                  className="mt-1 accent-[#C73E3E]"
                 />
                 <div>
                   <p className="text-sm font-medium">
@@ -145,8 +145,8 @@ function PenaltiForm() {
                 onClick={() => setViolationLevel(n)}
                 className={`flex h-10 items-center justify-center rounded-lg border text-sm font-semibold transition-colors ${
                   violationLevel === n
-                    ? 'border-purple-500 bg-purple-500 text-white shadow-sm'
-                    : 'border-border bg-background text-foreground hover:border-purple-300 hover:bg-purple-50'
+                    ? 'border-[#C73E3E] bg-[#C73E3E] text-white shadow-sm'
+                    : 'border-border bg-background text-foreground hover:border-[#C73E3E]/30 hover:bg-red-50'
                 }`}
               >
                 {n}
