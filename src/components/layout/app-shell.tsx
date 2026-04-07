@@ -20,7 +20,8 @@ export function AppShell({ user, unreadCount, children }: AppShellProps) {
       <Sidebar
         user={user}
         collapsed={sidebarCollapsed}
-        onToggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
+        onMouseEnter={() => setSidebarCollapsed(false)}
+        onMouseLeave={() => setSidebarCollapsed(true)}
         className="hidden md:flex"
       />
 
