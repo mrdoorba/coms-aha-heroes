@@ -40,10 +40,6 @@ function DashboardPage() {
   const showPendingBanner =
     (role === 'hr' || role === 'admin') && summary.pendingCount > 0
 
-  // Greeting based on time of day
-  const hour = new Date().getHours()
-  const timeGreeting = hour < 12 ? '☀️' : hour < 17 ? '⚡' : '🌙'
-
   return (
     <div className="mx-auto max-w-2xl space-y-5 px-4 pb-24 pt-5 md:pb-8">
       {/* Hero greeting */}
@@ -53,7 +49,7 @@ function DashboardPage() {
         <div className="pointer-events-none absolute -bottom-4 left-16 h-20 w-20 rounded-full bg-[#759EEE]/20 blur-xl" />
 
         <div className="relative">
-          <p className="text-[13px] font-medium text-white/60">{timeGreeting} {m.dashboard_welcome({ name: '' }).split(',')[0]}</p>
+          <p className="text-[13px] font-medium text-white/60">{m.dashboard_welcome({ name: '' }).split(',')[0]}</p>
           <h1 className="mt-0.5 text-xl font-extrabold tracking-tight text-white">{name}</h1>
           <span className="mt-2 inline-flex items-center rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-bold capitalize text-white/90 backdrop-blur-sm">
             {role}
