@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { LayoutDashboard, Award, Trophy, Gift, ShoppingCart, Users, Building2, Settings, FileText, BarChart3, User, ChevronsLeft, ChevronsRight } from 'lucide-react'
+import { LayoutDashboard, Award, Trophy, Gift, ShoppingCart, Users, Building2, Settings, FileText, BarChart3, User, ChevronsLeft, ChevronsRight, RefreshCw } from 'lucide-react'
 import { cn } from '~/lib/utils'
 import * as m from '~/paraglide/messages'
 
@@ -16,6 +16,7 @@ const adminNavItems = [
   { to: '/teams', icon: Building2 },
   { to: '/reports', icon: BarChart3 },
   { to: '/admin/audit-log', icon: FileText },
+  { to: '/admin/sheet-sync', icon: RefreshCw },
   { to: '/settings', icon: Settings },
 ] as const
 
@@ -24,7 +25,7 @@ function getMainNavLabels() {
 }
 
 function getAdminNavLabels() {
-  return [m.nav_users(), m.nav_teams(), m.nav_reports(), m.nav_audit_log(), m.nav_settings()]
+  return [m.nav_users(), m.nav_teams(), m.nav_reports(), m.nav_audit_log(), m.nav_sheet_sync(), m.nav_settings()]
 }
 
 interface SidebarProps {
