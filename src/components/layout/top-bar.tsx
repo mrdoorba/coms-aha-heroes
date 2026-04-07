@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { Bell, User, Trophy, Menu, X, LayoutDashboard, Award, Gift, ShoppingCart, Users, Building2, Settings, FileText, BarChart3, RefreshCw } from 'lucide-react'
+import { Bell, User, Trophy, Menu, X, LayoutDashboard, Award, Gift, ShoppingCart, Users, Building2, Settings, FileText, BarChart3, RefreshCw, Search } from 'lucide-react'
 import { cn } from '~/lib/utils'
 import * as m from '~/paraglide/messages'
 
 interface TopBarProps {
   user: { name: string; role: string; avatarUrl: string | null }
   unreadCount: number
+  onOpenPalette?: () => void
   className?: string
 }
 
@@ -23,7 +24,7 @@ const adminNavItems = [
   { to: '/settings', label: () => m.nav_settings(), icon: Settings },
 ] as const
 
-export function TopBar({ user, unreadCount, className }: TopBarProps) {
+export function TopBar({ user, unreadCount, onOpenPalette, className }: TopBarProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const isAdminOrHr = user.role === 'admin' || user.role === 'hr'
 
@@ -66,6 +67,16 @@ export function TopBar({ user, unreadCount, className }: TopBarProps) {
         </div>
 
         <div className="flex items-center gap-1">
+          {/* Search / Command palette trigger */}
+          <button
+            type="button"
+            onClick={onOpenPalette}
+            className="flex h-10 w-10 items-center justify-center rounded-full text-white/60 hover:bg-white/8 hover:text-white transition-colors"
+            aria-label="Search"
+          >
+            <Search className="h-5 w-5" />
+          </button>
+
           {/* Notifications */}
           <Link
             to="/notifications"
