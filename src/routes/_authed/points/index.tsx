@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { Plus, Filter, Search } from 'lucide-react'
+import { Plus, Filter, Search, SlidersHorizontal } from 'lucide-react'
 import * as m from '~/paraglide/messages'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
@@ -61,6 +61,13 @@ export const Route = createFileRoute('/_authed/points/')({
   },
   component: PointsPage,
 })
+
+const TAB_STYLES: Record<string, { active: string; dot: string }> = {
+  ALL: { active: 'text-[#1D388B] border-[#325FEC]/20 bg-[#325FEC]/6', dot: 'bg-[#325FEC]' },
+  BINTANG: { active: 'text-[#a07700] border-[#F4C144]/30 bg-[#F4C144]/10', dot: 'bg-[#F4C144]' },
+  PENALTI: { active: 'text-[#C73E3E] border-[#C73E3E]/25 bg-[#C73E3E]/8', dot: 'bg-[#C73E3E]' },
+  POIN_AHA: { active: 'text-[#325FEC] border-[#325FEC]/20 bg-[#325FEC]/8', dot: 'bg-[#325FEC]' },
+}
 
 function PointsPage() {
   const tabs: Array<{ label: string; value: PointCategoryCode | 'ALL' }> = [
@@ -198,45 +205,57 @@ function PointsPage() {
   const totalPages = Math.ceil((meta?.total ?? 0) / (meta?.limit ?? 20))
 
   return (
-    <div className="space-y-4 p-4 max-w-3xl mx-auto">
+    <div className="space-y-4 max-w-3xl mx-auto px-4 py-5 pb-28 md:pb-8">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-[#1D388B]">{m.nav_points()}</h1>
+        <h1 className="text-xl font-extrabold text-[#1D388B]">{m.nav_points()}</h1>
+        {meta?.total != null && (
+          <span className="rounded-xl bg-[#325FEC]/10 px-3 py-1 text-xs font-bold text-[#325FEC]">
+            {meta.total} {m.nav_points().toLowerCase()}
+          </span>
+        )}
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 rounded-lg bg-muted p-1">
-        {tabs.map((tab) => (
-          <button
-            key={tab.value}
-            type="button"
-            className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              activeTab === tab.value
-                ? 'bg-white text-[#1D388B] shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-            onClick={() => handleTabChange(tab.value)}
-          >
-            {tab.label}
-          </button>
-        ))}
+      {/* Category tabs */}
+      <div className="flex gap-1.5 rounded-2xl bg-white border border-[#325FEC]/8 p-1.5 shadow-[0_2px_8px_rgba(29,56,139,0.06)]">
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.value
+          const styles = TAB_STYLES[tab.value]
+          return (
+            <button
+              key={tab.value}
+              type="button"
+              className={`flex-1 rounded-xl px-2 py-2 text-xs font-bold transition-all duration-200 min-h-[36px] border ${
+                isActive
+                  ? styles.active
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}
+              onClick={() => handleTabChange(tab.value)}
+            >
+              {tab.label}
+            </button>
+          )
+        })}
       </div>
 
-      {/* Filter */}
+      {/* Filter row */}
       <div className="flex items-center gap-2">
-        <Filter className="h-4 w-4 text-muted-foreground" />
-        <Select value={statusFilter || 'all'} onValueChange={handleStatusChange}>
-          <SelectTrigger className="w-40 h-9">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{m.points_all_status()}</SelectItem>
-            {POINT_STATUSES.map((s) => (
-              <SelectItem key={s} value={s}>
-                {s.charAt(0).toUpperCase() + s.slice(1)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-1.5 rounded-xl border border-[#325FEC]/12 bg-white px-3 py-1.5 shadow-sm">
+          <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          <Select value={statusFilter || 'all'} onValueChange={handleStatusChange}>
+            <SelectTrigger className="w-36 h-7 border-0 shadow-none p-0 bg-transparent text-sm focus:ring-0">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{m.points_all_status()}</SelectItem>
+              {POINT_STATUSES.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {s.charAt(0).toUpperCase() + s.slice(1)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Advanced Filters */}
@@ -248,14 +267,14 @@ function PointsPage() {
             key: 'search',
             node: (
               <div className="space-y-1">
-                <Label className="text-xs">{m.common_search()}</Label>
+                <Label className="text-xs font-semibold">{m.common_search()}</Label>
                 <div className="relative">
-                  <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     placeholder={m.filter_search_reason()}
                     value={searchFilter}
                     onChange={(e) => handleSearchChange(e.target.value)}
-                    className="h-8 pl-8 text-sm"
+                    className="h-9 pl-9 text-sm rounded-xl border-[#325FEC]/15"
                   />
                 </div>
               </div>
@@ -266,21 +285,21 @@ function PointsPage() {
             node: (
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
-                  <Label className="text-xs">{m.filter_date_from()}</Label>
+                  <Label className="text-xs font-semibold">{m.filter_date_from()}</Label>
                   <Input
                     type="date"
                     value={dateFrom}
                     onChange={(e) => handleDateFromChange(e.target.value)}
-                    className="h-8 text-sm"
+                    className="h-9 text-sm rounded-xl border-[#325FEC]/15"
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">{m.filter_date_to()}</Label>
+                  <Label className="text-xs font-semibold">{m.filter_date_to()}</Label>
                   <Input
                     type="date"
                     value={dateTo}
                     onChange={(e) => handleDateToChange(e.target.value)}
-                    className="h-8 text-sm"
+                    className="h-9 text-sm rounded-xl border-[#325FEC]/15"
                   />
                 </div>
               </div>
@@ -296,13 +315,16 @@ function PointsPage() {
             {Array.from({ length: 5 }).map((_, i) => (
               <div
                 key={i}
-                className="h-20 rounded-xl border border-border bg-muted/50 animate-pulse"
+                className="h-[72px] rounded-2xl border border-[#325FEC]/8 bg-white animate-pulse"
               />
             ))}
           </div>
         ) : points.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <p className="text-muted-foreground">{m.points_empty()}</p>
+          <div className="flex flex-col items-center justify-center py-14 text-center">
+            <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#325FEC]/8">
+              <SlidersHorizontal className="h-8 w-8 text-[#325FEC]/40" />
+            </div>
+            <p className="font-medium text-muted-foreground">{m.points_empty()}</p>
           </div>
         ) : (
           <>
@@ -316,16 +338,17 @@ function PointsPage() {
                     indeterminate={bulk.selectedCount > 0 && !bulk.isAllSelected(pendingIds)}
                     onChange={() => bulk.toggleAll(pendingIds)}
                   />
-                  <span className="text-sm text-muted-foreground">{m.bulk_select_all()}</span>
+                  <span className="text-sm font-medium text-muted-foreground">{m.bulk_select_all()}</span>
                 </div>
               )
             })()}
-            {points.map((point) => (
+            {points.map((point, i) => (
               <div
                 key={point.id}
-                className={`flex items-start gap-2 rounded-xl transition-colors ${
-                  bulk.selectedIds.has(point.id) ? 'ring-2 ring-[#325FEC]' : ''
+                className={`flex items-start gap-2 rounded-2xl transition-all ${
+                  bulk.selectedIds.has(point.id) ? 'ring-2 ring-[#325FEC] ring-offset-1' : ''
                 }`}
+                style={{ animationDelay: `${i * 30}ms` }}
               >
                 {userRole !== 'employee' && point.status === 'pending' && (
                   <div className="flex items-center pt-5 pl-1">
@@ -378,17 +401,19 @@ function PointsPage() {
           <Button
             variant="outline"
             size="sm"
+            className="rounded-xl border-[#325FEC]/15 hover:bg-[#325FEC]/6 hover:text-[#325FEC] min-h-[36px]"
             disabled={page <= 1}
             onClick={() => handlePageChange(page - 1)}
           >
             {m.common_previous()}
           </Button>
-          <span className="text-sm text-muted-foreground">
+          <span className="rounded-xl bg-white border border-[#325FEC]/12 px-3 py-1.5 text-sm font-semibold text-muted-foreground">
             {m.common_page_of({ page: String(page), total: String(totalPages) })}
           </span>
           <Button
             variant="outline"
             size="sm"
+            className="rounded-xl border-[#325FEC]/15 hover:bg-[#325FEC]/6 hover:text-[#325FEC] min-h-[36px]"
             disabled={page >= totalPages}
             onClick={() => handlePageChange(page + 1)}
           >
@@ -398,19 +423,20 @@ function PointsPage() {
       )}
 
       {/* FAB */}
-      <Button
-        className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg md:bottom-8 md:right-8 bg-[#325FEC] hover:bg-[#1D388B]"
-        size="icon"
+      <button
+        type="button"
+        className="fixed bottom-20 right-4 flex h-14 w-14 items-center justify-center rounded-full btn-gradient-blue text-white shadow-[0_4px_20px_rgba(50,95,236,0.40)] hover:shadow-[0_6px_24px_rgba(50,95,236,0.50)] transition-all active:scale-95 md:bottom-8 md:right-8 z-40"
         onClick={() => setShowTypeSelector(true)}
+        aria-label={m.points_submit()}
       >
         <Plus className="h-6 w-6" />
-      </Button>
+      </button>
 
       {/* Type selector dialog */}
       <Dialog open={showTypeSelector} onOpenChange={setShowTypeSelector}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md rounded-2xl">
           <DialogHeader>
-            <DialogTitle>{m.points_submit()}</DialogTitle>
+            <DialogTitle className="text-[#1D388B] font-extrabold">{m.points_submit()}</DialogTitle>
           </DialogHeader>
           <PointTypeSelector
             userRole={userRole}

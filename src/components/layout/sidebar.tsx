@@ -50,22 +50,32 @@ export function Sidebar({ user, collapsed, onToggleCollapse, className }: Sideba
   return (
     <aside
       className={cn(
-        'fixed top-0 left-0 z-40 flex h-full flex-col border-r border-border bg-white transition-[width] duration-200',
+        'fixed top-0 left-0 z-40 flex h-full flex-col transition-[width] duration-200',
+        'bg-[#151C3B] border-r border-white/8',
         collapsed ? 'w-16' : 'w-64',
         className,
       )}
     >
-      <div className="flex h-16 items-center justify-between border-b border-border px-4">
+      {/* Logo / collapse toggle */}
+      <div className={cn(
+        'flex h-16 items-center border-b border-white/8',
+        collapsed ? 'justify-center px-0' : 'justify-between px-4',
+      )}>
         {!collapsed && (
-          <span className="font-manrope text-lg font-extrabold tracking-wide text-primary-dark">
-            AHA HEROES
-          </span>
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#F4C144] to-[#FFD97D] shadow-lg">
+              <Trophy className="h-4 w-4 text-[#7a5800]" />
+            </div>
+            <span className="font-manrope text-[15px] font-extrabold tracking-wide text-white">
+              AHA HEROES
+            </span>
+          </div>
         )}
         <button
           type="button"
           onClick={onToggleCollapse}
           className={cn(
-            'flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+            'flex h-8 w-8 items-center justify-center rounded-lg text-white/40 hover:bg-white/8 hover:text-white/80 transition-colors',
             collapsed && 'mx-auto',
           )}
           aria-label={collapsed ? m.sidebar_expand() : m.sidebar_collapse()}
@@ -74,58 +84,61 @@ export function Sidebar({ user, collapsed, onToggleCollapse, className }: Sideba
         </button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-0.5">
         {mainNavItems.map(({ to, icon: Icon }, index) => (
           <Link
             key={to}
             to={to}
             className={cn(
-              'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-500 transition-all duration-200 hover:bg-[#325FEC]/5 hover:text-[#325FEC]',
+              'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/50 transition-all duration-150 hover:bg-white/8 hover:text-white/90',
               collapsed && 'justify-center px-0',
             )}
-            activeProps={{ className: 'bg-gradient-to-r from-[#325FEC]/12 to-transparent border-l-[3px] border-[#325FEC] text-[#325FEC] font-semibold' }}
+            activeProps={{ className: 'sidebar-link-active' }}
             title={collapsed ? mainLabels[index] : undefined}
           >
-            <Icon className="h-5 w-5 shrink-0" />
-            {!collapsed && mainLabels[index]}
+            <Icon className="h-[18px] w-[18px] shrink-0" />
+            {!collapsed && <span className="leading-none">{mainLabels[index]}</span>}
           </Link>
         ))}
 
         {isAdminOrHr && (
           <>
-            {!collapsed && (
-              <div className="pt-4 pb-1 px-3">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <div className={cn('pt-4 pb-1.5', collapsed ? 'px-1' : 'px-3')}>
+              {!collapsed ? (
+                <span className="section-label text-white/30">
                   {m.nav_admin()}
                 </span>
-              </div>
-            )}
-            {collapsed && <div className="my-2 border-t border-border" />}
+              ) : (
+                <div className="border-t border-white/10" />
+              )}
+            </div>
             {adminNavItems.map(({ to, icon: Icon }, index) => (
               <Link
                 key={to}
                 to={to}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-500 transition-all duration-200 hover:bg-[#325FEC]/5 hover:text-[#325FEC]',
+                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/50 transition-all duration-150 hover:bg-white/8 hover:text-white/90',
                   collapsed && 'justify-center px-0',
                 )}
-                activeProps={{ className: 'bg-gradient-to-r from-[#325FEC]/12 to-transparent border-l-[3px] border-[#325FEC] text-[#325FEC] font-semibold' }}
+                activeProps={{ className: 'sidebar-link-active' }}
                 title={collapsed ? adminLabels[index] : undefined}
               >
-                <Icon className="h-5 w-5 shrink-0" />
-                {!collapsed && adminLabels[index]}
+                <Icon className="h-[18px] w-[18px] shrink-0" />
+                {!collapsed && <span className="leading-none">{adminLabels[index]}</span>}
               </Link>
             ))}
           </>
         )}
       </nav>
 
-      <div className="border-t border-border p-2">
+      {/* User footer */}
+      <div className="border-t border-white/8 p-2">
         <div className={cn(
-          'flex items-center gap-3 rounded-md px-3 py-2.5',
+          'flex items-center gap-3 rounded-lg px-3 py-2.5',
           collapsed && 'justify-center px-0',
         )}>
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/20 text-xs font-bold text-primary">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#325FEC]/30 text-xs font-bold text-[#759EEE] ring-1 ring-white/10">
             {user.avatarUrl ? (
               <img
                 src={user.avatarUrl}
@@ -138,8 +151,8 @@ export function Sidebar({ user, collapsed, onToggleCollapse, className }: Sideba
           </div>
           {!collapsed && (
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-foreground">{user.name}</p>
-              <span className="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+              <p className="truncate text-sm font-semibold text-white/85">{user.name}</p>
+              <span className="inline-block rounded-full bg-[#F4C144]/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#F4C144]">
                 {user.role}
               </span>
             </div>
