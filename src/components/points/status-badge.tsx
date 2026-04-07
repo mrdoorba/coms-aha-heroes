@@ -1,14 +1,31 @@
-import { Badge } from '~/components/ui/badge'
 import { cn } from '~/lib/utils'
 import type { PointStatus } from '~/shared/constants'
 
 const statusConfig: Record<PointStatus, { label: string; className: string }> = {
-  active: { label: 'Active', className: 'bg-green-100 text-green-700 border-green-200' },
-  pending: { label: 'Pending', className: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
-  challenged: { label: 'Challenged', className: 'bg-purple-100 text-purple-700 border-purple-200' },
-  frozen: { label: 'Frozen', className: 'bg-purple-100 text-purple-700 border-purple-200' },
-  revoked: { label: 'Revoked', className: 'bg-red-100 text-red-700 border-red-200' },
-  rejected: { label: 'Rejected', className: 'bg-red-100 text-red-700 border-red-200' },
+  active: {
+    label: 'Active',
+    className: 'bg-emerald-50 text-emerald-700 border border-emerald-200/70',
+  },
+  pending: {
+    label: 'Pending',
+    className: 'bg-[#F4C144]/10 text-[#a07700] border border-[#F4C144]/30',
+  },
+  challenged: {
+    label: 'Challenged',
+    className: 'bg-purple-50 text-purple-700 border border-purple-200/70',
+  },
+  frozen: {
+    label: 'Frozen',
+    className: 'bg-slate-100 text-slate-600 border border-slate-200',
+  },
+  revoked: {
+    label: 'Revoked',
+    className: 'bg-red-50 text-red-600 border border-red-200/70',
+  },
+  rejected: {
+    label: 'Rejected',
+    className: 'bg-red-50 text-red-600 border border-red-200/70',
+  },
 }
 
 type StatusBadgeProps = {
@@ -19,11 +36,14 @@ type StatusBadgeProps = {
 export function StatusBadge({ status, className }: StatusBadgeProps) {
   const config = statusConfig[status]
   return (
-    <Badge
-      variant="outline"
-      className={cn('text-xs font-medium', config.className, className)}
+    <span
+      className={cn(
+        'inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold leading-none tracking-wide',
+        config.className,
+        className,
+      )}
     >
       {config.label}
-    </Badge>
+    </span>
   )
 }

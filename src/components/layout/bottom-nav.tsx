@@ -23,7 +23,8 @@ export function BottomNav({ className }: BottomNavProps) {
   return (
     <nav
       className={cn(
-        'fixed bottom-0 left-0 right-0 z-50 flex h-16 items-stretch border-t border-border bg-white',
+        'fixed bottom-0 left-0 right-0 z-50 flex h-16 items-stretch',
+        'bg-[#151C3B] border-t border-white/8',
         className,
       )}
     >
@@ -31,11 +32,11 @@ export function BottomNav({ className }: BottomNavProps) {
         <Link
           key={to}
           to={to}
-          className="relative flex flex-1 flex-col items-center justify-center gap-0.5 text-gray-400 transition-colors duration-200 hover:text-[#325FEC]"
-          activeProps={{ className: 'text-[#325FEC] bnav-active' }}
+          className="relative flex flex-1 flex-col items-center justify-center gap-1 text-white/40 transition-colors duration-200 hover:text-white/70 min-h-[44px]"
+          activeProps={{ className: 'text-[#F4C144] bnav-active' }}
         >
-          <Icon className="h-5 w-5" />
-          <span className="text-[10px] font-medium leading-none">{labels[index]}</span>
+          <Icon className="h-5 w-5 shrink-0" />
+          <span className="text-[10px] font-semibold leading-none tracking-wide">{labels[index]}</span>
         </Link>
       ))}
     </nav>

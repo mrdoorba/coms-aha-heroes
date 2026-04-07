@@ -4,11 +4,26 @@ import type { PointCategoryCode } from '~/shared/constants'
 
 const categoryConfig: Record<
   PointCategoryCode,
-  { icon: typeof Star; color: string; bg: string }
+  { icon: typeof Star; color: string; bg: string; ring: string }
 > = {
-  BINTANG: { icon: Star, color: 'text-yellow-500', bg: 'bg-yellow-50' },
-  PENALTI: { icon: AlertTriangle, color: 'text-purple-500', bg: 'bg-purple-50' },
-  POIN_AHA: { icon: Award, color: 'text-blue-500', bg: 'bg-blue-50' },
+  BINTANG: {
+    icon: Star,
+    color: 'text-[#a07700]',
+    bg: 'bg-gradient-to-br from-[#F4C144]/20 to-[#FFD97D]/30',
+    ring: 'ring-1 ring-[#F4C144]/30',
+  },
+  PENALTI: {
+    icon: AlertTriangle,
+    color: 'text-[#C73E3E]',
+    bg: 'bg-gradient-to-br from-[#C73E3E]/10 to-[#E06B6B]/15',
+    ring: 'ring-1 ring-[#C73E3E]/20',
+  },
+  POIN_AHA: {
+    icon: Award,
+    color: 'text-[#325FEC]',
+    bg: 'bg-gradient-to-br from-[#325FEC]/10 to-[#759EEE]/20',
+    ring: 'ring-1 ring-[#325FEC]/20',
+  },
 }
 
 type CategoryIconProps = {
@@ -36,9 +51,10 @@ export function CategoryIcon({ code, size = 'md', className }: CategoryIconProps
   return (
     <div
       className={cn(
-        'flex items-center justify-center rounded-xl',
+        'flex items-center justify-center rounded-xl shrink-0',
         sizeClasses[size],
         config.bg,
+        config.ring,
         className,
       )}
     >

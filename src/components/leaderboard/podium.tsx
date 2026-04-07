@@ -1,4 +1,4 @@
-import { Trophy } from 'lucide-react'
+import { Crown } from 'lucide-react'
 import { cn } from '~/lib/utils'
 
 type PodiumEntry = {
@@ -13,24 +13,41 @@ type PodiumProps = {
   scoreLabel: string
 }
 
-const RANK_STYLES: Record<number, { badge: string; ring: string; glow: string; podium: string }> = {
+const RANK_STYLES: Record<number, {
+  avatarRing: string
+  podiumBg: string
+  podiumHeight: string
+  scoreBg: string
+  scoreText: string
+  nameBg: string
+  glow: string
+}> = {
   1: {
-    badge: 'bg-gradient-to-br from-[#F4C144] to-[#FFD97D] text-white shadow-md',
-    ring: 'ring-[3px] ring-[#F4C144] glow-gold',
-    glow: 'bg-gradient-to-b from-[#F4C144]/10 to-transparent',
-    podium: 'bg-gradient-to-t from-[#F4C144]/30 to-[#F4C144]/5',
+    avatarRing: 'ring-4 ring-[#F4C144] glow-gold',
+    podiumBg: 'bg-gradient-to-t from-[#F4C144] to-[#FFD97D]',
+    podiumHeight: 'h-20',
+    scoreBg: 'bg-[#F4C144]/15',
+    scoreText: 'text-[#a07700] font-extrabold',
+    nameBg: '',
+    glow: 'drop-shadow-[0_0_12px_rgba(244,193,68,0.5)]',
   },
   2: {
-    badge: 'bg-gradient-to-br from-[#C0C0C0] to-[#E8E8E8] text-white shadow-md',
-    ring: 'ring-[3px] ring-[#C0C0C0]',
+    avatarRing: 'ring-3 ring-[#C0C0C0]',
+    podiumBg: 'bg-gradient-to-t from-[#9a9a9a] to-[#d0d0d0]',
+    podiumHeight: 'h-14',
+    scoreBg: 'bg-[#C0C0C0]/15',
+    scoreText: 'text-[#666] font-bold',
+    nameBg: '',
     glow: '',
-    podium: 'bg-gradient-to-t from-[#C0C0C0]/20 to-[#C0C0C0]/5',
   },
   3: {
-    badge: 'bg-gradient-to-br from-[#CD7F32] to-[#E8A862] text-white shadow-md',
-    ring: 'ring-[3px] ring-[#CD7F32]',
+    avatarRing: 'ring-3 ring-[#CD7F32]',
+    podiumBg: 'bg-gradient-to-t from-[#CD7F32] to-[#E8A862]',
+    podiumHeight: 'h-10',
+    scoreBg: 'bg-[#CD7F32]/15',
+    scoreText: 'text-[#8B5E00] font-bold',
+    nameBg: '',
     glow: '',
-    podium: 'bg-gradient-to-t from-[#CD7F32]/20 to-[#CD7F32]/5',
   },
 }
 
@@ -41,11 +58,19 @@ function PodiumItem({
   entry: PodiumEntry
   size: 'lg' | 'md'
 }) {
-  const styles = RANK_STYLES[entry.rank] ?? { badge: 'bg-muted text-foreground', ring: 'ring-border', glow: '', podium: 'bg-muted' }
-  const avatarSize = size === 'lg' ? 'h-20 w-20 text-2xl' : 'h-16 w-16 text-lg'
-  const nameSize = size === 'lg' ? 'text-sm font-bold' : 'text-xs font-semibold'
-  const scoreSize = size === 'lg' ? 'text-lg font-extrabold' : 'text-sm font-bold'
-  const podiumHeight = size === 'lg' ? 'h-20' : 'h-12'
+  const styles = RANK_STYLES[entry.rank] ?? {
+    avatarRing: '',
+    podiumBg: 'bg-muted',
+    podiumHeight: 'h-8',
+    scoreBg: 'bg-muted',
+    scoreText: 'text-muted-foreground',
+    nameBg: '',
+    glow: '',
+  }
+
+  const avatarSize = size === 'lg' ? 'h-20 w-20' : 'h-14 w-14'
+  const textSize = size === 'lg' ? 'text-sm font-bold' : 'text-xs font-semibold'
+  const scoreTextSize = size === 'lg' ? 'text-base' : 'text-sm'
 
   const initials = entry.name
     .split(' ')
@@ -55,44 +80,47 @@ function PodiumItem({
     .toUpperCase()
 
   return (
-    <div className={cn('flex flex-col items-center gap-1.5 flex-1 relative', styles.glow, 'rounded-t-2xl pt-2')}>
-      {/* Rank badge */}
-      <div
-        className={cn(
-          'flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold',
-          styles.badge,
-        )}
-      >
-        {entry.rank === 1 ? <Trophy className="h-3.5 w-3.5" /> : entry.rank}
-      </div>
+    <div className="flex flex-col items-center gap-1.5 flex-1 relative">
+      {/* Crown for #1 */}
+      {entry.rank === 1 && (
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#F4C144] to-[#FFD97D] shadow-lg mb-0.5">
+          <Crown className="h-4 w-4 text-[#7a5800]" />
+        </div>
+      )}
+      {entry.rank !== 1 && (
+        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white border-2 border-[#C0C0C0] shadow-sm mb-0.5">
+          <span className="text-xs font-bold text-muted-foreground">{entry.rank}</span>
+        </div>
+      )}
 
       {/* Avatar */}
       <div
         className={cn(
-          'flex items-center justify-center rounded-full bg-muted overflow-hidden shrink-0',
+          'flex items-center justify-center rounded-full bg-[#325FEC]/10 overflow-hidden shrink-0',
           avatarSize,
-          styles.ring,
+          styles.avatarRing,
+          styles.glow,
         )}
       >
         {entry.avatarUrl ? (
-          <img
-            src={entry.avatarUrl}
-            alt={entry.name}
-            className="h-full w-full object-cover"
-          />
+          <img src={entry.avatarUrl} alt={entry.name} className="h-full w-full object-cover" />
         ) : (
-          <span className="font-semibold text-muted-foreground">{initials}</span>
+          <span className="font-bold text-[#325FEC] text-lg">{initials}</span>
         )}
       </div>
 
       {/* Name */}
-      <p className={cn('text-center max-w-[80px] truncate', nameSize)}>{entry.name}</p>
+      <p className={cn('text-center max-w-[80px] truncate text-foreground', textSize)}>
+        {entry.name}
+      </p>
 
       {/* Score */}
-      <p className={cn('text-[#325FEC]', scoreSize)}>{entry.score}</p>
+      <span className={cn('rounded-full px-2.5 py-0.5 text-xs', styles.scoreBg, styles.scoreText, scoreTextSize)}>
+        {entry.score}
+      </span>
 
       {/* Podium base */}
-      <div className={cn('w-full rounded-t-lg', podiumHeight, styles.podium)} />
+      <div className={cn('w-full rounded-t-xl shadow-inner', styles.podiumHeight, styles.podiumBg)} />
     </div>
   )
 }
@@ -105,10 +133,12 @@ export function Podium({ entries, scoreLabel: _scoreLabel }: PodiumProps) {
   if (!rank1 && !rank2 && !rank3) return null
 
   return (
-    <div className="flex items-end justify-center gap-2 px-4 pt-4">
-      {rank2 ? <PodiumItem entry={rank2} size="md" /> : <div className="flex-1" />}
-      {rank1 ? <PodiumItem entry={rank1} size="lg" /> : <div className="flex-1" />}
-      {rank3 ? <PodiumItem entry={rank3} size="md" /> : <div className="flex-1" />}
+    <div className="mx-4 rounded-2xl bg-gradient-to-b from-[#EDF1FA] to-white border border-[#325FEC]/8 px-4 pt-6 pb-0 overflow-hidden shadow-[0_2px_12px_rgba(29,56,139,0.08)]">
+      <div className="flex items-end justify-center gap-3">
+        {rank2 ? <PodiumItem entry={rank2} size="md" /> : <div className="flex-1" />}
+        {rank1 ? <PodiumItem entry={rank1} size="lg" /> : <div className="flex-1" />}
+        {rank3 ? <PodiumItem entry={rank3} size="md" /> : <div className="flex-1" />}
+      </div>
     </div>
   )
 }

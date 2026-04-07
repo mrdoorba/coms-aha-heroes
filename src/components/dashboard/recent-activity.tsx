@@ -28,16 +28,25 @@ function getInitials(name: string): string {
     .toUpperCase()
 }
 
-function getCategoryColor(code: string): string {
-  if (code.toUpperCase().includes('BINTANG')) return 'bg-yellow-100 text-yellow-800'
-  if (code.toUpperCase().includes('PENALTI')) return 'bg-purple-100 text-purple-800'
-  return 'bg-blue-100 text-blue-800'
+function getCategoryStyle(code: string): { bg: string; text: string; dot: string } {
+  const upper = code.toUpperCase()
+  if (upper.includes('BINTANG')) return { bg: 'bg-[#F4C144]/12', text: 'text-[#a07700]', dot: 'bg-[#F4C144]' }
+  if (upper.includes('PENALTI')) return { bg: 'bg-[#C73E3E]/10', text: 'text-[#C73E3E]', dot: 'bg-[#C73E3E]' }
+  return { bg: 'bg-[#325FEC]/10', text: 'text-[#325FEC]', dot: 'bg-[#325FEC]' }
 }
 
-function getStatusColor(status: string): string {
-  if (status === 'approved') return 'bg-green-100 text-green-700'
-  if (status === 'rejected') return 'bg-red-100 text-red-700'
-  return 'bg-yellow-100 text-yellow-700'
+function getStatusStyle(status: string): { bg: string; text: string } {
+  if (status === 'approved' || status === 'active') return { bg: 'bg-green-100', text: 'text-green-700' }
+  if (status === 'rejected' || status === 'revoked') return { bg: 'bg-red-100', text: 'text-red-600' }
+  if (status === 'challenged') return { bg: 'bg-purple-100', text: 'text-purple-700' }
+  return { bg: 'bg-[#F4C144]/15', text: 'text-[#a07700]' }
+}
+
+function getPointStyle(code: string): string {
+  const upper = code.toUpperCase()
+  if (upper.includes('PENALTI')) return 'text-[#C73E3E] bg-[#C73E3E]/8'
+  if (upper.includes('BINTANG')) return 'text-[#a07700] bg-[#F4C144]/12'
+  return 'text-[#325FEC] bg-[#325FEC]/8'
 }
 
 function formatRelativeTime(iso: string): string {
@@ -62,48 +71,52 @@ export function RecentActivity({ items }: RecentActivityProps) {
 
   return (
     <ul className="space-y-2">
-      {items.map((item) => (
-        <li key={item.id}>
-          <Link
-            to="/points/$id"
-            params={{ id: item.id }}
-            className="card-hover flex items-start gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:bg-muted/50"
-          >
-            {/* Avatar */}
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted">
-              {item.userAvatarUrl ? (
-                <img src={item.userAvatarUrl} alt={item.userName} className="h-full w-full object-cover" />
-              ) : (
-                <span className="text-xs font-semibold text-muted-foreground">
-                  {getInitials(item.userName)}
-                </span>
-              )}
-            </div>
+      {items.map((item, i) => {
+        const catStyle = getCategoryStyle(item.categoryCode)
+        const statusStyle = getStatusStyle(item.status)
+        const ptStyle = getPointStyle(item.categoryCode)
+        const prefix = item.categoryCode.toUpperCase().includes('PENALTI') ? '-' : '+'
 
-            {/* Content */}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm leading-snug">
-                <span className="font-medium">{item.userName}</span>
-                {' '}{m.activity_received()}{' '}
-                <span className={cn('inline-block rounded px-1 text-xs font-semibold', getCategoryColor(item.categoryCode))}>
-                  {item.categoryName}
-                </span>
-                {' '}{m.activity_from()}{' '}
-                <span className="font-medium">{item.submitterName}</span>
-              </p>
-              <div className="mt-1 flex items-center gap-2">
-                <span className={cn('rounded px-1.5 py-0.5 text-[10px] font-semibold capitalize', getStatusColor(item.status))}>
-                  {item.status}
-                </span>
-                <span className="text-[11px] text-muted-foreground">{formatRelativeTime(item.createdAt)}</span>
+        return (
+          <li key={item.id} className="stagger-item" style={{ animationDelay: `${i * 50}ms` }}>
+            <Link
+              to="/points/$id"
+              params={{ id: item.id }}
+              className="flex items-center gap-3 rounded-xl bg-white border border-[#325FEC]/8 p-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(29,56,139,0.10)] group"
+            >
+              {/* Avatar */}
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#325FEC]/10 text-[#325FEC]">
+                {item.userAvatarUrl ? (
+                  <img src={item.userAvatarUrl} alt={item.userName} className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-xs font-bold">{getInitials(item.userName)}</span>
+                )}
               </div>
-            </div>
 
-            {/* Points */}
-            <span className="shrink-0 text-sm font-bold text-primary">+{item.points}</span>
-          </Link>
-        </li>
-      ))}
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-sm font-semibold text-foreground">{item.userName}</span>
+                  <span className={cn('rounded-md px-1.5 py-0.5 text-[10px] font-bold', catStyle.bg, catStyle.text)}>
+                    {item.categoryName}
+                  </span>
+                </div>
+                <div className="mt-0.5 flex items-center gap-2">
+                  <span className={cn('rounded-full px-1.5 py-0.5 text-[10px] font-semibold capitalize', statusStyle.bg, statusStyle.text)}>
+                    {item.status}
+                  </span>
+                  <span className="text-[11px] text-muted-foreground/70">{formatRelativeTime(item.createdAt)}</span>
+                </div>
+              </div>
+
+              {/* Points */}
+              <span className={cn('shrink-0 rounded-lg px-2 py-1 text-sm font-extrabold', ptStyle)}>
+                {prefix}{item.points}
+              </span>
+            </Link>
+          </li>
+        )
+      })}
     </ul>
   )
 }
