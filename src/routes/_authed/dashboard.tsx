@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { Star, Award, AlertTriangle, Clock, ChevronRight, Zap } from 'lucide-react'
+import { Star, Award, AlertTriangle, Clock, ChevronRight } from 'lucide-react'
 import * as m from '~/paraglide/messages'
 import { SummaryCard } from '~/components/dashboard/summary-card'
 import { RecentActivity } from '~/components/dashboard/recent-activity'
@@ -52,18 +52,12 @@ function DashboardPage() {
         <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-[#F4C144]/15 blur-2xl" />
         <div className="pointer-events-none absolute -bottom-4 left-16 h-20 w-20 rounded-full bg-[#759EEE]/20 blur-xl" />
 
-        <div className="relative flex items-center justify-between">
-          <div>
-            <p className="text-[13px] font-medium text-white/60">{timeGreeting} {m.dashboard_welcome({ name: '' }).split(',')[0]}</p>
-            <h1 className="mt-0.5 text-xl font-extrabold tracking-tight text-white">{name}</h1>
-            <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-bold capitalize text-white/90 backdrop-blur-sm">
-              <Zap className="h-3 w-3 text-[#F4C144]" />
-              {role}
-            </span>
-          </div>
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-sm">
-            <span className="text-2xl">🏆</span>
-          </div>
+        <div className="relative">
+          <p className="text-[13px] font-medium text-white/60">{timeGreeting} {m.dashboard_welcome({ name: '' }).split(',')[0]}</p>
+          <h1 className="mt-0.5 text-xl font-extrabold tracking-tight text-white">{name}</h1>
+          <span className="mt-2 inline-flex items-center rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-bold capitalize text-white/90 backdrop-blur-sm">
+            {role}
+          </span>
         </div>
       </div>
 
