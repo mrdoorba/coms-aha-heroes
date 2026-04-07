@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { LayoutDashboard, Award, Trophy, Gift, ShoppingCart, Users, Building2, Settings, FileText, BarChart3, User, ChevronsLeft, ChevronsRight, RefreshCw } from 'lucide-react'
+import { LayoutDashboard, Award, Trophy, Gift, ShoppingCart, Users, Building2, Settings, FileText, BarChart3, User, RefreshCw } from 'lucide-react'
 import { cn } from '~/lib/utils'
 import * as m from '~/paraglide/messages'
 
@@ -31,11 +31,12 @@ function getAdminNavLabels() {
 interface SidebarProps {
   user: { name: string; role: string; avatarUrl: string | null }
   collapsed: boolean
-  onToggleCollapse: () => void
+  onMouseEnter?: () => void
+  onMouseLeave?: () => void
   className?: string
 }
 
-export function Sidebar({ user, collapsed, onToggleCollapse, className }: SidebarProps) {
+export function Sidebar({ user, collapsed, onMouseEnter, onMouseLeave, className }: SidebarProps) {
   const isAdminOrHr = user.role === 'admin' || user.role === 'hr'
   const mainLabels = getMainNavLabels()
   const adminLabels = getAdminNavLabels()
@@ -55,33 +56,24 @@ export function Sidebar({ user, collapsed, onToggleCollapse, className }: Sideba
         collapsed ? 'w-16' : 'w-64',
         className,
       )}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
-      {/* Logo / collapse toggle */}
+      {/* Logo */}
       <div className={cn(
         'flex h-16 items-center border-b border-[#325FEC]/10',
-        collapsed ? 'justify-center px-0' : 'justify-between px-4',
+        collapsed ? 'justify-center px-0' : 'px-4',
       )}>
-        {!collapsed && (
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#F4C144] to-[#FFD97D] shadow-md">
-              <Trophy className="h-4 w-4 text-[#7a5800]" />
-            </div>
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#F4C144] to-[#FFD97D] shadow-md">
+            <Trophy className="h-4 w-4 text-[#7a5800]" />
+          </div>
+          {!collapsed && (
             <span className="font-manrope text-[15px] font-extrabold tracking-wide text-[#1D388B]">
               AHA HEROES
             </span>
-          </div>
-        )}
-        <button
-          type="button"
-          onClick={onToggleCollapse}
-          className={cn(
-            'flex h-8 w-8 items-center justify-center rounded-lg text-[#1D388B]/50 hover:bg-[#325FEC]/8 hover:text-[#1D388B] transition-colors',
-            collapsed && 'mx-auto',
           )}
-          aria-label={collapsed ? m.sidebar_expand() : m.sidebar_collapse()}
-        >
-          {collapsed ? <ChevronsRight className="h-4 w-4" /> : <ChevronsLeft className="h-4 w-4" />}
-        </button>
+        </div>
       </div>
 
       {/* Navigation */}
