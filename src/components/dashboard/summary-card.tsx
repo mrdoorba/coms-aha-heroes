@@ -8,7 +8,7 @@ type SummaryCardProps = {
   icon: ReactNode
   iconBg: string
   iconColor: string
-  variant?: 'gold' | 'blue' | 'purple' | 'pending'
+  variant?: 'gold' | 'blue' | 'red' | 'pending'
   href?: string
 }
 
@@ -25,8 +25,8 @@ const VARIANT_STYLES = {
     iconColor: 'text-white',
     valueBg: '',
   },
-  purple: {
-    gradient: 'from-[#6D50B8] to-[#9681D4]',
+  red: {
+    gradient: 'from-[#C73E3E] to-[#E06B6B]',
     iconBg: 'bg-white/20',
     iconColor: 'text-white',
     valueBg: '',

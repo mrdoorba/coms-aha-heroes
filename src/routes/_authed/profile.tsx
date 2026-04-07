@@ -181,8 +181,8 @@ function ProfilePage() {
           label={m.points_penalti()}
           value={stats.penaltiPointsSum}
           icon={<AlertTriangle className="h-5 w-5" />}
-          iconBg="bg-[#6D50B8]/10"
-          iconColor="text-[#6D50B8]"
+          iconBg="bg-[#C73E3E]/10"
+          iconColor="text-[#C73E3E]"
         />
       </div>
 
