@@ -649,3 +649,15 @@
 .tap-active:active {
   transform: scale(0.97);
 }
+
+/* ───────────────────────────────────────────────────────
+   SCROLLBAR HIDE
+─────────────────────────────────────────────────────── */
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

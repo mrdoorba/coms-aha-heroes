@@ -81,35 +81,41 @@ function DashboardPage() {
           </div>
         )}
 
-        {/* Summary cards — 2-col on mobile, 3-col bento on desktop */}
-        <div className="grid grid-cols-2 gap-3 md:col-span-3 md:grid-cols-3">
-          <SummaryCard
-            title={m.dashboard_bintang_count()}
-            value={summary.bintangCount}
-            icon={<Star className="h-5 w-5" />}
-            iconBg="bg-[#F4C144]/15"
-            iconColor="text-[#F4C144]"
-            variant="gold"
-            href="/points?category=BINTANG"
-          />
-          <SummaryCard
-            title={m.dashboard_poin_aha_balance()}
-            value={summary.poinAhaBalance}
-            icon={<Award className="h-5 w-5" />}
-            iconBg="bg-[#325FEC]/10"
-            iconColor="text-[#325FEC]"
-            variant="blue"
-            href="/points?category=POIN_AHA"
-          />
-          <SummaryCard
-            title={m.dashboard_penalti_points()}
-            value={summary.penaltiCount}
-            icon={<AlertTriangle className="h-5 w-5" />}
-            iconBg="bg-[#C73E3E]/10"
-            iconColor="text-[#C73E3E]"
-            variant="red"
-            href="/points?category=PENALTI"
-          />
+        {/* Summary cards — horizontal scroll on mobile, 3-col bento on desktop */}
+        <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 scrollbar-hide md:grid md:grid-cols-3 md:overflow-visible md:snap-none md:pb-0 md:col-span-3">
+          <div className="min-w-[140px] snap-start shrink-0 md:min-w-0 md:shrink">
+            <SummaryCard
+              title={m.dashboard_bintang_count()}
+              value={summary.bintangCount}
+              icon={<Star className="h-5 w-5" />}
+              iconBg="bg-[#F4C144]/15"
+              iconColor="text-[#F4C144]"
+              variant="gold"
+              href="/points?category=BINTANG"
+            />
+          </div>
+          <div className="min-w-[140px] snap-start shrink-0 md:min-w-0 md:shrink">
+            <SummaryCard
+              title={m.dashboard_poin_aha_balance()}
+              value={summary.poinAhaBalance}
+              icon={<Award className="h-5 w-5" />}
+              iconBg="bg-[#325FEC]/10"
+              iconColor="text-[#325FEC]"
+              variant="blue"
+              href="/points?category=POIN_AHA"
+            />
+          </div>
+          <div className="min-w-[140px] snap-start shrink-0 md:min-w-0 md:shrink">
+            <SummaryCard
+              title={m.dashboard_penalti_points()}
+              value={summary.penaltiCount}
+              icon={<AlertTriangle className="h-5 w-5" />}
+              iconBg="bg-[#C73E3E]/10"
+              iconColor="text-[#C73E3E]"
+              variant="red"
+              href="/points?category=PENALTI"
+            />
+          </div>
         </div>
 
         {/* Mini Leaderboard — 1 col on desktop, spans 3 rows (cards + actions + activity) */}
@@ -124,19 +130,21 @@ function DashboardPage() {
 
         {/* Recent Activity — 3 cols */}
         <div className="md:col-span-3">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-[13px] font-bold uppercase tracking-wider text-[#1D388B]/60">
-              {m.dashboard_recent_activity()}
-            </h2>
-            <Link
-              to="/points"
-              className="text-xs font-semibold text-[#325FEC] hover:underline flex items-center gap-0.5"
-            >
-              {m.mini_leaderboard_view_all()}
-              <ChevronRight className="h-3 w-3" />
-            </Link>
+          <div className="overflow-hidden rounded-2xl bg-white border border-[#325FEC]/10 shadow-[0_2px_12px_rgba(50,95,236,0.10)] p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-[13px] font-bold uppercase tracking-wider text-[#1D388B]/60">
+                {m.dashboard_recent_activity()}
+              </h2>
+              <Link
+                to="/points"
+                className="text-xs font-semibold text-[#325FEC] hover:underline flex items-center gap-0.5"
+              >
+                {m.mini_leaderboard_view_all()}
+                <ChevronRight className="h-3 w-3" />
+              </Link>
+            </div>
+            <RecentActivity items={activity} />
           </div>
-          <RecentActivity items={activity} />
         </div>
 
       </div>

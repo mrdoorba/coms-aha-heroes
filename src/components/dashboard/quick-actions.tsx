@@ -90,7 +90,7 @@ export function QuickActions({ role }: QuickActionsProps) {
             key={action.to}
             to={action.to}
             className={cn(
-              'flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold shadow-sm min-h-[44px]',
+              'flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold shadow-sm min-h-[44px] shine-on-hover',
               action.gradientClass,
             )}
           >

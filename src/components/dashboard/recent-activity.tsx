@@ -82,7 +82,7 @@ export function RecentActivity({ items }: RecentActivityProps) {
             <Link
               to="/points/$id"
               params={{ id: item.id }}
-              className="flex items-center gap-3 rounded-xl bg-white border border-[#325FEC]/8 p-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(29,56,139,0.10)] group"
+              className="tap-active flex items-center gap-3 rounded-xl bg-white border border-[#325FEC]/8 p-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(29,56,139,0.10)] group"
             >
               {/* Avatar */}
               <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#325FEC]/10 text-[#325FEC]">

@@ -57,7 +57,7 @@ export function SummaryCard({ title, value, icon, variant = 'blue', href }: Summ
 
   const content = (
     <div className={cn(
-      'relative overflow-hidden rounded-2xl border p-4',
+      'relative overflow-hidden rounded-2xl border p-4 shine-on-hover',
       !isPending && `bg-gradient-to-br ${styles.gradient}`,
       isPending && 'bg-white',
       styles.border,

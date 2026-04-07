@@ -23,7 +23,7 @@ export function LeaderboardRow({ entry, isCurrentUser }: LeaderboardRowProps) {
   return (
     <div
       className={cn(
-        'flex items-center gap-3 rounded-2xl border px-4 py-3 transition-all duration-200 hover:-translate-y-0.5',
+        'tap-active flex items-center gap-3 rounded-2xl border px-4 py-3 transition-all duration-200 hover:-translate-y-0.5',
         isCurrentUser
           ? 'border-[#325FEC]/25 bg-gradient-to-r from-[#325FEC]/8 to-transparent shadow-[0_2px_12px_rgba(50,95,236,0.12)]'
           : 'border-[#325FEC]/8 bg-white hover:shadow-[0_4px_16px_rgba(29,56,139,0.10)]',
