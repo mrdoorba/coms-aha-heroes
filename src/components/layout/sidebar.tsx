@@ -51,22 +51,22 @@ export function Sidebar({ user, collapsed, onToggleCollapse, className }: Sideba
     <aside
       className={cn(
         'fixed top-0 left-0 z-40 flex h-full flex-col transition-[width] duration-200',
-        'bg-[#151C3B] border-r border-white/8',
+        'bg-white border-r border-[#325FEC]/10',
         collapsed ? 'w-16' : 'w-64',
         className,
       )}
     >
       {/* Logo / collapse toggle */}
       <div className={cn(
-        'flex h-16 items-center border-b border-white/8',
+        'flex h-16 items-center border-b border-[#325FEC]/10',
         collapsed ? 'justify-center px-0' : 'justify-between px-4',
       )}>
         {!collapsed && (
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#F4C144] to-[#FFD97D] shadow-lg">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#F4C144] to-[#FFD97D] shadow-md">
               <Trophy className="h-4 w-4 text-[#7a5800]" />
             </div>
-            <span className="font-manrope text-[15px] font-extrabold tracking-wide text-white">
+            <span className="font-manrope text-[15px] font-extrabold tracking-wide text-[#1D388B]">
               AHA HEROES
             </span>
           </div>
@@ -75,7 +75,7 @@ export function Sidebar({ user, collapsed, onToggleCollapse, className }: Sideba
           type="button"
           onClick={onToggleCollapse}
           className={cn(
-            'flex h-8 w-8 items-center justify-center rounded-lg text-white/80 hover:bg-white/12 hover:text-white transition-colors',
+            'flex h-8 w-8 items-center justify-center rounded-lg text-[#1D388B]/50 hover:bg-[#325FEC]/8 hover:text-[#1D388B] transition-colors',
             collapsed && 'mx-auto',
           )}
           aria-label={collapsed ? m.sidebar_expand() : m.sidebar_collapse()}
@@ -91,7 +91,7 @@ export function Sidebar({ user, collapsed, onToggleCollapse, className }: Sideba
             key={to}
             to={to}
             className={cn(
-              'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/50 transition-all duration-150 hover:bg-white/8 hover:text-white/90',
+              'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[#1D388B]/50 transition-all duration-150 hover:bg-[#325FEC]/8 hover:text-[#1D388B]',
               collapsed && 'justify-center px-0',
             )}
             activeProps={{ className: 'sidebar-link-active' }}
@@ -106,11 +106,11 @@ export function Sidebar({ user, collapsed, onToggleCollapse, className }: Sideba
           <>
             <div className={cn('pt-4 pb-1.5', collapsed ? 'px-1' : 'px-3')}>
               {!collapsed ? (
-                <span className="section-label text-white/30">
+                <span className="section-label text-[#1D388B]/30">
                   {m.nav_admin()}
                 </span>
               ) : (
-                <div className="border-t border-white/10" />
+                <div className="border-t border-[#325FEC]/10" />
               )}
             </div>
             {adminNavItems.map(({ to, icon: Icon }, index) => (
@@ -118,7 +118,7 @@ export function Sidebar({ user, collapsed, onToggleCollapse, className }: Sideba
                 key={to}
                 to={to}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/50 transition-all duration-150 hover:bg-white/8 hover:text-white/90',
+                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[#1D388B]/50 transition-all duration-150 hover:bg-[#325FEC]/8 hover:text-[#1D388B]',
                   collapsed && 'justify-center px-0',
                 )}
                 activeProps={{ className: 'sidebar-link-active' }}
@@ -133,12 +133,12 @@ export function Sidebar({ user, collapsed, onToggleCollapse, className }: Sideba
       </nav>
 
       {/* User footer */}
-      <div className="border-t border-white/8 p-2">
+      <div className="border-t border-[#325FEC]/10 p-2">
         <div className={cn(
           'flex items-center gap-3 rounded-lg px-3 py-2.5',
           collapsed && 'justify-center px-0',
         )}>
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#325FEC]/30 text-xs font-bold text-[#759EEE] ring-1 ring-white/10">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#325FEC]/10 text-xs font-bold text-[#325FEC] ring-1 ring-[#325FEC]/15">
             {user.avatarUrl ? (
               <img
                 src={user.avatarUrl}
@@ -151,8 +151,8 @@ export function Sidebar({ user, collapsed, onToggleCollapse, className }: Sideba
           </div>
           {!collapsed && (
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-white/85">{user.name}</p>
-              <span className="inline-block rounded-full bg-[#F4C144]/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#F4C144]">
+              <p className="truncate text-sm font-semibold text-[#1D388B]">{user.name}</p>
+              <span className="inline-block rounded-full bg-[#325FEC]/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#325FEC]">
                 {user.role}
               </span>
             </div>
