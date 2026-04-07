@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState, useMemo } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
 import { changePasswordFn } from '~/server/functions/auth'
 import * as m from '~/paraglide/messages'
 
@@ -44,6 +45,9 @@ function ChangePasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showCurrent, setShowCurrent] = useState(false)
+  const [showNew, setShowNew] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
 
   const strength = useMemo(() => getPasswordStrength(newPassword), [newPassword])
   const passwordsMatch = confirmPassword === '' || newPassword === confirmPassword
@@ -91,14 +95,24 @@ function ChangePasswordPage() {
             >
               {m.change_password_current()}
             </label>
-            <input
-              id="currentPassword"
-              type="password"
-              required
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#325FEC] focus:outline-none focus:ring-1 focus:ring-[#325FEC]"
-            />
+            <div className="relative mt-1">
+              <input
+                id="currentPassword"
+                type={showCurrent ? 'text' : 'password'}
+                required
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 pr-10 text-sm focus:border-[#325FEC] focus:outline-none focus:ring-1 focus:ring-[#325FEC]"
+              />
+              <button
+                type="button"
+                onClick={() => setShowCurrent(!showCurrent)}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                aria-label={showCurrent ? m.login_hide_password() : m.login_show_password()}
+              >
+                {showCurrent ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
           </div>
           <div>
             <label
@@ -107,15 +121,25 @@ function ChangePasswordPage() {
             >
               {m.change_password_new()}
             </label>
-            <input
-              id="newPassword"
-              type="password"
-              required
-              minLength={8}
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-[#325FEC] focus:outline-none focus:ring-1 focus:ring-[#325FEC]"
-            />
+            <div className="relative mt-1">
+              <input
+                id="newPassword"
+                type={showNew ? 'text' : 'password'}
+                required
+                minLength={8}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 pr-10 text-sm focus:border-[#325FEC] focus:outline-none focus:ring-1 focus:ring-[#325FEC]"
+              />
+              <button
+                type="button"
+                onClick={() => setShowNew(!showNew)}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                aria-label={showNew ? m.login_hide_password() : m.login_show_password()}
+              >
+                {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
             {newPassword && (
               <div className="mt-2">
                 <div className="flex gap-1">
@@ -137,18 +161,28 @@ function ChangePasswordPage() {
             >
               {m.change_password_confirm()}
             </label>
-            <input
-              id="confirmPassword"
-              type="password"
-              required
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-1 ${
-                !passwordsMatch
-                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                  : 'border-gray-300 focus:border-[#325FEC] focus:ring-[#325FEC]'
-              }`}
-            />
+            <div className="relative mt-1">
+              <input
+                id="confirmPassword"
+                type={showConfirm ? 'text' : 'password'}
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className={`block w-full rounded-md border px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-1 ${
+                  !passwordsMatch
+                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                    : 'border-gray-300 focus:border-[#325FEC] focus:ring-[#325FEC]'
+                }`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirm(!showConfirm)}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                aria-label={showConfirm ? m.login_hide_password() : m.login_show_password()}
+              >
+                {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
             {!passwordsMatch && (
               <p className="mt-1 text-xs text-red-600">{m.change_password_mismatch()}</p>
             )}
