@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { LayoutDashboard, Award, Trophy, User } from 'lucide-react'
+import { LayoutDashboard, Award, Trophy, Gift, User } from 'lucide-react'
 import { cn } from '~/lib/utils'
 import * as m from '~/paraglide/messages'
 
@@ -7,11 +7,12 @@ const navItems = [
   { to: '/dashboard', icon: LayoutDashboard },
   { to: '/points', icon: Award },
   { to: '/leaderboard', icon: Trophy },
+  { to: '/rewards', icon: Gift },
   { to: '/profile', icon: User },
 ] as const
 
 function getNavLabels() {
-  return [m.nav_dashboard(), m.nav_points(), m.nav_leaderboard(), m.nav_profile()]
+  return [m.nav_dashboard(), m.nav_points(), m.nav_leaderboard(), m.nav_rewards(), m.nav_profile()]
 }
 
 interface BottomNavProps {

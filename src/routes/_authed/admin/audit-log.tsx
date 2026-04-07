@@ -212,7 +212,7 @@ function AuditLogPage() {
       </div>
 
       {/* Filter bar */}
-      <div className="rounded-xl border border-border bg-card p-4 space-y-4">
+      <div className="rounded-xl border border-[#325FEC]/8 bg-white shadow-[0_2px_12px_rgba(29,56,139,0.07)] p-4 space-y-4">
         {/* Action group pills */}
         <div className="flex flex-wrap gap-2">
           {ACTION_GROUP_VALUES.map((val) => {
@@ -231,7 +231,7 @@ function AuditLogPage() {
                 className={`rounded-full px-3 py-1 text-xs font-medium transition-colors border ${
                   actionGroup === val
                     ? 'bg-[#325FEC] text-white border-[#325FEC]'
-                    : 'bg-muted text-muted-foreground border-transparent hover:border-[#325FEC]/40 hover:text-[#325FEC]'
+                    : 'bg-[#325FEC]/5 text-[#1D388B]/60 border-[#325FEC]/15 hover:border-[#325FEC]/40 hover:text-[#325FEC] hover:bg-[#325FEC]/10'
                 }`}
               >
                 {label}
@@ -300,10 +300,10 @@ function AuditLogPage() {
       ) : (
         <>
           {/* Desktop table */}
-          <div className="hidden md:block rounded-xl border border-border overflow-hidden">
+          <div className="hidden md:block rounded-xl border border-[#325FEC]/8 shadow-[0_2px_12px_rgba(29,56,139,0.07)] overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/50">
+                <TableRow className="bg-[#325FEC]/4">
                   <TableHead className="text-xs font-semibold text-muted-foreground w-36">{m.audit_col_timestamp()}</TableHead>
                   <TableHead className="text-xs font-semibold text-muted-foreground">{m.audit_col_actor()}</TableHead>
                   <TableHead className="text-xs font-semibold text-muted-foreground">{m.audit_col_action()}</TableHead>

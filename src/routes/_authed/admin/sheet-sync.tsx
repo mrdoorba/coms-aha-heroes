@@ -262,7 +262,7 @@ function SheetSyncPage() {
       </div>
 
       {/* Status card */}
-      <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+      <div className="rounded-xl border border-[#325FEC]/8 bg-white shadow-[0_2px_12px_rgba(29,56,139,0.07)] p-5 space-y-4">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="space-y-3">
             <div className="flex items-center gap-2">
@@ -367,10 +367,10 @@ function SheetSyncPage() {
         ) : (
           <>
             {/* Desktop table */}
-            <div className="hidden md:block rounded-xl border border-border overflow-hidden">
+            <div className="hidden md:block rounded-xl border border-[#325FEC]/8 shadow-[0_2px_12px_rgba(29,56,139,0.07)] overflow-hidden">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-muted/50">
+                  <TableRow className="bg-[#325FEC]/4">
                     <TableHead className="text-xs font-semibold text-muted-foreground w-36">Started at</TableHead>
                     <TableHead className="text-xs font-semibold text-muted-foreground">Direction</TableHead>
                     <TableHead className="text-xs font-semibold text-muted-foreground">Sheet</TableHead>
@@ -420,7 +420,7 @@ function SheetSyncPage() {
               {jobs.map((job) => {
                 const { date, time } = formatTimestamp(job.startedAt ?? job.createdAt)
                 return (
-                  <div key={job.id} className="rounded-xl border border-border bg-card p-4 space-y-3">
+                  <div key={job.id} className="rounded-xl border border-[#325FEC]/8 bg-white shadow-[0_2px_12px_rgba(29,56,139,0.07)] p-4 space-y-3">
                     <div className="flex items-start justify-between gap-2">
                       {getStatusBadge(job.status)}
                       <span className="text-[10px] text-muted-foreground text-right">
