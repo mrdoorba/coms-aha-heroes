@@ -47,7 +47,7 @@ function ReportsSkeleton() {
 
 const CATEGORY_COLORS: Record<string, { bar: string; text: string }> = {
   bintang: { bar: 'bg-[#F4C144]', text: 'text-[#F4C144]' },
-  penalti: { bar: 'bg-[#6D50B8]', text: 'text-[#6D50B8]' },
+  penalti: { bar: 'bg-[#C73E3E]', text: 'text-[#C73E3E]' },
   poin_aha: { bar: 'bg-[#325FEC]', text: 'text-[#325FEC]' },
 }
 
@@ -61,7 +61,7 @@ function categoryColor(name: string) {
 function categoryIcon(name: string) {
   const key = name.toLowerCase()
   if (key.includes('bintang')) return <Star className="h-4 w-4 text-[#F4C144]" />
-  if (key.includes('penalti')) return <AlertTriangle className="h-4 w-4 text-[#6D50B8]" />
+  if (key.includes('penalti')) return <AlertTriangle className="h-4 w-4 text-[#C73E3E]" />
   return <Award className="h-4 w-4 text-[#325FEC]" />
 }
 
@@ -217,8 +217,9 @@ function ReportsPage() {
           title={m.points_penalti()}
           value={penaltiCount}
           icon={<AlertTriangle className="h-5 w-5" />}
-          iconBg="bg-[#6D50B8]/10"
-          iconColor="text-[#6D50B8]"
+          iconBg="bg-[#C73E3E]/10"
+          iconColor="text-[#C73E3E]"
+          variant="red"
         />
         <SummaryCard
           title={m.points_poin_aha()}

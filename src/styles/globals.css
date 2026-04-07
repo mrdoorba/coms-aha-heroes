@@ -16,6 +16,7 @@
   --color-deep-navy: #0F0E7F;
   --color-gold: #F4C144;
   --color-purple: #6D50B8;
+  --color-penalti: #C73E3E;
   --color-sky-blue: #759EEE;
 
   /* Status colors */
@@ -353,13 +354,13 @@
 }
 
 .btn-gradient-purple {
-  background: linear-gradient(135deg, #6D50B8 0%, #9681D4 100%);
+  background: linear-gradient(135deg, #C73E3E 0%, #E06B6B 100%);
   transition: all 0.2s ease;
 }
 
 .btn-gradient-purple:hover {
-  background: linear-gradient(135deg, #5d43a0 0%, #8370c4 100%);
-  box-shadow: 0 4px 12px rgba(109, 80, 184, 0.3);
+  background: linear-gradient(135deg, #B03535 0%, #D45A5A 100%);
+  box-shadow: 0 4px 12px rgba(199, 62, 62, 0.3);
 }
 
 /* Bottom nav active indicator */

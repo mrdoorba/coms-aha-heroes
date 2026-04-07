@@ -198,7 +198,7 @@ function PenaltiForm() {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-[#6D50B8] text-white hover:bg-[#5a3fa0] font-semibold"
+          className="w-full bg-[#C73E3E] text-white hover:bg-[#B03535] font-semibold"
         >
           {isSubmitting ? m.common_submitting() : m.penalti_form_submit()}
         </Button>

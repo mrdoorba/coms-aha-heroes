@@ -93,9 +93,9 @@ function DashboardPage() {
           title={m.dashboard_penalti_points()}
           value={summary.penaltiCount}
           icon={<AlertTriangle className="h-5 w-5" />}
-          iconBg="bg-[#6D50B8]/10"
-          iconColor="text-[#6D50B8]"
-          variant="purple"
+          iconBg="bg-[#C73E3E]/10"
+          iconColor="text-[#C73E3E]"
+          variant="red"
           href="/points?category=PENALTI"
         />
         <SummaryCard
