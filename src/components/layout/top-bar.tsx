@@ -90,6 +90,10 @@ export function TopBar({ user, unreadCount, className }: TopBarProps) {
                 src={user.avatarUrl}
                 alt={user.name}
                 className="h-full w-full object-cover"
+                width={32}
+                height={32}
+                loading="lazy"
+                decoding="async"
               />
             ) : (
               <span>{initials || <User className="h-4 w-4" />}</span>
@@ -150,7 +154,15 @@ export function TopBar({ user, unreadCount, className }: TopBarProps) {
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#325FEC]/10 text-xs font-bold text-[#325FEC] ring-1 ring-[#325FEC]/15">
                   {user.avatarUrl ? (
-                    <img src={user.avatarUrl} alt={user.name} className="h-full w-full object-cover" />
+                    <img
+                      src={user.avatarUrl}
+                      alt={user.name}
+                      className="h-full w-full object-cover"
+                      width={36}
+                      height={36}
+                      loading="lazy"
+                      decoding="async"
+                    />
                   ) : (
                     <span>{initials || <User className="h-4 w-4" />}</span>
                   )}

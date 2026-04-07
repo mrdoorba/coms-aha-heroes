@@ -187,10 +187,15 @@
 
 .card-surface {
   background: rgba(255, 255, 255, 0.90);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   box-shadow: var(--shadow-card);
   border: 1px solid rgba(255, 255, 255, 0.80);
+}
+
+@media (min-width: 768px) {
+  .card-surface {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
 }
 
 .card-surface-solid {
@@ -257,6 +262,7 @@
 
 .stat-enter {
   animation: stat-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity;
 }
 
 /* ───────────────────────────────────────────────────────
@@ -285,21 +291,42 @@
 ─────────────────────────────────────────────────────── */
 
 @keyframes soft-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(244, 193, 68, 0.4); }
-  50% { box-shadow: 0 0 0 6px rgba(244, 193, 68, 0); }
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.4); opacity: 0; }
 }
 
 .pulse-gold {
+  position: relative;
+}
+
+.pulse-gold::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 2px solid #F4C144;
   animation: soft-pulse 2s ease-in-out infinite;
+  pointer-events: none;
 }
 
 @keyframes glow-gold {
-  0%, 100% { box-shadow: 0 0 8px rgba(244, 193, 68, 0.3), 0 0 20px rgba(244, 193, 68, 0.1); }
-  50% { box-shadow: 0 0 20px rgba(244, 193, 68, 0.6), 0 0 40px rgba(244, 193, 68, 0.2); }
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.05); }
 }
 
 .glow-gold {
+  position: relative;
+}
+
+.glow-gold::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  background: radial-gradient(circle, rgba(244, 193, 68, 0.4) 0%, transparent 70%);
   animation: glow-gold 2.5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
 }
 
 /* ───────────────────────────────────────────────────────
@@ -442,6 +469,15 @@
 
 .bnav-active {
   font-weight: 700;
+}
+
+/* ───────────────────────────────────────────────────────
+   SIDEBAR WIDTH CSS VARIABLE
+─────────────────────────────────────────────────────── */
+
+@media (min-width: 768px) {
+  .sidebar-collapsed { --sidebar-width: 4rem; }
+  .sidebar-expanded { --sidebar-width: 16rem; }
 }
 
 /* ───────────────────────────────────────────────────────

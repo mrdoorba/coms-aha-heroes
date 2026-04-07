@@ -15,7 +15,7 @@ export function AppShell({ user, unreadCount, children }: AppShellProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
 
   return (
-    <div className="app-bg min-h-screen">
+    <div className={`app-bg min-h-screen ${sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}`}>
       <TopBar user={{ name: user.name, role: user.role, avatarUrl: user.avatarUrl }} unreadCount={unreadCount} className="md:hidden" />
       <Sidebar
         user={user}
@@ -25,10 +25,7 @@ export function AppShell({ user, unreadCount, children }: AppShellProps) {
         className="hidden md:flex"
       />
 
-      <div
-        className="transition-[margin-left] duration-200"
-        style={{ marginLeft: `var(--sidebar-width, 0px)` }}
-      >
+      <div className="transition-[margin-left] duration-200 md:ml-[var(--sidebar-width)]">
         <Header user={user} unreadCount={unreadCount} className="hidden md:flex" />
         <PullToRefresh>
           <main className="page-transition pt-14 pb-16 md:pt-0 md:pb-0 px-4 md:px-6 max-w-screen-xl mx-auto">
@@ -38,13 +35,6 @@ export function AppShell({ user, unreadCount, children }: AppShellProps) {
       </div>
 
       <BottomNav className="md:hidden" />
-
-      <style>{`
-        :root { --sidebar-width: 0px; }
-        @media (min-width: 768px) {
-          :root { --sidebar-width: ${sidebarCollapsed ? '4rem' : '16rem'}; }
-        }
-      `}</style>
     </div>
   )
 }
