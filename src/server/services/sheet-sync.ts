@@ -28,6 +28,35 @@ type SyncResult = {
   errors: Array<{ tab: string; row: number; name: string; error: string }>
 }
 
+// Cache for the "Inactive" team — created once per sync run
+let inactiveTeamId: string | null = null
+
+async function getOrCreateInactiveTeam(
+  branchId: string,
+  db: ReturnType<typeof getDb>,
+): Promise<string> {
+  if (inactiveTeamId) return inactiveTeamId
+
+  const [existing] = await db
+    .select({ id: teams.id })
+    .from(teams)
+    .where(and(eq(teams.branchId, branchId), eq(teams.name, 'Inactive')))
+    .limit(1)
+
+  if (existing) {
+    inactiveTeamId = existing.id
+    return inactiveTeamId
+  }
+
+  const [created] = await db
+    .insert(teams)
+    .values({ branchId, name: 'Inactive' })
+    .returning({ id: teams.id })
+
+  inactiveTeamId = created.id
+  return inactiveTeamId
+}
+
 // Find user by name (case-insensitive). If not found, auto-create as inactive.
 async function findOrCreateUser(
   name: string,
@@ -42,12 +71,16 @@ async function findOrCreateUser(
 
   if (found) return found
 
+  const teamId = await getOrCreateInactiveTeam(branchId, db)
+
   const [created] = await db
     .insert(users)
     .values({
       name,
       email: `former-${name.toLowerCase().replace(/\s+/g, '.')}@placeholder.local`,
       branchId,
+      teamId,
+      department: 'Inactive',
       role: 'employee',
       isActive: false,
       mustChangePassword: true,
@@ -667,6 +700,7 @@ export async function runFullSync(
   startedBy?: string,
   tx?: DbClient,
 ) {
+  inactiveTeamId = null // reset cache for each sync run
   const db = (tx ?? defaultDb) as unknown as DbClient
 
   const job = await createJob(
