@@ -41,88 +41,89 @@ function DashboardPage() {
     (role === 'hr' || role === 'admin') && summary.pendingCount > 0
 
   return (
-    <div className="mx-auto max-w-2xl space-y-5 px-4 pb-24 pt-5 md:pb-8">
-      {/* Hero greeting */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1D388B] via-[#2550C8] to-[#325FEC] p-5 shadow-[0_8px_32px_rgba(29,56,139,0.35)]">
-        {/* Decorative glows */}
-        <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-[#F4C144]/15 blur-2xl" />
-        <div className="pointer-events-none absolute -bottom-4 left-16 h-20 w-20 rounded-full bg-[#759EEE]/20 blur-xl" />
+    <div className="mx-auto max-w-screen-lg px-4 pb-24 pt-5 md:pb-8">
+      {/* Bento grid — single col on mobile, 4-col asymmetric on desktop */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
 
-        <div className="relative">
-          <p className="text-[13px] font-medium text-white/60">{m.dashboard_welcome({ name: '' }).split(',')[0]}</p>
-          <h1 className="mt-0.5 text-xl font-extrabold tracking-tight text-white">{name}</h1>
-          <span className="mt-2 inline-flex items-center rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-bold capitalize text-white/90 backdrop-blur-sm">
-            {role}
-          </span>
+        {/* Hero greeting — full width */}
+        <div className="md:col-span-4">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1D388B] via-[#2550C8] to-[#325FEC] p-5 shadow-[0_8px_32px_rgba(29,56,139,0.35)]">
+            {/* Decorative glows */}
+            <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-[#F4C144]/15 blur-2xl" />
+            <div className="pointer-events-none absolute -bottom-4 left-16 h-20 w-20 rounded-full bg-[#759EEE]/20 blur-xl" />
+
+            <div className="relative">
+              <p className="text-[13px] font-medium text-white/60">{m.dashboard_welcome({ name: '' }).split(',')[0]}</p>
+              <h1 className="mt-0.5 text-xl font-extrabold tracking-tight text-white">{name}</h1>
+              <span className="mt-2 inline-flex items-center rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-bold capitalize text-white/90 backdrop-blur-sm">
+                {role}
+              </span>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Pending approvals banner */}
-      {showPendingBanner && (
-        <Link
-          to="/points"
-          search={{ status: 'pending' }}
-          className="group flex items-center justify-between rounded-xl bg-white border border-[#F4C144]/30 px-4 py-3 shadow-[0_2px_12px_rgba(244,193,68,0.15)] hover:shadow-[0_4px_20px_rgba(244,193,68,0.25)] hover:border-[#F4C144]/60 transition-all duration-200"
-        >
-          <span className="flex items-center gap-2.5 text-sm font-semibold text-[#1D388B]">
-            <span className="pulse-gold flex h-8 w-8 items-center justify-center rounded-full bg-[#F4C144]/15">
-              <Clock className="h-4 w-4 text-[#F4C144]" />
-            </span>
-            {m.dashboard_pending_review({ count: String(summary.pendingCount) })}
-          </span>
-          <ChevronRight className="h-4 w-4 shrink-0 text-[#F4C144] transition-transform group-hover:translate-x-0.5" />
-        </Link>
-      )}
+        {/* Pending approvals banner — full width, conditional */}
+        {showPendingBanner && (
+          <div className="md:col-span-4">
+            <Link
+              to="/points"
+              search={{ status: 'pending' }}
+              className="group flex items-center justify-between rounded-xl bg-white border border-[#F4C144]/30 px-4 py-3 shadow-[0_2px_12px_rgba(244,193,68,0.15)] hover:shadow-[0_4px_20px_rgba(244,193,68,0.25)] hover:border-[#F4C144]/60 transition-all duration-200"
+            >
+              <span className="flex items-center gap-2.5 text-sm font-semibold text-[#1D388B]">
+                <span className="pulse-gold flex h-8 w-8 items-center justify-center rounded-full bg-[#F4C144]/15">
+                  <Clock className="h-4 w-4 text-[#F4C144]" />
+                </span>
+                {m.dashboard_pending_review({ count: String(summary.pendingCount) })}
+              </span>
+              <ChevronRight className="h-4 w-4 shrink-0 text-[#F4C144] transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </div>
+        )}
 
-      {/* Summary cards — 2x2 on mobile, 4-col on desktop */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <SummaryCard
-          title={m.dashboard_bintang_count()}
-          value={summary.bintangCount}
-          icon={<Star className="h-5 w-5" />}
-          iconBg="bg-[#F4C144]/15"
-          iconColor="text-[#F4C144]"
-          variant="gold"
-          href="/points?category=BINTANG"
-        />
-        <SummaryCard
-          title={m.dashboard_poin_aha_balance()}
-          value={summary.poinAhaBalance}
-          icon={<Award className="h-5 w-5" />}
-          iconBg="bg-[#325FEC]/10"
-          iconColor="text-[#325FEC]"
-          variant="blue"
-          href="/points?category=POIN_AHA"
-        />
-        <SummaryCard
-          title={m.dashboard_penalti_points()}
-          value={summary.penaltiCount}
-          icon={<AlertTriangle className="h-5 w-5" />}
-          iconBg="bg-[#C73E3E]/10"
-          iconColor="text-[#C73E3E]"
-          variant="red"
-          href="/points?category=PENALTI"
-        />
-        <SummaryCard
-          title={m.dashboard_pending_actions()}
-          value={summary.pendingCount}
-          icon={<Clock className="h-5 w-5" />}
-          iconBg="bg-[#F4C144]/15"
-          iconColor="text-[#F4C144]"
-          variant="pending"
-          href="/points?status=pending"
-        />
-      </div>
+        {/* Summary cards — 2-col on mobile, 3-col bento on desktop */}
+        <div className="grid grid-cols-2 gap-3 md:col-span-3 md:grid-cols-3">
+          <SummaryCard
+            title={m.dashboard_bintang_count()}
+            value={summary.bintangCount}
+            icon={<Star className="h-5 w-5" />}
+            iconBg="bg-[#F4C144]/15"
+            iconColor="text-[#F4C144]"
+            variant="gold"
+            href="/points?category=BINTANG"
+          />
+          <SummaryCard
+            title={m.dashboard_poin_aha_balance()}
+            value={summary.poinAhaBalance}
+            icon={<Award className="h-5 w-5" />}
+            iconBg="bg-[#325FEC]/10"
+            iconColor="text-[#325FEC]"
+            variant="blue"
+            href="/points?category=POIN_AHA"
+          />
+          <SummaryCard
+            title={m.dashboard_penalti_points()}
+            value={summary.penaltiCount}
+            icon={<AlertTriangle className="h-5 w-5" />}
+            iconBg="bg-[#C73E3E]/10"
+            iconColor="text-[#C73E3E]"
+            variant="red"
+            href="/points?category=PENALTI"
+          />
+        </div>
 
-      {/* Quick Actions — desktop only (mobile has FAB) */}
-      <div>
-        <QuickActions role={role} />
-      </div>
+        {/* Mini Leaderboard — 1 col on desktop, spans 3 rows (cards + actions + activity) */}
+        <div className="md:col-span-1 md:row-span-3">
+          <MiniLeaderboard entries={leaderboardEntries} currentUserId={currentUserId} />
+        </div>
 
-      {/* Two-column layout on desktop */}
-      <div className="flex flex-col gap-5 md:flex-row md:items-start">
-        {/* Recent Activity */}
-        <div className="flex-1 min-w-0">
+        {/* Quick Actions — 3 cols */}
+        <div className="md:col-span-3">
+          <QuickActions role={role} />
+        </div>
+
+        {/* Recent Activity — 3 cols */}
+        <div className="md:col-span-3">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-[13px] font-bold uppercase tracking-wider text-[#1D388B]/60">
               {m.dashboard_recent_activity()}
@@ -138,10 +139,6 @@ function DashboardPage() {
           <RecentActivity items={activity} />
         </div>
 
-        {/* Mini Leaderboard */}
-        <div className="w-full md:w-64 shrink-0">
-          <MiniLeaderboard entries={leaderboardEntries} currentUserId={currentUserId} />
-        </div>
       </div>
     </div>
   )

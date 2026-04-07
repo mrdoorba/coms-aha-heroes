@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { Bell, User, ChevronDown, Search, KeyRound, LogOut } from 'lucide-react'
 import { cn } from '~/lib/utils'
@@ -18,12 +17,12 @@ const LANGUAGES = ['id', 'en', 'th'] as const
 interface HeaderProps {
   user: { name: string; avatarUrl: string | null }
   unreadCount: number
+  onOpenPalette?: () => void
   className?: string
 }
 
-export function Header({ user, unreadCount, className }: HeaderProps) {
+export function Header({ user, unreadCount, onOpenPalette, className }: HeaderProps) {
   const navigate = useNavigate()
-  const [query, setQuery] = useState('')
 
   const initials = user.name
     .split(' ')
@@ -31,14 +30,6 @@ export function Header({ user, unreadCount, className }: HeaderProps) {
     .slice(0, 2)
     .join('')
     .toUpperCase()
-
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault()
-    const trimmed = query.trim()
-    if (!trimmed) return
-    navigate({ to: '/points', search: { q: trimmed } })
-    setQuery('')
-  }
 
   return (
     <header
@@ -49,17 +40,24 @@ export function Header({ user, unreadCount, className }: HeaderProps) {
         className,
       )}
     >
-      {/* Search */}
-      <form onSubmit={handleSearch} className="relative w-full max-w-xs">
-        <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={m.header_search_placeholder()}
-          className="h-9 w-full rounded-xl border border-[#325FEC]/12 bg-[#EDF1FA] pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground/70 focus:border-[#325FEC]/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#325FEC]/15 transition-all"
-        />
-      </form>
+      {/* Command palette trigger */}
+      <button
+        type="button"
+        onClick={onOpenPalette}
+        className={cn(
+          'flex w-full max-w-xs items-center gap-2.5 rounded-xl border border-[#325FEC]/12 bg-[#EDF1FA]',
+          'h-9 px-3 text-sm text-muted-foreground/70 transition-all',
+          'hover:border-[#325FEC]/25 hover:bg-white hover:text-muted-foreground',
+          'cursor-pointer select-none',
+        )}
+        aria-label="Open command palette"
+      >
+        <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
+        <span className="flex-1 text-left">{m.header_search_placeholder()}</span>
+        <kbd className="flex items-center gap-0.5 rounded-md border border-[#325FEC]/15 bg-white/70 px-1.5 py-0.5 text-[10px] font-semibold text-[#325FEC]/50 shadow-sm">
+          <span className="text-[11px]">⌘</span>K
+        </kbd>
+      </button>
 
       <div className="flex items-center gap-2">
         {/* Language switcher */}

@@ -42,7 +42,7 @@ export function QuickActions({ role }: QuickActionsProps) {
             label: m.quick_action_penalti(),
             to: '/points/new/penalti',
             icon: <AlertTriangle className="h-4 w-4" />,
-            gradientClass: 'btn-gradient-purple text-white',
+            gradientClass: 'btn-gradient-red text-white',
             mobileDelay: 'delay-0',
           } satisfies ActionItem,
         ]

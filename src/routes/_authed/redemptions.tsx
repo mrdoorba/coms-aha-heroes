@@ -513,7 +513,7 @@ function RedemptionsPage() {
             </Button>
             <Button
               size="sm"
-              className="btn-gradient-purple text-white rounded-lg font-semibold"
+              className="btn-gradient-red text-white rounded-lg font-semibold"
               disabled={isSubmitting}
               onClick={handleRejectConfirm}
             >

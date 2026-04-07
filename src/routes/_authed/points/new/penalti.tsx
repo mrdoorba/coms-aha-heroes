@@ -301,7 +301,7 @@ function PenaltiForm() {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full btn-gradient-purple text-white font-semibold h-11 rounded-xl shadow-md"
+            className="w-full btn-gradient-red text-white font-semibold h-11 rounded-xl shadow-md"
           >
             {isSubmitting ? m.common_submitting() : m.penalti_form_submit()}
           </Button>
