@@ -1,22 +1,54 @@
 import { Elysia, t } from 'elysia'
 import { paginationQuery } from './_query'
-import * as scheduler from '../services/sheet-sync-scheduler'
+import * as sync from '../services/sheet-sync-scheduler'
 import * as repo from '../repositories/sheet-sync'
+import { auth } from '../auth'
+import { db } from '~/db'
+import { users } from '~/db/schema'
+import { eq } from 'drizzle-orm'
 import type { AuthUser } from '../middleware/auth'
 
 type Ctx = { authUser: AuthUser }
 
-// Public route — Cloud Scheduler triggers this via OIDC + Cloud Run IAM invoker
-export const sheetSyncTriggerRoute = new Elysia({ prefix: '/cron' })
-  .post('/sheet-sync', async () => {
-    const job = await scheduler.triggerManualSync()
+// ── Public route: callable by Cloud Scheduler (OIDC) or admin (session) ─────
+// Registered outside the auth group. Handles its own authentication.
+export const sheetSyncTriggerRoute = new Elysia()
+  .post('/sheet-sync-trigger', async ({ request, set }) => {
+    // Path 1: Cloud Scheduler sends a Bearer OIDC token.
+    // Cloud Run IAM validates the token before the request reaches the app.
+    // If we got here with a Bearer token, the caller is authorized.
+    const authHeader = request.headers.get('authorization')
+    if (authHeader?.startsWith('Bearer ')) {
+      const job = await sync.triggerManualSync()
+      return { success: true, data: job, error: null }
+    }
+
+    // Path 2: Admin user with a session cookie.
+    const session = await auth.api.getSession({ headers: request.headers })
+    if (!session) {
+      set.status = 401
+      return { success: false, data: null, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } }
+    }
+
+    const [appUser] = await db
+      .select({ id: users.id, role: users.role })
+      .from(users)
+      .where(eq(users.email, session.user.email))
+      .limit(1)
+
+    if (!appUser || appUser.role !== 'admin') {
+      set.status = 403
+      return { success: false, data: null, error: { code: 'FORBIDDEN', message: 'Admin access required' } }
+    }
+
+    const job = await sync.triggerManualSync(appUser.id)
     return { success: true, data: job, error: null }
   })
 
-// Protected routes — admin only (inside auth group)
+// ── Protected routes: admin-only (inside /v1 auth group) ────────────────────
 export const sheetSyncRoute = new Elysia({ prefix: '/sheet-sync' })
 
-  // POST /trigger — admin manual trigger (also available via session auth)
+  // POST /trigger — admin manual trigger (via session auth from UI)
   .post('/trigger', async ({ set, ...c }) => {
     const { authUser: actor } = c as unknown as Ctx
 
@@ -25,11 +57,11 @@ export const sheetSyncRoute = new Elysia({ prefix: '/sheet-sync' })
       return { success: false, data: null, error: { code: 'FORBIDDEN', message: 'Admin access required' } }
     }
 
-    const job = await scheduler.triggerManualSync(actor.id)
+    const job = await sync.triggerManualSync(actor.id)
     return { success: true, data: job, error: null }
   })
 
-  // GET /jobs — list sync job history (admin only)
+  // GET /jobs — list sync job history
   .get('/jobs', async ({ query, set, ...c }) => {
     const { authUser: actor } = c as unknown as Ctx
 
@@ -47,7 +79,7 @@ export const sheetSyncRoute = new Elysia({ prefix: '/sheet-sync' })
     }
   }, { query: t.Object({ ...paginationQuery }) })
 
-  // GET /jobs/:id — get single job by id (admin only)
+  // GET /jobs/:id — get single job
   .get('/jobs/:id', async ({ params, set, ...c }) => {
     const { authUser: actor } = c as unknown as Ctx
 
@@ -64,7 +96,7 @@ export const sheetSyncRoute = new Elysia({ prefix: '/sheet-sync' })
     return { success: true, data: job, error: null }
   })
 
-  // GET /status — get current sync status (admin only)
+  // GET /status — current sync status
   .get('/status', async ({ set, ...c }) => {
     const { authUser: actor } = c as unknown as Ctx
 
@@ -73,7 +105,7 @@ export const sheetSyncRoute = new Elysia({ prefix: '/sheet-sync' })
       return { success: false, data: null, error: { code: 'FORBIDDEN', message: 'Admin access required' } }
     }
 
-    const isRunning = scheduler.isSyncRunning()
+    const isRunning = sync.isSyncRunning()
     const lastJob = await repo.getLatestJob()
 
     return {
