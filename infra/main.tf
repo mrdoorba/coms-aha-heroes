@@ -61,7 +61,7 @@ resource "google_cloud_scheduler_job" "sheet_sync_daily" {
 
   http_target {
     http_method = "POST"
-    uri         = "${module.cloud_run.service_url}/api/cron/sheet-sync"
+    uri         = "${module.cloud_run.service_url}/api/sheet-sync-trigger"
     oidc_token {
       service_account_email = google_service_account.sheet_sync_scheduler.email
       audience              = module.cloud_run.service_url
