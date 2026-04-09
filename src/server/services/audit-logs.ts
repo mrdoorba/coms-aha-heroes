@@ -12,8 +12,8 @@ export async function listAuditLogs(input: ListAuditLogsInput, ctx: ServiceConte
     throw new InsufficientRoleError()
   }
 
-  // Admin sees all branches, HR sees only their own branch
-  const branchId = ctx.actor.role === 'admin' ? null : ctx.actor.branchId
+  // Admin and HR see all branches
+  const branchId = ctx.actor.role === 'admin' || ctx.actor.role === 'hr' ? null : ctx.actor.branchId
 
   const { rows, total } = await withRLS(ctx.actor, (db) =>
     auditLogsRepo.listAuditLogs(input, branchId, db),

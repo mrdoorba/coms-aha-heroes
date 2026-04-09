@@ -43,7 +43,7 @@ export const pointsRoute = new Elysia({ prefix: '/points' })
       if (
         err instanceof pointsService.SelfPenaltiError ||
         err instanceof pointsService.LeaderSelfGiveError ||
-        err instanceof pointsService.InsufficientRoleForPenaltiError
+        err instanceof pointsService.EmployeeSelfOnlyError
       ) {
         set.status = 403
         return { success: false, data: null, error: { code: 'FORBIDDEN', message: (err as Error).message } }

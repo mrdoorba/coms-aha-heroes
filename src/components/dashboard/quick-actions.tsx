@@ -19,8 +19,6 @@ type ActionItem = {
 export function QuickActions({ role }: QuickActionsProps) {
   const [open, setOpen] = useState(false)
 
-  const canGiveToOthers = role === 'leader' || role === 'hr' || role === 'admin'
-
   const actions: ActionItem[] = [
     {
       label: m.quick_action_bintang(),
@@ -29,24 +27,20 @@ export function QuickActions({ role }: QuickActionsProps) {
       gradientClass: 'btn-gradient-gold text-[#7a5800]',
       mobileDelay: 'delay-75',
     },
-    ...(canGiveToOthers
-      ? [
-          {
-            label: m.quick_action_poin_aha(),
-            to: '/points/new/poin-aha',
-            icon: <Award className="h-4 w-4" />,
-            gradientClass: 'btn-gradient-blue text-white',
-            mobileDelay: 'delay-[40ms]',
-          } satisfies ActionItem,
-          {
-            label: m.quick_action_penalti(),
-            to: '/points/new/penalti',
-            icon: <AlertTriangle className="h-4 w-4" />,
-            gradientClass: 'btn-gradient-red text-white',
-            mobileDelay: 'delay-0',
-          } satisfies ActionItem,
-        ]
-      : []),
+    {
+      label: m.quick_action_poin_aha(),
+      to: '/points/new/poin-aha',
+      icon: <Award className="h-4 w-4" />,
+      gradientClass: 'btn-gradient-blue text-white',
+      mobileDelay: 'delay-[40ms]',
+    },
+    {
+      label: m.quick_action_penalti(),
+      to: '/points/new/penalti',
+      icon: <AlertTriangle className="h-4 w-4" />,
+      gradientClass: 'btn-gradient-red text-white',
+      mobileDelay: 'delay-0',
+    },
   ]
 
   return (

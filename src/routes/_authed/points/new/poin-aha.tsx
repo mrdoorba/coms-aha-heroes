@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { Award, AlertTriangle, ChevronRight } from 'lucide-react'
 import * as m from '~/paraglide/messages'
@@ -71,8 +71,9 @@ function PoinAhaForm() {
   const { session } = Route.useRouteContext()
   const router = useRouter()
   const userRole = (session?.appUser?.role ?? 'employee') as UserRole
+  const isSelfOnly = !(session?.appUser?.canSubmitPoints ?? false)
 
-  const [userId, setUserId] = useState('')
+  const [userId, setUserId] = useState(isSelfOnly ? (session?.appUser?.id ?? '') : '')
   const [level, setLevel] = useState(1)
   const [reason, setReason] = useState('')
   const [relatedStaff, setRelatedStaff] = useState('')
@@ -81,15 +82,6 @@ function PoinAhaForm() {
   const [error, setError] = useState<string | null>(null)
 
   const impact = getImpactBand(level)
-
-  // Employees cannot give Poin AHA — redirect to dashboard
-  useEffect(() => {
-    if (userRole === 'employee') {
-      router.navigate({ to: '/dashboard' })
-    }
-  }, [userRole, router])
-
-  if (userRole === 'employee') return null
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -152,12 +144,18 @@ function PoinAhaForm() {
 
           {/* Step 1 — Employee */}
           <SectionCard step={1} title={m.form_staff_name()}>
-            <EmployeeSelector
-              employees={employees}
-              value={userId}
-              onChange={setUserId}
-              excludeId={userRole === 'leader' ? session?.appUser?.id : undefined}
-            />
+            {isSelfOnly ? (
+              <div className="flex h-10 w-full items-center rounded-lg border border-border bg-muted/50 px-3 text-sm text-muted-foreground">
+                {session?.appUser?.name ?? session?.user?.name}
+              </div>
+            ) : (
+              <EmployeeSelector
+                employees={employees}
+                value={userId}
+                onChange={setUserId}
+                excludeId={userRole === 'leader' ? session?.appUser?.id : undefined}
+              />
+            )}
           </SectionCard>
 
           {/* Step 2 — Reason / Activity */}

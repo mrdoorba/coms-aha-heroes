@@ -9,6 +9,7 @@ import { FileUpload } from '~/components/ui/file-upload'
 import { getPointsLookupDataFn, submitPointFn } from '~/server/functions/points'
 import { uploadFile } from '~/lib/upload'
 import { KITTA_CODES, KITTA_LABELS, KITTA_DESCRIPTIONS } from '~/shared/constants'
+import type { UserRole } from '~/shared/constants'
 import type { KittaCode } from '~/shared/constants'
 
 
@@ -88,9 +89,11 @@ function PenaltiForm() {
   const { employees } = Route.useLoaderData()
   const { session } = Route.useRouteContext()
   const router = useRouter()
+  const userRole = (session?.appUser?.role ?? 'employee') as UserRole
+  const isSelfOnly = !(session?.appUser?.canSubmitPoints ?? false)
   const violationDescriptions = getViolationDescriptions()
 
-  const [userId, setUserId] = useState('')
+  const [userId, setUserId] = useState(isSelfOnly ? (session?.appUser?.id ?? '') : '')
   const [kittaComponent, setKittaComponent] = useState<KittaCode | ''>('')
   const [violationLevel, setViolationLevel] = useState(1)
   const [reason, setReason] = useState('')
@@ -165,12 +168,18 @@ function PenaltiForm() {
 
           {/* Step 1 — Employee */}
           <SectionCard step={1} title={m.form_staff_name()}>
-            <EmployeeSelector
-              employees={employees}
-              value={userId}
-              onChange={setUserId}
-              excludeId={session?.appUser?.id}
-            />
+            {isSelfOnly ? (
+              <div className="flex h-10 w-full items-center rounded-lg border border-border bg-muted/50 px-3 text-sm text-muted-foreground">
+                {session?.appUser?.name ?? session?.user?.name}
+              </div>
+            ) : (
+              <EmployeeSelector
+                employees={employees}
+                value={userId}
+                onChange={setUserId}
+                excludeId={session?.appUser?.id}
+              />
+            )}
           </SectionCard>
 
           {/* Step 2 — KITTA */}
