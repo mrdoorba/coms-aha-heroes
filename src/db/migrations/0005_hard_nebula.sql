@@ -1,1 +1,1 @@
-CREATE INDEX "idx_points_branch_created" ON "achievement_points" USING btree ("branch_id","created_at" DESC NULLS LAST);
+CREATE INDEX IF NOT EXISTS "idx_points_branch_created" ON "achievement_points" USING btree ("branch_id","created_at" DESC NULLS LAST);
