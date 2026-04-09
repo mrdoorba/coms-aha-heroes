@@ -1,3 +1,5 @@
+import { eq } from 'drizzle-orm'
+import { teams } from '~/db/schema'
 import * as pointsRepo from '../repositories/points'
 import { writeAuditLog } from './audit'
 import { createNotification } from './notifications'
@@ -24,7 +26,7 @@ export async function approvePoint(
 
     if (point.status !== 'pending') throw new PointNotPendingError(id)
 
-    assertCanApproveReject(ctx.actor, targetUser)
+    await assertCanApproveReject(ctx.actor, targetUser, db)
 
     const now = new Date()
     const updated = await pointsRepo.updatePointStatus(
@@ -90,7 +92,7 @@ export async function rejectPoint(
 
     if (point.status !== 'pending') throw new PointNotPendingError(id)
 
-    assertCanApproveReject(ctx.actor, targetUser)
+    await assertCanApproveReject(ctx.actor, targetUser, db)
 
     const now = new Date()
     const updated = await pointsRepo.updatePointStatus(
@@ -199,18 +201,28 @@ export async function revokePoint(
   })
 }
 
-function assertCanApproveReject(
+async function assertCanApproveReject(
   actor: AuthUser,
   targetUser: { id: string; teamId: string | null },
+  db: Parameters<Parameters<typeof withRLS>[1]>[0],
 ) {
   if (actor.role === 'employee') {
     throw new UnauthorizedApprovalError('Employees cannot approve or reject points')
   }
 
   if (actor.role === 'leader') {
-    if (!actor.teamId || actor.teamId !== targetUser.teamId) {
+    if (!targetUser.teamId) {
+      throw new UnauthorizedApprovalError('Target user has no team assigned')
+    }
+    const [team] = await db
+      .select({ leaderId: teams.leaderId })
+      .from(teams)
+      .where(eq(teams.id, targetUser.teamId))
+      .limit(1)
+
+    if (!team || team.leaderId !== actor.id) {
       throw new UnauthorizedApprovalError(
-        'Leaders can only approve or reject points for users in their own team',
+        'Leaders can only approve or reject points for teams they lead',
       )
     }
   }

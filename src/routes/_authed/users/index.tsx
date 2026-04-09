@@ -56,6 +56,7 @@ type UserRow = {
   teamId: string | null
   branchId: string
   isActive: boolean
+  canSubmitPoints: boolean
   createdAt: Date
 }
 

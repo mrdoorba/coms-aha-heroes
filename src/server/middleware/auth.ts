@@ -12,6 +12,7 @@ export type AuthUser = {
   readonly role: UserRole
   readonly branchId: string
   readonly teamId: string | null
+  readonly canSubmitPoints: boolean
   readonly mustChangePassword: boolean
 }
 
@@ -37,6 +38,7 @@ export const authPlugin = new Elysia({ name: 'auth' }).derive(
         role: users.role,
         branchId: users.branchId,
         teamId: users.teamId,
+        canSubmitPoints: users.canSubmitPoints,
         mustChangePassword: users.mustChangePassword,
       })
       .from(users)
@@ -59,6 +61,7 @@ export const authPlugin = new Elysia({ name: 'auth' }).derive(
             role: users.role,
             branchId: users.branchId,
             teamId: users.teamId,
+            canSubmitPoints: users.canSubmitPoints,
             mustChangePassword: users.mustChangePassword,
           })
           .from(users)

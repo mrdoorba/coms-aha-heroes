@@ -50,6 +50,13 @@
       "when": 1775464669544,
       "tag": "0006_loud_cassandra_nova",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1744156800000,
+      "tag": "0007_can_submit_points",
+      "breakpoints": true
     }
   ]
 }

@@ -10,6 +10,7 @@ export const createUserSchema = t.Object({
   department: t.Optional(t.String({ maxLength: 100 })),
   position: t.Optional(t.String({ maxLength: 100 })),
   phone: t.Optional(t.String({ maxLength: 20 })),
+  canSubmitPoints: t.Optional(t.Boolean()),
 })
 
 export const updateUserSchema = t.Object({
@@ -20,6 +21,7 @@ export const updateUserSchema = t.Object({
   position: t.Optional(t.String({ maxLength: 100 })),
   phone: t.Optional(t.String({ maxLength: 20 })),
   isActive: t.Optional(t.Boolean()),
+  canSubmitPoints: t.Optional(t.Boolean()),
 })
 
 export const listUsersSchema = t.Object({

@@ -1,6 +1,6 @@
-import { eq, and, desc, count } from 'drizzle-orm'
+import { eq, and, desc, count, inArray } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
-import { pointSummaries, achievementPoints, pointCategories, users } from '~/db/schema'
+import { pointSummaries, achievementPoints, pointCategories, users, teams } from '~/db/schema'
 import { withRLS } from '../repositories/base'
 import { getPointImpactSettings } from './settings-cache'
 import type { AuthUser } from '../middleware/auth'
@@ -75,7 +75,14 @@ async function getPendingCount(
   if (role === 'employee') return 0
 
   if (role === 'leader') {
-    if (!ctx.actor.teamId) return 0
+    const ledTeams = await db
+      .select({ id: teams.id })
+      .from(teams)
+      .where(eq(teams.leaderId, ctx.actor.id))
+
+    if (ledTeams.length === 0) return 0
+
+    const teamIds = ledTeams.map((t) => t.id)
     const rows = await db
       .select({ cnt: count() })
       .from(achievementPoints)
@@ -83,7 +90,7 @@ async function getPendingCount(
       .where(
         and(
           eq(achievementPoints.status, 'pending'),
-          eq(users.teamId, ctx.actor.teamId),
+          inArray(users.teamId, teamIds),
         ),
       )
     return Number(rows[0]?.cnt ?? 0)

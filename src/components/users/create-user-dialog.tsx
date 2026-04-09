@@ -38,6 +38,7 @@ const INITIAL_FORM: CreateUserInput = {
   department: '',
   position: '',
   phone: '',
+  canSubmitPoints: false,
 }
 
 export function CreateUserDialog({
@@ -51,7 +52,14 @@ export function CreateUserDialog({
   const [form, setForm] = useState<CreateUserInput>({ ...INITIAL_FORM })
 
   function handleChange(field: keyof CreateUserInput, value: string | null) {
-    setForm((prev) => ({ ...prev, [field]: value }))
+    setForm((prev) => {
+      const next = { ...prev, [field]: value }
+      // Auto-default canSubmitPoints when role changes
+      if (field === 'role') {
+        next.canSubmitPoints = ['admin', 'hr', 'leader'].includes(value ?? '')
+      }
+      return next
+    })
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -169,6 +177,18 @@ export function CreateUserDialog({
               />
             </div>
           </div>
+          <label className="flex items-center gap-3 rounded-lg border border-border p-3 cursor-pointer hover:bg-muted/50 transition-colors">
+            <input
+              type="checkbox"
+              checked={form.canSubmitPoints ?? false}
+              onChange={(e) => setForm((prev) => ({ ...prev, canSubmitPoints: e.target.checked }))}
+              className="h-4 w-4 rounded border-border"
+            />
+            <div>
+              <p className="text-sm font-medium leading-none">Can Submit Points</p>
+              <p className="text-xs text-muted-foreground mt-1">Allow this user to give points to others</p>
+            </div>
+          </label>
           <div className="grid gap-2">
             <Label htmlFor="create-phone">Phone (optional)</Label>
             <Input
