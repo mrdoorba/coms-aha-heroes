@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import * as m from '~/paraglide/messages'
 import {
   useReactTable,
@@ -264,10 +264,12 @@ function UsersPage() {
     columnHelper.accessor('name', {
       header: () => m.users_col_name(),
       cell: (info) => (
-        <div>
-          <div className="font-semibold text-[#1D388B]">{info.getValue()}</div>
+        <Link to="/users/$id" params={{ id: info.row.original.id }} className="block">
+          <div className="font-semibold text-[#1D388B] hover:text-[#325FEC] transition-colors">
+            {info.getValue()}
+          </div>
           <div className="text-xs text-[#1D388B]/50">{info.row.original.email}</div>
-        </div>
+        </Link>
       ),
     }),
     columnHelper.accessor('role', {

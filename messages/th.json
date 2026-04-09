@@ -368,5 +368,19 @@
   "filter_position_placeholder": "กรองตามตำแหน่ง...",
   "filter_branch": "สาขา",
   "filter_all_branches": "ทุกสาขา",
-  "filter_clear": "ล้างตัวกรอง"
+  "filter_clear": "ล้างตัวกรอง",
+  "employee_detail_poin_bintang": "คะแนนดาว",
+  "employee_detail_poin_aha": "คะแนน AHA",
+  "employee_detail_penalti": "บทลงโทษ",
+  "employee_detail_chart_title": "คะแนนดาว",
+  "employee_detail_history_title": "ประวัติคะแนนดาว ({count})",
+  "employee_detail_col_date": "วันที่",
+  "employee_detail_col_team": "ทีม",
+  "employee_detail_col_related_staff": "พนักงานที่เกี่ยวข้อง",
+  "employee_detail_col_reason": "เหตุผล",
+  "employee_detail_col_screenshot": "อัพโหลดภาพหน้าจอ",
+  "employee_detail_col_month": "MMM YYYY",
+  "employee_detail_view": "ดู",
+  "employee_detail_empty": "ยังไม่มีประวัติคะแนนดาว",
+  "employee_detail_page_of": "หน้า {page} จาก {total}"
 }
