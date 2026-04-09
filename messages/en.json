@@ -368,5 +368,19 @@
   "filter_position_placeholder": "Filter by position...",
   "filter_branch": "Branch",
   "filter_all_branches": "All Branches",
-  "filter_clear": "Clear Filters"
+  "filter_clear": "Clear Filters",
+  "employee_detail_poin_bintang": "Star Points",
+  "employee_detail_poin_aha": "AHA Points",
+  "employee_detail_penalti": "Penalty",
+  "employee_detail_chart_title": "Star Points",
+  "employee_detail_history_title": "Star Points History ({count})",
+  "employee_detail_col_date": "Date",
+  "employee_detail_col_team": "Team",
+  "employee_detail_col_related_staff": "Related Staff",
+  "employee_detail_col_reason": "Reason",
+  "employee_detail_col_screenshot": "Upload screenshot",
+  "employee_detail_col_month": "MMM YYYY",
+  "employee_detail_view": "View",
+  "employee_detail_empty": "No star points history yet",
+  "employee_detail_page_of": "Page {page} of {total}"
 }
