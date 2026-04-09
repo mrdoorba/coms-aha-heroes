@@ -33,6 +33,7 @@ export const users = pgTable(
     avatarUrl: text('avatar_url'),
     localePref: varchar('locale_pref', { length: 10 }),
     mustChangePassword: boolean('must_change_password').notNull().default(true),
+    canSubmitPoints: boolean('can_submit_points').notNull().default(false),
     isActive: boolean('is_active').notNull().default(true),
     archivedAt: timestamp('archived_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

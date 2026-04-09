@@ -63,6 +63,7 @@ export async function createUser(input: CreateUserInput, ctx: ServiceContext) {
         teamId: input.teamId ?? null,
         department: input.department ?? null,
         position: input.position ?? null,
+        canSubmitPoints: input.canSubmitPoints ?? ['admin', 'hr', 'leader'].includes(input.role),
       },
       db,
     )

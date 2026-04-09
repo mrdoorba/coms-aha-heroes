@@ -28,6 +28,7 @@ type UserData = {
   readonly teamId: string | null
   readonly department: string | null
   readonly position: string | null
+  readonly canSubmitPoints: boolean
 }
 
 type EditUserDialogProps = {
@@ -57,6 +58,7 @@ export function EditUserDialog({
         teamId: user.teamId,
         department: user.department ?? '',
         position: user.position ?? '',
+        canSubmitPoints: user.canSubmitPoints,
       })
     }
   }, [user])
@@ -126,6 +128,18 @@ export function EditUserDialog({
               </SelectContent>
             </Select>
           </div>
+          <label className="flex items-center gap-3 rounded-lg border border-border p-3 cursor-pointer hover:bg-muted/50 transition-colors">
+            <input
+              type="checkbox"
+              checked={form.canSubmitPoints ?? false}
+              onChange={(e) => setForm((prev) => ({ ...prev, canSubmitPoints: e.target.checked }))}
+              className="h-4 w-4 rounded border-border"
+            />
+            <div>
+              <p className="text-sm font-medium leading-none">Can Submit Points</p>
+              <p className="text-xs text-muted-foreground mt-1">Allow this user to give points to others</p>
+            </div>
+          </label>
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-2">
               <Label htmlFor="edit-dept">Department</Label>

@@ -23,6 +23,7 @@ export const getSessionFn = createServerFn({ method: 'GET' }).handler(
         mustChangePassword: users.mustChangePassword,
         branchId: users.branchId,
         teamId: users.teamId,
+        canSubmitPoints: users.canSubmitPoints,
       })
       .from(users)
       .where(eq(users.email, session.user.email))
