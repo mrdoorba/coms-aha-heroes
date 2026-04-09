@@ -32,45 +32,6 @@ module "sheet_sync" {
   cloud_run_sa_email = "coms-aha-heroes-run-sa@${var.project_id}.iam.gserviceaccount.com"
 }
 
-# ── Cloud Scheduler: daily sheet sync ────────────────────────────────────────
-
-resource "google_service_account" "sheet_sync_scheduler" {
-  project      = var.project_id
-  account_id   = "coms-aha-heroes-sheet-sched"
-  display_name = "Sheet Sync Scheduler (invokes Cloud Run)"
-}
-
-resource "google_cloud_run_v2_service_iam_member" "scheduler_invoker" {
-  project  = var.project_id
-  location = var.region
-  name     = "coms-aha-heroes-app"
-  role     = "roles/run.invoker"
-  member   = "serviceAccount:${google_service_account.sheet_sync_scheduler.email}"
-
-  depends_on = [module.cloud_run]
-}
-
-resource "google_cloud_scheduler_job" "sheet_sync_daily" {
-  project          = var.project_id
-  region           = var.region
-  name             = "coms-aha-heroes-sheet-sync-daily"
-  description      = "Triggers daily Google Sheets sync at 6 AM WIB"
-  schedule         = "0 6 * * *"
-  time_zone        = "Asia/Jakarta"
-  attempt_deadline = "600s"
-
-  http_target {
-    http_method = "POST"
-    uri         = "${module.cloud_run.service_url}/api/sheet-sync-trigger"
-    oidc_token {
-      service_account_email = google_service_account.sheet_sync_scheduler.email
-      audience              = module.cloud_run.service_url
-    }
-  }
-
-  depends_on = [module.cloud_run, google_cloud_run_v2_service_iam_member.scheduler_invoker]
-}
-
 module "cloud_run" {
   source              = "./modules/cloud-run"
   project_id          = var.project_id

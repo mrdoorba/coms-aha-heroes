@@ -113,7 +113,7 @@ export const sheetSyncRoute = new Elysia({ prefix: '/sheet-sync' })
       data: {
         isRunning,
         lastJob,
-        schedule: 'daily (6 AM WIB via Cloud Scheduler)',
+        schedule: 'manual',
       },
       error: null,
     }
