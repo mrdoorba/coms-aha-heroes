@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
+import { ThemeToggle } from '~/components/theme-toggle'
 
 const LANGUAGES = ['id', 'en', 'th'] as const
 
@@ -35,7 +36,7 @@ export function Header({ user, unreadCount, onOpenPalette, className }: HeaderPr
     <header
       className={cn(
         'sticky top-0 z-30 flex h-14 items-center justify-between px-6',
-        'bg-white/80 backdrop-blur-md border-b border-[#325FEC]/8',
+        'bg-white/80 dark:bg-[oklch(0.12_0.025_265)]/80 backdrop-blur-md border-b border-[#325FEC]/8 dark:border-white/8',
         'shadow-[0_1px_0_0_rgba(29,56,139,0.06)]',
         className,
       )}
@@ -81,6 +82,9 @@ export function Header({ user, unreadCount, onOpenPalette, className }: HeaderPr
             )
           })}
         </div>
+
+        {/* Theme toggle */}
+        <ThemeToggle />
 
         {/* Notifications */}
         <Link

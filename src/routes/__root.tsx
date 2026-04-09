@@ -13,12 +13,18 @@ import { FileQuestion, AlertTriangle } from 'lucide-react'
 import { PwaInstallBanner } from '~/components/pwa/install-banner'
 import { OfflineIndicator } from '~/components/pwa/offline-indicator'
 import { Toaster } from '~/components/ui/sonner'
+import { ThemeProvider } from '~/components/theme-provider'
+import { getThemeFn } from '~/server/functions/theme'
 import appCss from '~/styles/globals.css?url'
 import { getLocale } from '~/paraglide/runtime.js'
 import { Button, buttonVariants } from '~/components/ui/button'
 import { cn } from '~/lib/utils'
 
 export const Route = createRootRoute({
+  beforeLoad: async () => {
+    const theme = await getThemeFn()
+    return { theme }
+  },
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
@@ -50,24 +56,27 @@ export const Route = createRootRoute({
 })
 
 function RootComponent() {
+  const { theme } = Route.useRouteContext()
   const [queryClient] = useState(() => new QueryClient())
 
   return (
     <QueryClientProvider client={queryClient}>
-      <RootDocument>
-        <Outlet />
-      </RootDocument>
+      <ThemeProvider initial={theme}>
+        <RootDocument theme={theme}>
+          <Outlet />
+        </RootDocument>
+      </ThemeProvider>
     </QueryClientProvider>
   )
 }
 
-function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
+function RootDocument({ theme, children }: Readonly<{ theme: string; children: ReactNode }>) {
   return (
-    <html lang={getLocale()}>
+    <html lang={getLocale()} className={theme === 'dark' ? 'dark' : undefined} suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
-      <body className="min-h-screen bg-white font-sans text-gray-900 antialiased">
+      <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         <OfflineIndicator />
         <PwaInstallBanner />
         {children}
@@ -85,7 +94,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
 
 function NotFoundPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white p-6">
+    <div className="flex min-h-screen items-center justify-center bg-background p-6">
       <div className="flex w-full max-w-md flex-col items-center text-center">
         <FileQuestion className="mb-4 size-16 text-muted-foreground" />
         <p className="mb-2 text-6xl font-bold" style={{ color: '#1D388B' }}>
@@ -107,7 +116,7 @@ function ErrorPage({ error }: { error: Error }) {
   const router = useRouter()
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white p-6">
+    <div className="flex min-h-screen items-center justify-center bg-background p-6">
       <div className="flex w-full max-w-md flex-col items-center text-center">
         <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-destructive/10">
           <AlertTriangle className="size-8 text-destructive" />
