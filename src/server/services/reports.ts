@@ -26,7 +26,7 @@ export async function getDashboardStats(
   return withRLS(ctx.actor, async (db) => {
     // Determine branchId filter: admin can pass branchId param, hr is scoped to own branch
     const branchId =
-      ctx.actor.role === 'admin' ? (input.branchId ?? null) : ctx.actor.branchId
+      ctx.actor.role === 'admin' || ctx.actor.role === 'hr' ? (input.branchId ?? null) : ctx.actor.branchId
 
     const baseConditions = []
     if (branchId !== null) {

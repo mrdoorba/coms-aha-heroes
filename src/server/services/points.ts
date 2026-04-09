@@ -1,5 +1,5 @@
 import { eq, and } from 'drizzle-orm'
-import { pointCategories, users } from '~/db/schema'
+import { pointCategories, users, teams } from '~/db/schema'
 import * as pointsRepo from '../repositories/points'
 import { writeAuditLog } from './audit'
 import { createNotification } from './notifications'
@@ -61,29 +61,9 @@ export async function submitPoint(input: SubmitPointInput, ctx: ServiceContext) 
       throw new LeaderSelfGiveError()
     }
 
-    // Penalti can only be given by leader, hr, or admin
-    if (
-      input.categoryCode === 'PENALTI' &&
-      ctx.actor.role === 'employee'
-    ) {
-      throw new InsufficientRoleForPenaltiError()
-    }
-
-    // Poin AHA can only be given by leader, hr, or admin
-    if (
-      input.categoryCode === 'POIN_AHA' &&
-      ctx.actor.role === 'employee'
-    ) {
-      throw new InsufficientRoleForPoinAhaError()
-    }
-
-    // Employees can only submit Bintang for themselves (self-nomination)
-    if (
-      ctx.actor.role === 'employee' &&
-      input.categoryCode === 'BINTANG' &&
-      !isSelfSubmission
-    ) {
-      throw new EmployeeBintangSelfOnlyError()
+    // Users without canSubmitPoints can only submit for themselves
+    if (!ctx.actor.canSubmitPoints && !isSelfSubmission) {
+      throw new EmployeeSelfOnlyError()
     }
 
     // Determine status based on role and submission type
@@ -139,24 +119,19 @@ export async function submitPoint(input: SubmitPointInput, ctx: ServiceContext) 
         db,
       )
 
-      // Notify team leaders for approval
+      // Notify the designated team leader for approval
       if (targetUser.teamId) {
-        const teamLeaders = await db
-          .select({ id: users.id })
-          .from(users)
-          .where(
-            and(
-              eq(users.teamId, targetUser.teamId),
-              eq(users.role, 'leader'),
-              eq(users.isActive, true),
-            ),
-          )
+        const [team] = await db
+          .select({ leaderId: teams.leaderId })
+          .from(teams)
+          .where(eq(teams.id, targetUser.teamId))
+          .limit(1)
 
-        for (const leader of teamLeaders) {
+        if (team?.leaderId) {
           await createNotification(
             {
               branchId: ctx.actor.branchId,
-              userId: leader.id,
+              userId: team.leaderId,
               type: 'point_needs_approval',
               title: `${ctx.actor.name} submitted ${getCategoryLabel(input.categoryCode)} — needs your approval`,
               entityType: 'achievement_points',
@@ -305,24 +280,10 @@ export class LeaderSelfGiveError extends Error {
   }
 }
 
-export class InsufficientRoleForPenaltiError extends Error {
+export class EmployeeSelfOnlyError extends Error {
   constructor() {
-    super('Only leaders, HR, or admins can give Penalti')
-    this.name = 'InsufficientRoleForPenaltiError'
-  }
-}
-
-export class InsufficientRoleForPoinAhaError extends Error {
-  constructor() {
-    super('Only leaders, HR, or admins can give Poin AHA')
-    this.name = 'InsufficientRoleForPoinAhaError'
-  }
-}
-
-export class EmployeeBintangSelfOnlyError extends Error {
-  constructor() {
-    super('Employees can only submit Bintang for themselves')
-    this.name = 'EmployeeBintangSelfOnlyError'
+    super('Employees can only submit points for themselves')
+    this.name = 'EmployeeSelfOnlyError'
   }
 }
 

@@ -53,8 +53,8 @@ function BintangForm() {
   const router = useRouter()
   const userRole = (session?.appUser?.role ?? 'employee') as UserRole
 
-  const isEmployee = userRole === 'employee'
-  const [userId, setUserId] = useState(isEmployee ? (session?.appUser?.id ?? '') : '')
+  const isSelfOnly = !(session?.appUser?.canSubmitPoints ?? false)
+  const [userId, setUserId] = useState(isSelfOnly ? (session?.appUser?.id ?? '') : '')
   const [reason, setReason] = useState('')
   const [relatedStaff, setRelatedStaff] = useState('')
   const [screenshotFile, setScreenshotFile] = useState<File | undefined>()
@@ -123,7 +123,7 @@ function BintangForm() {
 
           {/* Step 1 — Employee */}
           <SectionCard step={1} title={m.form_staff_name()}>
-            {isEmployee ? (
+            {isSelfOnly ? (
               <div className="flex h-10 w-full items-center rounded-lg border border-border bg-muted/50 px-3 text-sm text-muted-foreground">
                 {session?.appUser?.name ?? session?.user?.name}
               </div>
@@ -174,7 +174,7 @@ function BintangForm() {
           </SectionCard>
 
           {/* Pending approval notice for employees */}
-          {isEmployee && (
+          {isSelfOnly && (
             <div className="flex items-start gap-2.5 rounded-lg border border-[#F4C144]/40 bg-amber-50 px-3 py-2.5">
               <Star className="w-4 h-4 text-[#D4962A] mt-0.5 flex-shrink-0" />
               <p className="text-sm text-amber-800 leading-snug">{m.form_pending_approval()}</p>
