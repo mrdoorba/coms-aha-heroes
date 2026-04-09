@@ -6,6 +6,9 @@ node_modules/
 .env.*
 !.env.example
 
+# Service account keys
+*.sa-key.json
+
 # Build output
 dist/
 .output/
