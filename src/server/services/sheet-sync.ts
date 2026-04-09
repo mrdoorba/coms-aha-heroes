@@ -28,77 +28,39 @@ type SyncResult = {
   errors: Array<{ tab: string; row: number; name: string; error: string }>
 }
 
-// Cache for the "Inactive" team — created once per sync run
-let inactiveTeamId: string | null = null
+// ── Helpers ──────────────────────────────────────────────────────────
+
+const BATCH_SIZE = 100
+
+async function batchInsert<T extends Record<string, unknown>>(
+  db: ReturnType<typeof getDb>,
+  table: Parameters<ReturnType<typeof getDb>['insert']>[0],
+  rows: T[],
+) {
+  if (rows.length === 0) return
+  for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+    await (db.insert(table) as any).values(rows.slice(i, i + BATCH_SIZE)).onConflictDoNothing()
+  }
+}
 
 async function getOrCreateInactiveTeam(
   branchId: string,
   db: ReturnType<typeof getDb>,
 ): Promise<string> {
-  if (inactiveTeamId) return inactiveTeamId
-
   const [existing] = await db
     .select({ id: teams.id })
     .from(teams)
     .where(and(eq(teams.branchId, branchId), eq(teams.name, 'Inactive')))
     .limit(1)
 
-  if (existing) {
-    inactiveTeamId = existing.id
-    return inactiveTeamId
-  }
+  if (existing) return existing.id
 
   const [created] = await db
     .insert(teams)
     .values({ branchId, name: 'Inactive' })
     .returning({ id: teams.id })
 
-  inactiveTeamId = created.id
-  return inactiveTeamId
-}
-
-// Find user by name (case-insensitive). If not found, auto-create as inactive.
-async function findOrCreateUser(
-  name: string,
-  branchId: string,
-  db: ReturnType<typeof getDb>,
-): Promise<{ id: string }> {
-  const [found] = await db
-    .select({ id: users.id })
-    .from(users)
-    .where(and(eq(users.branchId, branchId), sql`LOWER(${users.name}) = LOWER(${name})`))
-    .limit(1)
-
-  if (found) return found
-
-  const teamId = await getOrCreateInactiveTeam(branchId, db)
-
-  const [created] = await db
-    .insert(users)
-    .values({
-      name,
-      email: `former-${name.toLowerCase().replace(/\s+/g, '.')}@placeholder.local`,
-      branchId,
-      teamId,
-      department: 'Inactive',
-      role: 'employee',
-      isActive: false,
-      mustChangePassword: true,
-    })
-    .onConflictDoNothing()
-    .returning({ id: users.id })
-
-  if (created) return created
-
-  // If conflict on email (duplicate former employee name), try lookup again
-  const [existing] = await db
-    .select({ id: users.id })
-    .from(users)
-    .where(and(eq(users.branchId, branchId), sql`LOWER(${users.name}) = LOWER(${name})`))
-    .limit(1)
-
-  if (existing) return existing
-  throw new Error(`Could not create or find user: ${name}`)
+  return created.id
 }
 
 type TabNames = {
@@ -122,7 +84,6 @@ export function buildHeaderIndex(
 }
 
 export function parseTimestamp(value: string): Date {
-  // Format: M/D/YYYY H:MM:SS or M/D/YYYY HH:MM:SS
   const match = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2}):(\d{2})$/)
   if (!match) {
     const fallback = new Date(value)
@@ -146,6 +107,97 @@ export function parseReward(value: string): { name: string; cost: number } {
   return { name: match[1].trim(), cost: Number(match[2]) }
 }
 
+// ── Pre-load user cache for name-based lookups ──────────────────────
+
+type UserCache = {
+  byEmail: Map<string, { id: string }>
+  byName: Map<string, { id: string }>
+  byAttendanceName: Map<string, { id: string }>
+}
+
+async function preloadUserCache(
+  branchId: string,
+  db: ReturnType<typeof getDb>,
+): Promise<UserCache> {
+  const allUsers = await db
+    .select({
+      id: users.id,
+      email: users.email,
+      name: users.name,
+      attendanceName: users.attendanceName,
+    })
+    .from(users)
+    .where(eq(users.branchId, branchId))
+
+  const byEmail = new Map<string, { id: string }>()
+  const byName = new Map<string, { id: string }>()
+  const byAttendanceName = new Map<string, { id: string }>()
+
+  for (const u of allUsers) {
+    byEmail.set(u.email.toLowerCase(), { id: u.id })
+    byName.set(u.name.toLowerCase(), { id: u.id })
+    if (u.attendanceName) {
+      byAttendanceName.set(u.attendanceName.toLowerCase(), { id: u.id })
+    }
+  }
+
+  return { byEmail, byName, byAttendanceName }
+}
+
+async function findOrCreateUsersBatch(
+  names: string[],
+  branchId: string,
+  userCache: UserCache,
+  db: ReturnType<typeof getDb>,
+): Promise<void> {
+  const missing = [...new Set(names.map((n) => n.toLowerCase()))].filter(
+    (n) => !userCache.byName.has(n),
+  )
+  if (missing.length === 0) return
+
+  const inactiveTeamId = await getOrCreateInactiveTeam(branchId, db)
+
+  const newUsers = missing.map((name) => ({
+    name,
+    email: `former-${name.replace(/\s+/g, '.')}@placeholder.local`,
+    branchId,
+    teamId: inactiveTeamId,
+    department: 'Inactive',
+    role: 'employee' as const,
+    isActive: false,
+    mustChangePassword: true,
+  }))
+
+  // Insert in batches, skip conflicts
+  for (let i = 0; i < newUsers.length; i += BATCH_SIZE) {
+    await db
+      .insert(users)
+      .values(newUsers.slice(i, i + BATCH_SIZE))
+      .onConflictDoNothing()
+  }
+
+  // Refresh cache for newly created users
+  const created = await db
+    .select({ id: users.id, name: users.name, email: users.email })
+    .from(users)
+    .where(
+      and(
+        eq(users.branchId, branchId),
+        inArray(
+          sql`LOWER(${users.name})`,
+          missing,
+        ),
+      ),
+    )
+
+  for (const u of created) {
+    userCache.byEmail.set(u.email.toLowerCase(), { id: u.id })
+    userCache.byName.set(u.name.toLowerCase(), { id: u.id })
+  }
+}
+
+// ── syncEmployees ───────────────────────────────────────────────────
+
 export async function syncEmployees(
   sheetId: string,
   tabName: string,
@@ -163,8 +215,33 @@ export async function syncEmployees(
   let failed = 0
   const errors: SyncResult['errors'] = []
 
+  // 1. Pre-load all existing users by email (single query)
+  const userCache = await preloadUserCache(branchId, db)
+
+  // 2. Pre-load all existing teams by name (single query)
+  const existingTeams = await db
+    .select({ id: teams.id, name: teams.name })
+    .from(teams)
+    .where(eq(teams.branchId, branchId))
+  const teamByName = new Map(existingTeams.map((t) => [t.name, t.id]))
+
+  // 3. Collect team names and leader mappings from data
   const teamNames = new Set<string>()
   const leaderMap = new Map<string, string>() // attendanceName -> teamName
+
+  // Parse all rows first, collect what we need
+  type ParsedEmployee = {
+    rowIdx: number
+    name: string
+    email: string
+    attendanceName?: string
+    phone?: string
+    teamName?: string
+    position?: string
+    employmentStatus?: string
+    talentaId?: string
+  }
+  const parsed: ParsedEmployee[] = []
 
   for (const [i, row] of dataRows.entries()) {
     const name = row[headerIndex.NAME]?.trim()
@@ -186,41 +263,75 @@ export async function syncEmployees(
     if (teamName) teamNames.add(teamName)
     if (leaderAttendanceName && teamName) leaderMap.set(leaderAttendanceName, teamName)
 
+    parsed.push({ rowIdx: i, name, email, attendanceName, phone, teamName, position, employmentStatus, talentaId })
+  }
+
+  // 4. Create missing teams in batch
+  const missingTeams = [...teamNames].filter((n) => !teamByName.has(n))
+  if (missingTeams.length > 0) {
+    const created = await db
+      .insert(teams)
+      .values(missingTeams.map((name) => ({ branchId, name })))
+      .onConflictDoNothing()
+      .returning({ id: teams.id, name: teams.name })
+    for (const t of created) teamByName.set(t.name, t.id)
+
+    // If onConflictDoNothing skipped some, re-fetch
+    if (created.length < missingTeams.length) {
+      const refetch = await db
+        .select({ id: teams.id, name: teams.name })
+        .from(teams)
+        .where(and(eq(teams.branchId, branchId), inArray(teams.name, missingTeams)))
+      for (const t of refetch) teamByName.set(t.name, t.id)
+    }
+  }
+
+  // 5. Upsert employees — use cache to avoid SELECT per row
+  for (const emp of parsed) {
     try {
-      const [existing] = await db
-        .select({ id: users.id })
-        .from(users)
-        .where(eq(users.email, email))
-        .limit(1)
+      const existing = userCache.byEmail.get(emp.email)
 
       if (existing) {
         await db
           .update(users)
           .set({
-            name,
-            ...(attendanceName && { attendanceName }),
-            ...(phone && { phone }),
-            ...(employmentStatus && { employmentStatus }),
-            ...(talentaId && { talentaId }),
-            ...(position && { position }),
+            name: emp.name,
+            ...(emp.attendanceName && { attendanceName: emp.attendanceName }),
+            ...(emp.phone && { phone: emp.phone }),
+            ...(emp.employmentStatus && { employmentStatus: emp.employmentStatus }),
+            ...(emp.talentaId && { talentaId: emp.talentaId }),
+            ...(emp.position && { position: emp.position }),
+            ...(emp.teamName ? { teamId: teamByName.get(emp.teamName) ?? null } : {}),
             isActive: true,
             updatedAt: new Date(),
           })
           .where(eq(users.id, existing.id))
       } else {
-        await db.insert(users).values({
-          name,
-          email,
-          attendanceName: attendanceName || null,
-          phone: phone || null,
-          employmentStatus: employmentStatus || null,
-          talentaId: talentaId || null,
-          position: position || null,
-          branchId,
-          role: 'employee',
-          isActive: true,
-          mustChangePassword: true,
-        })
+        const teamId = emp.teamName ? teamByName.get(emp.teamName) ?? null : null
+        const [created] = await db
+          .insert(users)
+          .values({
+            name: emp.name,
+            email: emp.email,
+            attendanceName: emp.attendanceName || null,
+            phone: emp.phone || null,
+            employmentStatus: emp.employmentStatus || null,
+            talentaId: emp.talentaId || null,
+            position: emp.position || null,
+            teamId,
+            branchId,
+            role: 'employee',
+            isActive: true,
+            mustChangePassword: true,
+          })
+          .returning({ id: users.id })
+
+        // Update cache
+        userCache.byEmail.set(emp.email, { id: created.id })
+        userCache.byName.set(emp.name.toLowerCase(), { id: created.id })
+        if (emp.attendanceName) {
+          userCache.byAttendanceName.set(emp.attendanceName.toLowerCase(), { id: created.id })
+        }
       }
 
       processed++
@@ -228,55 +339,21 @@ export async function syncEmployees(
       failed++
       errors.push({
         tab: tabName,
-        row: i + 2,
-        name,
+        row: emp.rowIdx + 2,
+        name: emp.name,
         error: err instanceof Error ? err.message : String(err),
       })
     }
   }
 
-  // Resolve teams: find-or-create
-  const teamIdByName = new Map<string, string>()
-  for (const teamName of teamNames) {
-    const [existing] = await db
-      .select({ id: teams.id })
-      .from(teams)
-      .where(and(eq(teams.branchId, branchId), eq(teams.name, teamName)))
-      .limit(1)
+  // 6. Resolve leaders — use pre-loaded cache instead of per-leader queries
+  // Refresh cache to include newly created users
+  const freshCache = await preloadUserCache(branchId, db)
 
-    if (existing) {
-      teamIdByName.set(teamName, existing.id)
-    } else {
-      const [created] = await db
-        .insert(teams)
-        .values({ branchId, name: teamName })
-        .returning({ id: teams.id })
-      teamIdByName.set(teamName, created.id)
-    }
-  }
-
-  // Assign teamId to users
-  for (const row of dataRows) {
-    const email = row[headerIndex.EMAIL]?.trim().toLowerCase()
-    const teamName = row[headerIndex.TEAM]?.trim()
-    if (!email || !teamName) continue
-    const teamId = teamIdByName.get(teamName)
-    if (!teamId) continue
-    await db
-      .update(users)
-      .set({ teamId, updatedAt: new Date() })
-      .where(eq(users.email, email))
-  }
-
-  // Resolve leaders: find user by attendanceName, set as team leaderId
   for (const [leaderAttendanceName, teamName] of leaderMap.entries()) {
-    const teamId = teamIdByName.get(teamName)
+    const teamId = teamByName.get(teamName)
     if (!teamId) continue
-    const [leader] = await db
-      .select({ id: users.id })
-      .from(users)
-      .where(and(eq(users.branchId, branchId), eq(users.attendanceName, leaderAttendanceName)))
-      .limit(1)
+    const leader = freshCache.byAttendanceName.get(leaderAttendanceName.toLowerCase())
     if (!leader) continue
     await db
       .update(teams)
@@ -286,6 +363,8 @@ export async function syncEmployees(
 
   return { processed, failed, errors }
 }
+
+// ── syncPoints ──────────────────────────────────────────────────────
 
 export async function syncPoints(
   sheetId: string,
@@ -326,12 +405,28 @@ export async function syncPoints(
   let failed = 0
   const errors: SyncResult['errors'] = []
 
-  // Find a system admin user for submittedBy fallback
+  // 1. Pre-load user cache (single query)
+  const userCache = await preloadUserCache(branchId, db)
+
+  // 2. Find system admin user for submittedBy fallback (single query)
   const [adminUser] = await db
     .select({ id: users.id })
     .from(users)
     .where(and(eq(users.branchId, branchId), eq(users.role, 'admin')))
     .limit(1)
+
+  // 3. Parse all rows first, collect names that need user creation
+  type ParsedPoint = {
+    rowIdx: number
+    name: string
+    reason: string
+    screenshotUrl: string | null
+    points: number
+    kittaComponent: string | null
+    createdAt: Date
+  }
+  const parsedRows: ParsedPoint[] = []
+  const allNames: string[] = []
 
   for (const [i, row] of dataRows.entries()) {
     const timestampRaw = row[headerIndex.TIMESTAMP]?.trim()
@@ -359,16 +454,6 @@ export async function syncPoints(
       continue
     }
 
-    // Match user by name (case-insensitive), auto-create inactive if not found
-    let matchedUser: { id: string }
-    try {
-      matchedUser = await findOrCreateUser(nameRaw, branchId, db)
-    } catch (err) {
-      failed++
-      errors.push({ tab: tabName, row: i + 2, name: nameRaw, error: err instanceof Error ? err.message : String(err) })
-      continue
-    }
-
     let points = 1
     let kittaComponent: string | null = null
 
@@ -384,59 +469,125 @@ export async function syncPoints(
       if (isNaN(points) || points <= 0) points = 1
     }
 
-    const reason = reasonRaw ?? ''
+    allNames.push(nameRaw)
+    parsedRows.push({
+      rowIdx: i,
+      name: nameRaw,
+      reason: reasonRaw ?? '',
+      screenshotUrl: screenshotRaw || null,
+      points,
+      kittaComponent,
+      createdAt,
+    })
+  }
 
-    // Dedup check: same userId + categoryId + createdAt + reason
-    const [existing] = await db
-      .select({ id: achievementPoints.id })
-      .from(achievementPoints)
-      .where(
-        and(
-          eq(achievementPoints.userId, matchedUser.id),
-          eq(achievementPoints.categoryId, cat.id),
-          eq(achievementPoints.reason, reason),
-          sql`date_trunc('minute', ${achievementPoints.createdAt}) = date_trunc('minute', ${createdAt.toISOString()}::timestamptz)`,
-        ),
-      )
-      .limit(1)
+  // 4. Batch-create missing users (instead of findOrCreateUser per row)
+  try {
+    await findOrCreateUsersBatch(allNames, branchId, userCache, db)
+  } catch (err) {
+    // Non-fatal — individual rows will fail below
+  }
 
-    if (existing) {
+  // 5. Pre-load existing points for dedup (single query)
+  const existingPoints = await db
+    .select({
+      userId: achievementPoints.userId,
+      reason: achievementPoints.reason,
+      createdMinute: sql<string>`to_char(${achievementPoints.createdAt}, 'YYYY-MM-DD HH24:MI')`,
+    })
+    .from(achievementPoints)
+    .where(
+      and(
+        eq(achievementPoints.branchId, branchId),
+        eq(achievementPoints.categoryId, cat.id),
+      ),
+    )
+
+  const dedupSet = new Set(
+    existingPoints.map((p) => `${p.userId}|${p.reason}|${p.createdMinute}`),
+  )
+
+  // 6. Insert new points in batches
+  const toInsert: Array<{
+    branchId: string
+    userId: string
+    categoryId: string
+    points: number
+    reason: string
+    screenshotUrl: string | null
+    kittaComponent: 'K' | 'I' | 'T1' | 'T2' | 'A' | null
+    status: 'active'
+    submittedBy: string
+    createdAt: Date
+    updatedAt: Date
+  }> = []
+
+  for (const row of parsedRows) {
+    const user = userCache.byName.get(row.name.toLowerCase())
+    if (!user) {
+      failed++
+      errors.push({ tab: tabName, row: row.rowIdx + 2, name: row.name, error: `Could not find or create user: ${row.name}` })
+      continue
+    }
+
+    const createdMinute = `${row.createdAt.getFullYear()}-${String(row.createdAt.getMonth() + 1).padStart(2, '0')}-${String(row.createdAt.getDate()).padStart(2, '0')} ${String(row.createdAt.getHours()).padStart(2, '0')}:${String(row.createdAt.getMinutes()).padStart(2, '0')}`
+    const dedupKey = `${user.id}|${row.reason}|${createdMinute}`
+
+    if (dedupSet.has(dedupKey)) {
       processed++
       continue
     }
 
+    const submittedBy =
+      categoryCode === 'BINTANG' ? user.id : (adminUser?.id ?? user.id)
+
+    toInsert.push({
+      branchId,
+      userId: user.id,
+      categoryId: cat.id,
+      points: row.points,
+      reason: row.reason,
+      screenshotUrl: row.screenshotUrl,
+      kittaComponent: row.kittaComponent as 'K' | 'I' | 'T1' | 'T2' | 'A' | null,
+      status: 'active',
+      submittedBy,
+      createdAt: row.createdAt,
+      updatedAt: new Date(),
+    })
+
+    dedupSet.add(dedupKey) // prevent dupes within same batch
+    processed++
+  }
+
+  // Batch insert
+  for (let i = 0; i < toInsert.length; i += BATCH_SIZE) {
     try {
-      const submittedBy =
-        categoryCode === 'BINTANG' ? matchedUser.id : (adminUser?.id ?? matchedUser.id)
-
-      await db.insert(achievementPoints).values({
-        branchId,
-        userId: matchedUser.id,
-        categoryId: cat.id,
-        points,
-        reason,
-        screenshotUrl: screenshotRaw || null,
-        kittaComponent: kittaComponent as 'K' | 'I' | 'T1' | 'T2' | 'A' | null,
-        status: 'active',
-        submittedBy,
-        createdAt,
-        updatedAt: new Date(),
-      })
-
-      processed++
+      await db
+        .insert(achievementPoints)
+        .values(toInsert.slice(i, i + BATCH_SIZE))
     } catch (err) {
-      failed++
-      errors.push({
-        tab: tabName,
-        row: i + 2,
-        name: nameRaw,
-        error: err instanceof Error ? err.message : String(err),
-      })
+      // If batch fails, fall back to individual inserts for this chunk
+      for (const row of toInsert.slice(i, i + BATCH_SIZE)) {
+        try {
+          await db.insert(achievementPoints).values(row)
+        } catch (innerErr) {
+          processed--
+          failed++
+          errors.push({
+            tab: tabName,
+            row: 0,
+            name: '',
+            error: innerErr instanceof Error ? innerErr.message : String(innerErr),
+          })
+        }
+      }
     }
   }
 
   return { processed, failed, errors }
 }
+
+// ── syncRedemptions ─────────────────────────────────────────────────
 
 export async function syncRedemptions(
   sheetId: string,
@@ -454,6 +605,43 @@ export async function syncRedemptions(
   let processed = 0
   let failed = 0
   const errors: SyncResult['errors'] = []
+
+  // 1. Pre-load user cache (single query)
+  const userCache = await preloadUserCache(branchId, db)
+
+  // 2. Pre-load all rewards (single query)
+  const existingRewards = await db
+    .select({ id: rewards.id, name: rewards.name, pointCost: rewards.pointCost })
+    .from(rewards)
+  const rewardMap = new Map(
+    existingRewards.map((r) => [`${r.name}|${r.pointCost}`, r.id]),
+  )
+
+  // 3. Pre-load existing redemptions for dedup (single query)
+  const existingRedemptionRows = await db
+    .select({
+      userId: redemptions.userId,
+      rewardId: redemptions.rewardId,
+      createdMinute: sql<string>`to_char(${redemptions.createdAt}, 'YYYY-MM-DD HH24:MI')`,
+    })
+    .from(redemptions)
+    .where(eq(redemptions.branchId, branchId))
+
+  const redemptionDedupSet = new Set(
+    existingRedemptionRows.map((r) => `${r.userId}|${r.rewardId}|${r.createdMinute}`),
+  )
+
+  // 4. Parse rows, collect missing user names
+  type ParsedRedemption = {
+    rowIdx: number
+    name: string
+    email?: string
+    createdAt: Date
+    reward: { name: string; cost: number }
+    notes: string | null
+  }
+  const parsedRows: ParsedRedemption[] = []
+  const allNames: string[] = []
 
   for (const [i, row] of dataRows.entries()) {
     const timestampRaw = row[headerIndex.TIMESTAMP]?.trim()
@@ -496,100 +684,143 @@ export async function syncRedemptions(
       continue
     }
 
-    // Match user by email first, then name (case-insensitive), auto-create inactive if not found
-    let matchedUser: { id: string } | undefined
+    allNames.push(nameRaw)
+    parsedRows.push({
+      rowIdx: i,
+      name: nameRaw,
+      email: emailRaw || undefined,
+      createdAt,
+      reward: parsedReward,
+      notes: notesRaw || null,
+    })
+  }
 
-    if (emailRaw) {
-      const [byEmail] = await db
-        .select({ id: users.id })
-        .from(users)
-        .where(eq(users.email, emailRaw))
-        .limit(1)
-      matchedUser = byEmail
+  // 5. Batch-create missing users
+  try {
+    await findOrCreateUsersBatch(allNames, branchId, userCache, db)
+  } catch (err) {
+    // Non-fatal
+  }
+
+  // 6. Collect and batch-create missing rewards
+  const missingRewardKeys = new Set<string>()
+  for (const row of parsedRows) {
+    const key = `${row.reward.name}|${row.reward.cost}`
+    if (!rewardMap.has(key)) missingRewardKeys.add(key)
+  }
+
+  if (missingRewardKeys.size > 0) {
+    const newRewards = [...missingRewardKeys].map((key) => {
+      const [name, cost] = key.split('|')
+      return { name, pointCost: Number(cost), branchId, isActive: true }
+    })
+
+    const created = await db
+      .insert(rewards)
+      .values(newRewards)
+      .onConflictDoNothing()
+      .returning({ id: rewards.id, name: rewards.name, pointCost: rewards.pointCost })
+
+    for (const r of created) {
+      rewardMap.set(`${r.name}|${r.pointCost}`, r.id)
     }
 
-    if (!matchedUser) {
-      try {
-        matchedUser = await findOrCreateUser(nameRaw, branchId, db)
-      } catch (err) {
-        failed++
-        errors.push({ tab: tabName, row: i + 2, name: nameRaw, error: err instanceof Error ? err.message : String(err) })
-        continue
+    // Re-fetch if some were skipped by onConflictDoNothing
+    if (created.length < newRewards.length) {
+      const refetch = await db
+        .select({ id: rewards.id, name: rewards.name, pointCost: rewards.pointCost })
+        .from(rewards)
+      for (const r of refetch) {
+        rewardMap.set(`${r.name}|${r.pointCost}`, r.id)
       }
     }
+  }
 
-    // Find-or-create reward
-    let rewardId: string
-    const [existingReward] = await db
-      .select({ id: rewards.id })
-      .from(rewards)
-      .where(
-        and(
-          eq(rewards.name, parsedReward.name),
-          eq(rewards.pointCost, parsedReward.cost),
-        ),
-      )
-      .limit(1)
+  // 7. Build insert batch
+  const toInsert: Array<{
+    branchId: string
+    userId: string
+    rewardId: string
+    pointsSpent: number
+    notes: string | null
+    status: 'approved'
+    createdAt: Date
+    updatedAt: Date
+  }> = []
 
-    if (existingReward) {
-      rewardId = existingReward.id
-    } else {
-      const [created] = await db
-        .insert(rewards)
-        .values({
-          name: parsedReward.name,
-          pointCost: parsedReward.cost,
-          branchId,
-          isActive: true,
-        })
-        .returning({ id: rewards.id })
-      rewardId = created.id
+  for (const row of parsedRows) {
+    // Resolve user: try email first, then name
+    let user: { id: string } | undefined
+    if (row.email) {
+      user = userCache.byEmail.get(row.email)
+    }
+    if (!user) {
+      user = userCache.byName.get(row.name.toLowerCase())
     }
 
-    // Dedup check
-    const [existingRedemption] = await db
-      .select({ id: redemptions.id })
-      .from(redemptions)
-      .where(
-        and(
-          eq(redemptions.userId, matchedUser.id),
-          eq(redemptions.rewardId, rewardId),
-          sql`date_trunc('minute', ${redemptions.createdAt}) = date_trunc('minute', ${createdAt.toISOString()}::timestamptz)`,
-        ),
-      )
-      .limit(1)
+    if (!user) {
+      failed++
+      errors.push({ tab: tabName, row: row.rowIdx + 2, name: row.name, error: `Could not find or create user: ${row.name}` })
+      continue
+    }
 
-    if (existingRedemption) {
+    const rewardKey = `${row.reward.name}|${row.reward.cost}`
+    const rewardId = rewardMap.get(rewardKey)
+    if (!rewardId) {
+      failed++
+      errors.push({ tab: tabName, row: row.rowIdx + 2, name: row.name, error: `Reward not found: ${row.reward.name}` })
+      continue
+    }
+
+    const createdMinute = `${row.createdAt.getFullYear()}-${String(row.createdAt.getMonth() + 1).padStart(2, '0')}-${String(row.createdAt.getDate()).padStart(2, '0')} ${String(row.createdAt.getHours()).padStart(2, '0')}:${String(row.createdAt.getMinutes()).padStart(2, '0')}`
+    const dedupKey = `${user.id}|${rewardId}|${createdMinute}`
+
+    if (redemptionDedupSet.has(dedupKey)) {
       processed++
       continue
     }
 
-    try {
-      await db.insert(redemptions).values({
-        branchId,
-        userId: matchedUser.id,
-        rewardId,
-        pointsSpent: parsedReward.cost,
-        notes: notesRaw || null,
-        status: 'approved',
-        createdAt,
-        updatedAt: new Date(),
-      })
+    toInsert.push({
+      branchId,
+      userId: user.id,
+      rewardId,
+      pointsSpent: row.reward.cost,
+      notes: row.notes,
+      status: 'approved',
+      createdAt: row.createdAt,
+      updatedAt: new Date(),
+    })
 
-      processed++
+    redemptionDedupSet.add(dedupKey)
+    processed++
+  }
+
+  // Batch insert
+  for (let i = 0; i < toInsert.length; i += BATCH_SIZE) {
+    try {
+      await db.insert(redemptions).values(toInsert.slice(i, i + BATCH_SIZE))
     } catch (err) {
-      failed++
-      errors.push({
-        tab: tabName,
-        row: i + 2,
-        name: nameRaw,
-        error: err instanceof Error ? err.message : String(err),
-      })
+      for (const row of toInsert.slice(i, i + BATCH_SIZE)) {
+        try {
+          await db.insert(redemptions).values(row)
+        } catch (innerErr) {
+          processed--
+          failed++
+          errors.push({
+            tab: tabName,
+            row: 0,
+            name: '',
+            error: innerErr instanceof Error ? innerErr.message : String(innerErr),
+          })
+        }
+      }
     }
   }
 
   return { processed, failed, errors }
 }
+
+// ── recalculatePointSummaries ───────────────────────────────────────
 
 export async function recalculatePointSummaries(
   branchId: string,
@@ -597,101 +828,38 @@ export async function recalculatePointSummaries(
 ): Promise<void> {
   const db = getDb(tx)
 
-  // Get all categories
-  const cats = await db
-    .select({ id: pointCategories.id, code: pointCategories.code })
-    .from(pointCategories)
-
-  const bintangCat = cats.find((c) => c.code === 'BINTANG')
-  const penaltiCat = cats.find((c) => c.code === 'PENALTI')
-  const poinAhaCat = cats.find((c) => c.code === 'POIN_AHA')
-
-  // Get all users in branch
-  const branchUsers = await db
-    .select({ id: users.id })
-    .from(users)
-    .where(eq(users.branchId, branchId))
-
-  if (branchUsers.length === 0) return
-
-  const userIds = branchUsers.map((u) => u.id)
-
-  // Aggregate achievement points per user
-  const pointAggRows = await db
-    .select({
-      userId: achievementPoints.userId,
-      categoryId: achievementPoints.categoryId,
-      total: sql<number>`COALESCE(SUM(${achievementPoints.points}), 0)::int`,
-      cnt: sql<number>`COUNT(*)::int`,
-    })
-    .from(achievementPoints)
-    .where(
-      and(
-        eq(achievementPoints.branchId, branchId),
-        eq(achievementPoints.status, 'active'),
-        inArray(achievementPoints.userId, userIds),
-      ),
-    )
-    .groupBy(achievementPoints.userId, achievementPoints.categoryId)
-
-  // Aggregate redemptions per user
-  const redemptionAggRows = await db
-    .select({
-      userId: redemptions.userId,
-      total: sql<number>`COALESCE(SUM(${redemptions.pointsSpent}), 0)::int`,
-    })
-    .from(redemptions)
-    .where(
-      and(
-        eq(redemptions.branchId, branchId),
-        eq(redemptions.status, 'approved'),
-        inArray(redemptions.userId, userIds),
-      ),
-    )
-    .groupBy(redemptions.userId)
-
-  const redemptionByUser = new Map(redemptionAggRows.map((r) => [r.userId, r.total]))
-
-  // Build per-user summaries
-  const bintangByUser = new Map<string, number>()
-  const penaltiByUser = new Map<string, number>()
-  const poinAhaByUser = new Map<string, number>()
-
-  for (const row of pointAggRows) {
-    if (bintangCat && row.categoryId === bintangCat.id) {
-      bintangByUser.set(row.userId, (bintangByUser.get(row.userId) ?? 0) + row.cnt)
-    } else if (penaltiCat && row.categoryId === penaltiCat.id) {
-      penaltiByUser.set(row.userId, (penaltiByUser.get(row.userId) ?? 0) + row.total)
-    } else if (poinAhaCat && row.categoryId === poinAhaCat.id) {
-      poinAhaByUser.set(row.userId, (poinAhaByUser.get(row.userId) ?? 0) + row.total)
-    }
-  }
-
-  // Upsert point summaries
-  for (const { id: userId } of branchUsers) {
-    await db
-      .insert(pointSummaries)
-      .values({
-        userId,
-        branchId,
-        bintangCount: bintangByUser.get(userId) ?? 0,
-        penaltiPointsSum: penaltiByUser.get(userId) ?? 0,
-        directPoinAha: poinAhaByUser.get(userId) ?? 0,
-        redeemedTotal: redemptionByUser.get(userId) ?? 0,
-        updatedAt: new Date(),
-      })
-      .onConflictDoUpdate({
-        target: pointSummaries.userId,
-        set: {
-          bintangCount: bintangByUser.get(userId) ?? 0,
-          penaltiPointsSum: penaltiByUser.get(userId) ?? 0,
-          directPoinAha: poinAhaByUser.get(userId) ?? 0,
-          redeemedTotal: redemptionByUser.get(userId) ?? 0,
-          updatedAt: new Date(),
-        },
-      })
-  }
+  // Single SQL: compute all summaries and upsert in one shot
+  await db.execute(sql`
+    INSERT INTO point_summaries (id, user_id, branch_id, bintang_count, penalti_points_sum, direct_poin_aha, redeemed_total, updated_at)
+    SELECT
+      gen_random_uuid(),
+      u.id,
+      u.branch_id,
+      COALESCE(SUM(CASE WHEN pc.code = 'BINTANG' AND ap.status = 'active' THEN 1 ELSE 0 END), 0)::int,
+      COALESCE(SUM(CASE WHEN pc.code = 'PENALTI' AND ap.status = 'active' THEN ap.points ELSE 0 END), 0)::int,
+      COALESCE(SUM(CASE WHEN pc.code = 'POIN_AHA' AND ap.status = 'active' THEN ap.points ELSE 0 END), 0)::int,
+      COALESCE(rd.redeemed, 0)::int,
+      NOW()
+    FROM users u
+    LEFT JOIN achievement_points ap ON ap.user_id = u.id
+    LEFT JOIN point_categories pc ON pc.id = ap.category_id
+    LEFT JOIN LATERAL (
+      SELECT COALESCE(SUM(r.points_spent), 0)::int AS redeemed
+      FROM redemptions r
+      WHERE r.user_id = u.id AND r.status = 'approved'
+    ) rd ON TRUE
+    WHERE u.branch_id = ${branchId}
+    GROUP BY u.id, u.branch_id, rd.redeemed
+    ON CONFLICT (user_id) DO UPDATE SET
+      bintang_count = EXCLUDED.bintang_count,
+      penalti_points_sum = EXCLUDED.penalti_points_sum,
+      direct_poin_aha = EXCLUDED.direct_poin_aha,
+      redeemed_total = EXCLUDED.redeemed_total,
+      updated_at = NOW()
+  `)
 }
+
+// ── runFullSync ─────────────────────────────────────────────────────
 
 export async function runFullSync(
   sheetIds: { points: string; employees: string },
@@ -700,7 +868,6 @@ export async function runFullSync(
   startedBy?: string,
   tx?: DbClient,
 ) {
-  inactiveTeamId = null // reset cache for each sync run
   const db = (tx ?? defaultDb) as unknown as DbClient
 
   const job = await createJob(
