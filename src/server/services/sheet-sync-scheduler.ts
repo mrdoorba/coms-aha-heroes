@@ -1,7 +1,7 @@
 import { eq, and, lt, sql } from 'drizzle-orm'
 import { db } from '~/db'
 import { branches, sheetSyncJobs } from '~/db/schema'
-import { runFullSync } from './sheet-sync'
+import { runFullSync, runFullResync } from './sheet-sync'
 
 type SyncConfig = {
   sheetIds: {
@@ -29,12 +29,17 @@ async function cleanupStaleJobs(): Promise<void> {
     .set({
       status: 'failed',
       completedAt: new Date(),
-      errorLog: [{ tab: 'system', row: 0, name: '', error: 'Job timed out — marked as failed by cleanup' }],
+      errorLog: [
+        { tab: 'system', row: 0, name: '', error: 'Job timed out — marked as failed by cleanup' },
+      ],
     })
     .where(
       and(
         eq(sheetSyncJobs.status, 'in_progress'),
-        lt(sheetSyncJobs.startedAt, sql`NOW() - INTERVAL '${sql.raw(String(STALE_JOB_MINUTES))} minutes'`),
+        lt(
+          sheetSyncJobs.startedAt,
+          sql`NOW() - INTERVAL '${sql.raw(String(STALE_JOB_MINUTES))} minutes'`,
+        ),
       ),
     )
 }
@@ -89,4 +94,25 @@ export function triggerSyncInBackground(startedBy?: string) {
   if (isSyncing) return { started: false, reason: 'Sync already in progress' }
   void triggerManualSync(startedBy).catch(() => {})
   return { started: true }
+}
+
+/** Wipe all transactional data then re-import from the sheet. */
+export async function triggerFullResync(startedBy?: string) {
+  if (isSyncing) return null
+  isSyncing = true
+  try {
+    await cleanupStaleJobs()
+    const config = buildConfigFromEnv()
+    const branchId = await getDefaultBranchId()
+    if (!branchId) throw new Error('No branch found')
+    if (!config.sheetIds.points && !config.sheetIds.employees) {
+      throw new Error('GOOGLE_SHEET_ID_POINTS/EMPLOYEES env vars not set')
+    }
+    return await runFullResync(config.sheetIds, config.tabNames, branchId, startedBy)
+  } catch (err) {
+    console.error('[sheet-sync] resync error:', err)
+    throw err
+  } finally {
+    isSyncing = false
+  }
 }

@@ -1,6 +1,10 @@
 import { Elysia, t } from 'elysia'
 import { paginationQuery } from './_query'
-import { triggerSyncInBackground, isSyncRunning } from '../services/sheet-sync-scheduler'
+import {
+  triggerSyncInBackground,
+  triggerFullResync,
+  isSyncRunning,
+} from '../services/sheet-sync-scheduler'
 import * as repo from '../repositories/sheet-sync'
 import { auth } from '../auth'
 import { db } from '~/db'
@@ -12,8 +16,9 @@ type Ctx = { authUser: AuthUser }
 
 // ── Public route: callable by Cloud Scheduler (OIDC) or admin (session) ─────
 // Registered outside the auth group. Handles its own authentication.
-export const sheetSyncTriggerRoute = new Elysia()
-  .post('/sheet-sync-trigger', async ({ request, set }) => {
+export const sheetSyncTriggerRoute = new Elysia().post(
+  '/sheet-sync-trigger',
+  async ({ request, set }) => {
     // Path 1: Cloud Scheduler sends a Bearer OIDC token.
     // Cloud Run IAM validates the token before the request reaches the app.
     // If we got here with a Bearer token, the caller is authorized.
@@ -27,7 +32,11 @@ export const sheetSyncTriggerRoute = new Elysia()
     const session = await auth.api.getSession({ headers: request.headers })
     if (!session) {
       set.status = 401
-      return { success: false, data: null, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } }
+      return {
+        success: false,
+        data: null,
+        error: { code: 'UNAUTHORIZED', message: 'Authentication required' },
+      }
     }
 
     const [appUser] = await db
@@ -38,12 +47,17 @@ export const sheetSyncTriggerRoute = new Elysia()
 
     if (!appUser || appUser.role !== 'admin') {
       set.status = 403
-      return { success: false, data: null, error: { code: 'FORBIDDEN', message: 'Admin access required' } }
+      return {
+        success: false,
+        data: null,
+        error: { code: 'FORBIDDEN', message: 'Admin access required' },
+      }
     }
 
     const job = triggerSyncInBackground(appUser.id)
     return { success: true, data: job, error: null }
-  })
+  },
+)
 
 // ── Protected routes: admin-only (inside /v1 auth group) ────────────────────
 export const sheetSyncRoute = new Elysia({ prefix: '/sheet-sync' })
@@ -54,30 +68,59 @@ export const sheetSyncRoute = new Elysia({ prefix: '/sheet-sync' })
 
     if (actor.role !== 'admin') {
       set.status = 403
-      return { success: false, data: null, error: { code: 'FORBIDDEN', message: 'Admin access required' } }
+      return {
+        success: false,
+        data: null,
+        error: { code: 'FORBIDDEN', message: 'Admin access required' },
+      }
     }
 
     const job = triggerSyncInBackground(actor.id)
     return { success: true, data: job, error: null }
   })
 
-  // GET /jobs — list sync job history
-  .get('/jobs', async ({ query, set, ...c }) => {
+  // POST /resync — wipe all transactional data then re-import from the sheet
+  .post('/resync', async ({ set, ...c }) => {
     const { authUser: actor } = c as unknown as Ctx
 
     if (actor.role !== 'admin') {
       set.status = 403
-      return { success: false, data: null, error: { code: 'FORBIDDEN', message: 'Admin access required' } }
+      return {
+        success: false,
+        data: null,
+        error: { code: 'FORBIDDEN', message: 'Admin access required' },
+      }
     }
 
-    const result = await repo.listJobs({ page: query.page, limit: query.limit })
-    return {
-      success: true,
-      data: result.jobs,
-      error: null,
-      meta: result.meta,
-    }
-  }, { query: t.Object({ ...paginationQuery }) })
+    const result = await triggerFullResync(actor.id)
+    return { success: true, data: result, error: null }
+  })
+
+  // GET /jobs — list sync job history
+  .get(
+    '/jobs',
+    async ({ query, set, ...c }) => {
+      const { authUser: actor } = c as unknown as Ctx
+
+      if (actor.role !== 'admin') {
+        set.status = 403
+        return {
+          success: false,
+          data: null,
+          error: { code: 'FORBIDDEN', message: 'Admin access required' },
+        }
+      }
+
+      const result = await repo.listJobs({ page: query.page, limit: query.limit })
+      return {
+        success: true,
+        data: result.jobs,
+        error: null,
+        meta: result.meta,
+      }
+    },
+    { query: t.Object({ ...paginationQuery }) },
+  )
 
   // GET /jobs/:id — get single job
   .get('/jobs/:id', async ({ params, set, ...c }) => {
@@ -85,13 +128,21 @@ export const sheetSyncRoute = new Elysia({ prefix: '/sheet-sync' })
 
     if (actor.role !== 'admin') {
       set.status = 403
-      return { success: false, data: null, error: { code: 'FORBIDDEN', message: 'Admin access required' } }
+      return {
+        success: false,
+        data: null,
+        error: { code: 'FORBIDDEN', message: 'Admin access required' },
+      }
     }
 
     const job = await repo.getJobById(params.id)
     if (!job) {
       set.status = 404
-      return { success: false, data: null, error: { code: 'NOT_FOUND', message: 'Sync job not found' } }
+      return {
+        success: false,
+        data: null,
+        error: { code: 'NOT_FOUND', message: 'Sync job not found' },
+      }
     }
     return { success: true, data: job, error: null }
   })
@@ -102,7 +153,11 @@ export const sheetSyncRoute = new Elysia({ prefix: '/sheet-sync' })
 
     if (actor.role !== 'admin') {
       set.status = 403
-      return { success: false, data: null, error: { code: 'FORBIDDEN', message: 'Admin access required' } }
+      return {
+        success: false,
+        data: null,
+        error: { code: 'FORBIDDEN', message: 'Admin access required' },
+      }
     }
 
     const isRunning = isSyncRunning()

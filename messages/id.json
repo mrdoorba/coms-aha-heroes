@@ -384,6 +384,8 @@
   "employee_detail_col_reason": "Sebab",
   "employee_detail_col_screenshot": "Upload screenshot",
   "employee_detail_col_month": "MMM YYYY",
+  "employee_detail_col_level": "Tingkat",
+  "employee_detail_col_kitta": "Komponen KITTA",
   "employee_detail_view": "Lihat",
   "employee_detail_empty": "Belum ada riwayat poin bintang",
   "employee_detail_empty_aha": "Belum ada riwayat poin AHA",
