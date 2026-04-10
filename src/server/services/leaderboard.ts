@@ -129,19 +129,20 @@ async function getLeaderboardFiltered(
   return withRLS(ctx.actor, async (db) => {
     const sinceDate = sql`now() - make_interval(months => ${input.months})`
 
-    const bintangCountExpr = sql<number>`COALESCE(COUNT(*) FILTER (
+    // NOTE: Do NOT use .as() aliases on expressions used in raw sql`` templates.
+    // Drizzle renders SQL.Aliased as just the alias name (e.g. "bintang_count"),
+    // not the full expression — causing "column does not exist" errors.
+    // Instead, add aliases manually in the SELECT template string.
+
+    const bintangCountExpr = sql`COALESCE(COUNT(*) FILTER (
       WHERE ${pointCategories.code} = 'BINTANG' AND ${achievementPoints.status} = 'active'
-    ), 0)`.as('bintang_count')
+    ), 0)`
 
-    const penaltiSumExpr = sql<number>`COALESCE(SUM(${achievementPoints.points}) FILTER (
+    const penaltiSumExpr = sql`COALESCE(SUM(${achievementPoints.points}) FILTER (
       WHERE ${pointCategories.code} = 'PENALTI' AND ${achievementPoints.status} IN ('active', 'challenged')
-    ), 0)`.as('penalti_sum')
+    ), 0)`
 
-    const directPoinAhaExpr = sql<number>`COALESCE(SUM(${achievementPoints.points}) FILTER (
-      WHERE ${pointCategories.code} = 'POIN_AHA' AND ${achievementPoints.status} = 'active'
-    ), 0)`.as('direct_poin_aha')
-
-    const poinAhaBalanceExpr = sql<number>`(
+    const poinAhaBalanceExpr = sql`(
       COALESCE(SUM(${achievementPoints.points}) FILTER (
         WHERE ${pointCategories.code} = 'POIN_AHA' AND ${achievementPoints.status} = 'active'
       ), 0)
@@ -151,14 +152,15 @@ async function getLeaderboardFiltered(
       - COALESCE(SUM(${achievementPoints.points}) FILTER (
         WHERE ${pointCategories.code} = 'PENALTI' AND ${achievementPoints.status} IN ('active', 'challenged')
       ), 0) * ${penaltiPointImpact}
-    )`.as('poin_aha_balance')
+    )`
 
+    // PostgreSQL allows ORDER BY output-column alias
     const orderExpr =
       input.type === 'bintang'
-        ? desc(bintangCountExpr)
+        ? sql`bintang_count DESC`
         : input.type === 'penalti'
-          ? desc(penaltiSumExpr)
-          : desc(poinAhaBalanceExpr)
+          ? sql`penalti_sum DESC`
+          : sql`poin_aha_balance DESC`
 
     const teamCondition = input.teamId ? sql`AND ${users.teamId} = ${input.teamId}` : sql``
 
@@ -196,9 +198,9 @@ async function getLeaderboardFiltered(
         ${users.name} AS name,
         ${users.avatarUrl} AS avatar_url,
         ${users.teamId} AS team_id,
-        ${bintangCountExpr},
-        ${penaltiSumExpr},
-        ${poinAhaBalanceExpr}
+        ${bintangCountExpr} AS bintang_count,
+        ${penaltiSumExpr} AS penalti_sum,
+        ${poinAhaBalanceExpr} AS poin_aha_balance
       FROM ${users}
       INNER JOIN ${achievementPoints} ON ${achievementPoints.userId} = ${users.id}
       INNER JOIN ${pointCategories} ON ${pointCategories.id} = ${achievementPoints.categoryId}
