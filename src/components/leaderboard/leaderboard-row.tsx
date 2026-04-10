@@ -1,4 +1,3 @@
-import { AlertTriangle } from 'lucide-react'
 import { cn } from '~/lib/utils'
 
 type LeaderboardRowEntry = {
@@ -6,16 +5,14 @@ type LeaderboardRowEntry = {
   name: string
   avatarUrl: string | null
   score: number
-  penaltiCount: number
 }
 
 type LeaderboardRowProps = {
   entry: LeaderboardRowEntry
   isCurrentUser: boolean
-  showPenalti?: boolean
 }
 
-export function LeaderboardRow({ entry, isCurrentUser, showPenalti }: LeaderboardRowProps) {
+export function LeaderboardRow({ entry, isCurrentUser }: LeaderboardRowProps) {
   const initials = entry.name
     .split(' ')
     .slice(0, 2)
@@ -63,14 +60,6 @@ export function LeaderboardRow({ entry, isCurrentUser, showPenalti }: Leaderboar
           </span>
         )}
       </div>
-
-      {/* Penalti (non-employee only) */}
-      {showPenalti && entry.penaltiCount > 0 && (
-        <span className="flex shrink-0 items-center gap-1 rounded-xl bg-red-500/10 px-2.5 py-1 text-xs font-bold text-red-600">
-          <AlertTriangle className="h-3 w-3" />
-          {entry.penaltiCount}
-        </span>
-      )}
 
       {/* Score */}
       <span className="bg-primary/8 text-primary shrink-0 rounded-xl px-3 py-1 text-sm font-extrabold">

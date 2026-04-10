@@ -230,9 +230,7 @@ function LeaderboardPage() {
       ) : (
         <>
           {/* Podium — top 3 */}
-          {top3.length > 0 && (
-            <Podium entries={top3} scoreLabel={scoreLabel} showPenalti={showPenalti} />
-          )}
+          {top3.length > 0 && <Podium entries={top3} scoreLabel={scoreLabel} />}
 
           {/* Ranked list — rank 4+ */}
           {rest.length > 0 && (
@@ -243,11 +241,7 @@ function LeaderboardPage() {
                   className="stagger-item"
                   style={{ animationDelay: `${i * 30}ms` }}
                 >
-                  <LeaderboardRow
-                    entry={entry}
-                    isCurrentUser={entry.userId === currentUserId}
-                    showPenalti={showPenalti}
-                  />
+                  <LeaderboardRow entry={entry} isCurrentUser={entry.userId === currentUserId} />
                 </div>
               ))}
             </div>
