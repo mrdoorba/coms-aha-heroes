@@ -505,12 +505,12 @@ export async function syncPoints(
     .select({
       userId: achievementPoints.userId,
       reason: achievementPoints.reason,
-      createdMinute: sql<string>`to_char(${achievementPoints.createdAt}, 'YYYY-MM-DD HH24:MI')`,
+      createdSecond: sql<string>`to_char(${achievementPoints.createdAt}, 'YYYY-MM-DD HH24:MI:SS')`,
     })
     .from(achievementPoints)
     .where(and(eq(achievementPoints.branchId, branchId), eq(achievementPoints.categoryId, cat.id)))
 
-  const dedupSet = new Set(existingPoints.map((p) => `${p.userId}|${p.reason}|${p.createdMinute}`))
+  const dedupSet = new Set(existingPoints.map((p) => `${p.userId}|${p.reason}|${p.createdSecond}`))
 
   // 6. Insert new points in batches
   const toInsert: Array<{
@@ -540,8 +540,8 @@ export async function syncPoints(
       continue
     }
 
-    const createdMinute = `${row.createdAt.getUTCFullYear()}-${String(row.createdAt.getUTCMonth() + 1).padStart(2, '0')}-${String(row.createdAt.getUTCDate()).padStart(2, '0')} ${String(row.createdAt.getUTCHours()).padStart(2, '0')}:${String(row.createdAt.getUTCMinutes()).padStart(2, '0')}`
-    const dedupKey = `${user.id}|${row.reason}|${createdMinute}`
+    const createdSecond = `${row.createdAt.getUTCFullYear()}-${String(row.createdAt.getUTCMonth() + 1).padStart(2, '0')}-${String(row.createdAt.getUTCDate()).padStart(2, '0')} ${String(row.createdAt.getUTCHours()).padStart(2, '0')}:${String(row.createdAt.getUTCMinutes()).padStart(2, '0')}:${String(row.createdAt.getUTCSeconds()).padStart(2, '0')}`
+    const dedupKey = `${user.id}|${row.reason}|${createdSecond}`
 
     if (dedupSet.has(dedupKey)) {
       processed++
@@ -627,13 +627,13 @@ export async function syncRedemptions(
     .select({
       userId: redemptions.userId,
       rewardId: redemptions.rewardId,
-      createdMinute: sql<string>`to_char(${redemptions.createdAt}, 'YYYY-MM-DD HH24:MI')`,
+      createdSecond: sql<string>`to_char(${redemptions.createdAt}, 'YYYY-MM-DD HH24:MI:SS')`,
     })
     .from(redemptions)
     .where(eq(redemptions.branchId, branchId))
 
   const redemptionDedupSet = new Set(
-    existingRedemptionRows.map((r) => `${r.userId}|${r.rewardId}|${r.createdMinute}`),
+    existingRedemptionRows.map((r) => `${r.userId}|${r.rewardId}|${r.createdSecond}`),
   )
 
   // 4. Parse rows, collect missing user names
@@ -792,8 +792,8 @@ export async function syncRedemptions(
       continue
     }
 
-    const createdMinute = `${row.createdAt.getUTCFullYear()}-${String(row.createdAt.getUTCMonth() + 1).padStart(2, '0')}-${String(row.createdAt.getUTCDate()).padStart(2, '0')} ${String(row.createdAt.getUTCHours()).padStart(2, '0')}:${String(row.createdAt.getUTCMinutes()).padStart(2, '0')}`
-    const dedupKey = `${user.id}|${rewardId}|${createdMinute}`
+    const createdSecond = `${row.createdAt.getUTCFullYear()}-${String(row.createdAt.getUTCMonth() + 1).padStart(2, '0')}-${String(row.createdAt.getUTCDate()).padStart(2, '0')} ${String(row.createdAt.getUTCHours()).padStart(2, '0')}:${String(row.createdAt.getUTCMinutes()).padStart(2, '0')}:${String(row.createdAt.getUTCSeconds()).padStart(2, '0')}`
+    const dedupKey = `${user.id}|${rewardId}|${createdSecond}`
 
     if (redemptionDedupSet.has(dedupKey)) {
       processed++
