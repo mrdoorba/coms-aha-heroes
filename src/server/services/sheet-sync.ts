@@ -894,13 +894,14 @@ export async function runFullSync(
   branchId: string,
   startedBy?: string,
   tx?: DbClient,
+  direction: 'import' | 'resync' = 'import',
 ) {
   const db = (tx ?? defaultDb) as unknown as DbClient
 
   const job = await createJob(
     {
       branchId,
-      direction: 'import',
+      direction,
       sheetId: `${sheetIds.employees},${sheetIds.points}`,
       sheetName: Object.values(tabNames).join(', '),
       status: 'in_progress',
@@ -992,6 +993,6 @@ export async function runFullResync(
     await txDb.delete(achievementPoints).where(eq(achievementPoints.branchId, branchId))
     await txDb.delete(pointSummaries).where(eq(pointSummaries.branchId, branchId))
 
-    return runFullSync(sheetIds, tabNames, branchId, startedBy, txDb)
+    return runFullSync(sheetIds, tabNames, branchId, startedBy, txDb, 'resync')
   })
 }
