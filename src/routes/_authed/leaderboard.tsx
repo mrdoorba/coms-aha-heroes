@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { Trophy, Star, Users } from 'lucide-react'
+import { Trophy, Star, Users, Calendar, AlertTriangle } from 'lucide-react'
 import * as m from '~/paraglide/messages'
 import {
   Select,
@@ -24,6 +24,7 @@ type LeaderboardEntry = {
   teamId: string | null
   score: number
   bintangCount: number
+  penaltiCount: number
 }
 
 type Team = {
@@ -46,14 +47,32 @@ function LeaderboardPage() {
   const initialData = Route.useLoaderData()
   const { session } = Route.useRouteContext()
   const currentUserId = session?.appUser?.id ?? ''
+  const userRole = session?.appUser?.role ?? 'employee'
+  const showPenalti = userRole !== 'employee'
 
-  const tabs: Array<{ label: string; value: LeaderboardType; icon: React.ReactNode; color: string }> = [
-    { label: m.points_bintang(), value: 'bintang', icon: <Star className="h-4 w-4" />, color: '#F4C144' },
-    { label: m.points_poin_aha(), value: 'poin_aha', icon: <Trophy className="h-4 w-4" />, color: '#325FEC' },
+  const tabs: Array<{
+    label: string
+    value: LeaderboardType
+    icon: React.ReactNode
+    color: string
+  }> = [
+    {
+      label: m.points_bintang(),
+      value: 'bintang',
+      icon: <Star className="h-4 w-4" />,
+      color: '#F4C144',
+    },
+    {
+      label: m.points_poin_aha(),
+      value: 'poin_aha',
+      icon: <Trophy className="h-4 w-4" />,
+      color: '#325FEC',
+    },
   ]
 
   const [activeType, setActiveType] = useState<LeaderboardType>('bintang')
   const [teamId, setTeamId] = useState<string>('')
+  const [months, setMonths] = useState<string>('')
   const [entries, setEntries] = useState<LeaderboardEntry[]>(
     initialData.leaderboard.entries as LeaderboardEntry[],
   )
@@ -61,9 +80,14 @@ function LeaderboardPage() {
 
   const teams: Team[] = (initialData.teams.teams ?? []) as Team[]
 
-  async function fetchLeaderboard(opts?: { type?: LeaderboardType; team?: string }) {
+  async function fetchLeaderboard(opts?: {
+    type?: LeaderboardType
+    team?: string
+    months?: string
+  }) {
     const type = opts?.type ?? activeType
     const team = opts?.team ?? teamId
+    const m_ = opts?.months ?? months
 
     setIsLoading(true)
     try {
@@ -71,6 +95,7 @@ function LeaderboardPage() {
         data: {
           type,
           teamId: team || undefined,
+          months: m_ ? Number(m_) : undefined,
           page: 1,
           limit: 50,
         },
@@ -92,25 +117,30 @@ function LeaderboardPage() {
     fetchLeaderboard({ team })
   }
 
+  function handleMonthsChange(val: string | null) {
+    const m_ = !val || val === 'all' ? '' : val
+    setMonths(m_)
+    fetchLeaderboard({ months: m_ })
+  }
+
   const top3 = entries.filter((e) => e.rank <= 3)
   const rest = entries.filter((e) => e.rank > 3)
   const scoreLabel = activeType === 'bintang' ? m.points_bintang() : m.points_poin_aha()
-  const activeTab = tabs.find((t) => t.value === activeType)!
 
   return (
-    <div className="max-w-2xl mx-auto space-y-4 pb-8">
+    <div className="mx-auto max-w-2xl space-y-4 pb-8">
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-6">
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#F4C144] to-[#FFD97D] shadow-md">
             <Trophy className="h-4.5 w-4.5 text-[#7a5800]" />
           </div>
-          <h1 className="text-xl font-extrabold text-foreground">{m.nav_leaderboard()}</h1>
+          <h1 className="text-foreground text-xl font-extrabold">{m.nav_leaderboard()}</h1>
         </div>
         {teams.length > 0 && (
           <Select value={teamId || 'all'} onValueChange={handleTeamChange}>
-            <SelectTrigger className="w-36 h-9 text-sm rounded-xl border-border bg-card">
-              <Users className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+            <SelectTrigger className="border-border bg-card h-9 w-36 rounded-xl text-sm">
+              <Users className="text-muted-foreground mr-1 h-3.5 w-3.5" />
               <SelectValue placeholder="All Teams" />
             </SelectTrigger>
             <SelectContent>
@@ -125,47 +155,60 @@ function LeaderboardPage() {
         )}
       </div>
 
-      {/* Tab switcher */}
-      <div className="mx-4 flex gap-1.5 rounded-2xl bg-card border border-border p-1.5 shadow-card">
-        {tabs.map((tab) => {
-          const isActive = activeType === tab.value
-          return (
-            <button
-              key={tab.value}
-              type="button"
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-bold transition-all duration-200 min-h-[44px]"
-              style={
-                isActive
-                  ? {
-                      background: `linear-gradient(135deg, ${tab.color}18, ${tab.color}08)`,
-                      color: tab.color,
-                      boxShadow: `0 2px 8px ${tab.color}20`,
-                      border: `1px solid ${tab.color}30`,
-                    }
-                  : { color: 'var(--muted-foreground)' }
-              }
-              onClick={() => handleTypeChange(tab.value)}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          )
-        })}
+      {/* Tab switcher + period filter */}
+      <div className="mx-4 space-y-2">
+        <div className="bg-card border-border shadow-card flex gap-1.5 rounded-2xl border p-1.5">
+          {tabs.map((tab) => {
+            const isActive = activeType === tab.value
+            return (
+              <button
+                key={tab.value}
+                type="button"
+                className="flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-bold transition-all duration-200"
+                style={
+                  isActive
+                    ? {
+                        background: `linear-gradient(135deg, ${tab.color}18, ${tab.color}08)`,
+                        color: tab.color,
+                        boxShadow: `0 2px 8px ${tab.color}20`,
+                        border: `1px solid ${tab.color}30`,
+                      }
+                    : { color: 'var(--muted-foreground)' }
+                }
+                onClick={() => handleTypeChange(tab.value)}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Period filter */}
+        <Select value={months || 'all'} onValueChange={handleMonthsChange}>
+          <SelectTrigger className="border-border bg-card h-9 w-full rounded-xl text-sm">
+            <Calendar className="text-muted-foreground mr-1 h-3.5 w-3.5" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{m.leaderboard_all_time()}</SelectItem>
+            <SelectItem value="1">{m.leaderboard_last_month()}</SelectItem>
+            <SelectItem value="2">{m.leaderboard_last_months({ count: '2' })}</SelectItem>
+            <SelectItem value="3">{m.leaderboard_last_months({ count: '3' })}</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {isLoading ? (
         <div className="space-y-3 px-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-16 rounded-2xl border border-border bg-card animate-pulse"
-            />
+            <div key={i} className="border-border bg-card h-16 animate-pulse rounded-2xl border" />
           ))}
         </div>
       ) : entries.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/8">
-            <Trophy className="h-8 w-8 text-primary/40" />
+        <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
+          <div className="bg-primary/8 mb-4 flex h-16 w-16 items-center justify-center rounded-2xl">
+            <Trophy className="text-primary/40 h-8 w-8" />
           </div>
           <p className="text-muted-foreground">{m.common_no_data()}</p>
         </div>
@@ -173,17 +216,22 @@ function LeaderboardPage() {
         <>
           {/* Podium — top 3 */}
           {top3.length > 0 && (
-            <Podium entries={top3} scoreLabel={scoreLabel} />
+            <Podium entries={top3} scoreLabel={scoreLabel} showPenalti={showPenalti} />
           )}
 
           {/* Ranked list — rank 4+ */}
           {rest.length > 0 && (
             <div className="space-y-2 px-4 pt-2">
               {rest.map((entry, i) => (
-                <div key={entry.userId} className="stagger-item" style={{ animationDelay: `${i * 30}ms` }}>
+                <div
+                  key={entry.userId}
+                  className="stagger-item"
+                  style={{ animationDelay: `${i * 30}ms` }}
+                >
                   <LeaderboardRow
                     entry={entry}
                     isCurrentUser={entry.userId === currentUserId}
+                    showPenalti={showPenalti}
                   />
                 </div>
               ))}

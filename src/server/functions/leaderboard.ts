@@ -5,6 +5,7 @@ import { createServerApi, unwrap } from '~/lib/api-client'
 type LeaderboardParams = {
   type?: 'bintang' | 'poin_aha'
   teamId?: string
+  months?: number
   page?: number
   limit?: number
 }
@@ -21,6 +22,7 @@ export const getLeaderboardFn = createServerFn({ method: 'GET' })
         page: data.page ?? 1,
         limit: data.limit ?? 50,
         ...(data.teamId ? { teamId: data.teamId } : {}),
+        ...(data.months ? { months: data.months } : {}),
       } as any,
     })
     const res = unwrap(result, 'Failed to load leaderboard')

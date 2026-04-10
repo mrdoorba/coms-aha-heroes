@@ -1,4 +1,4 @@
-import { Crown } from 'lucide-react'
+import { Crown, AlertTriangle } from 'lucide-react'
 import { cn } from '~/lib/utils'
 
 type PodiumEntry = {
@@ -6,22 +6,27 @@ type PodiumEntry = {
   name: string
   avatarUrl: string | null
   score: number
+  penaltiCount: number
 }
 
 type PodiumProps = {
   entries: Array<PodiumEntry>
   scoreLabel: string
+  showPenalti?: boolean
 }
 
-const RANK_STYLES: Record<number, {
-  avatarRing: string
-  podiumBg: string
-  podiumHeight: string
-  scoreBg: string
-  scoreText: string
-  nameBg: string
-  glow: string
-}> = {
+const RANK_STYLES: Record<
+  number,
+  {
+    avatarRing: string
+    podiumBg: string
+    podiumHeight: string
+    scoreBg: string
+    scoreText: string
+    nameBg: string
+    glow: string
+  }
+> = {
   1: {
     avatarRing: 'ring-4 ring-[#F4C144] glow-gold',
     podiumBg: 'bg-gradient-to-t from-[#F4C144] to-[#FFD97D]',
@@ -54,9 +59,11 @@ const RANK_STYLES: Record<number, {
 function PodiumItem({
   entry,
   size,
+  showPenalti,
 }: {
   entry: PodiumEntry
   size: 'lg' | 'md'
+  showPenalti?: boolean
 }) {
   const styles = RANK_STYLES[entry.rank] ?? {
     avatarRing: '',
@@ -81,23 +88,23 @@ function PodiumItem({
     .toUpperCase()
 
   return (
-    <div className="flex flex-col items-center gap-1.5 flex-1 relative">
+    <div className="relative flex flex-1 flex-col items-center gap-1.5">
       {/* Crown for #1 */}
       {entry.rank === 1 && (
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#F4C144] to-[#FFD97D] shadow-lg mb-0.5">
+        <div className="mb-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#F4C144] to-[#FFD97D] shadow-lg">
           <Crown className="h-4 w-4 text-[#7a5800]" />
         </div>
       )}
       {entry.rank !== 1 && (
-        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-card border-2 border-[#C0C0C0] shadow-sm mb-0.5">
-          <span className="text-xs font-bold text-muted-foreground">{entry.rank}</span>
+        <div className="bg-card mb-0.5 flex h-6 w-6 items-center justify-center rounded-full border-2 border-[#C0C0C0] shadow-sm">
+          <span className="text-muted-foreground text-xs font-bold">{entry.rank}</span>
         </div>
       )}
 
       {/* Avatar */}
       <div
         className={cn(
-          'flex items-center justify-center rounded-full bg-primary/10 overflow-hidden shrink-0',
+          'bg-primary/10 flex shrink-0 items-center justify-center overflow-hidden rounded-full',
           avatarSize,
           styles.avatarRing,
           styles.glow,
@@ -114,27 +121,44 @@ function PodiumItem({
             decoding="async"
           />
         ) : (
-          <span className="font-bold text-primary text-lg">{initials}</span>
+          <span className="text-primary text-lg font-bold">{initials}</span>
         )}
       </div>
 
       {/* Name */}
-      <p className={cn('text-center max-w-[80px] truncate text-foreground', textSize)}>
+      <p className={cn('text-foreground max-w-[80px] truncate text-center', textSize)}>
         {entry.name}
       </p>
 
       {/* Score */}
-      <span className={cn('rounded-full px-2.5 py-0.5 text-xs', styles.scoreBg, styles.scoreText, scoreTextSize)}>
+      <span
+        className={cn(
+          'rounded-full px-2.5 py-0.5 text-xs',
+          styles.scoreBg,
+          styles.scoreText,
+          scoreTextSize,
+        )}
+      >
         {entry.score}
       </span>
 
+      {/* Penalti (non-employee only) */}
+      {showPenalti && entry.penaltiCount > 0 && (
+        <span className="flex items-center gap-0.5 text-[10px] font-bold text-red-500">
+          <AlertTriangle className="h-2.5 w-2.5" />
+          {entry.penaltiCount}
+        </span>
+      )}
+
       {/* Podium base */}
-      <div className={cn('w-full rounded-t-xl shadow-inner', styles.podiumHeight, styles.podiumBg)} />
+      <div
+        className={cn('w-full rounded-t-xl shadow-inner', styles.podiumHeight, styles.podiumBg)}
+      />
     </div>
   )
 }
 
-export function Podium({ entries, scoreLabel: _scoreLabel }: PodiumProps) {
+export function Podium({ entries, scoreLabel: _scoreLabel, showPenalti }: PodiumProps) {
   const rank1 = entries.find((e) => e.rank === 1)
   const rank2 = entries.find((e) => e.rank === 2)
   const rank3 = entries.find((e) => e.rank === 3)
@@ -142,11 +166,23 @@ export function Podium({ entries, scoreLabel: _scoreLabel }: PodiumProps) {
   if (!rank1 && !rank2 && !rank3) return null
 
   return (
-    <div className="mx-4 rounded-2xl bg-gradient-to-b from-muted to-card border border-border px-4 pt-6 pb-0 overflow-hidden shadow-card">
+    <div className="from-muted to-card border-border shadow-card mx-4 overflow-hidden rounded-2xl border bg-gradient-to-b px-4 pt-6 pb-0">
       <div className="flex items-end justify-center gap-3">
-        {rank2 ? <PodiumItem entry={rank2} size="md" /> : <div className="flex-1" />}
-        {rank1 ? <PodiumItem entry={rank1} size="lg" /> : <div className="flex-1" />}
-        {rank3 ? <PodiumItem entry={rank3} size="md" /> : <div className="flex-1" />}
+        {rank2 ? (
+          <PodiumItem entry={rank2} size="md" showPenalti={showPenalti} />
+        ) : (
+          <div className="flex-1" />
+        )}
+        {rank1 ? (
+          <PodiumItem entry={rank1} size="lg" showPenalti={showPenalti} />
+        ) : (
+          <div className="flex-1" />
+        )}
+        {rank3 ? (
+          <PodiumItem entry={rank3} size="md" showPenalti={showPenalti} />
+        ) : (
+          <div className="flex-1" />
+        )}
       </div>
     </div>
   )
