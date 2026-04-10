@@ -1,4 +1,4 @@
-import { Crown, AlertTriangle } from 'lucide-react'
+import { Crown } from 'lucide-react'
 import { cn } from '~/lib/utils'
 
 type PodiumEntry = {
@@ -6,13 +6,11 @@ type PodiumEntry = {
   name: string
   avatarUrl: string | null
   score: number
-  penaltiCount: number
 }
 
 type PodiumProps = {
   entries: Array<PodiumEntry>
   scoreLabel: string
-  showPenalti?: boolean
 }
 
 const RANK_STYLES: Record<
@@ -56,15 +54,7 @@ const RANK_STYLES: Record<
   },
 }
 
-function PodiumItem({
-  entry,
-  size,
-  showPenalti,
-}: {
-  entry: PodiumEntry
-  size: 'lg' | 'md'
-  showPenalti?: boolean
-}) {
+function PodiumItem({ entry, size }: { entry: PodiumEntry; size: 'lg' | 'md' }) {
   const styles = RANK_STYLES[entry.rank] ?? {
     avatarRing: '',
     podiumBg: 'bg-muted',
@@ -142,14 +132,6 @@ function PodiumItem({
         {entry.score}
       </span>
 
-      {/* Penalti (non-employee only) */}
-      {showPenalti && entry.penaltiCount > 0 && (
-        <span className="flex items-center gap-0.5 text-[10px] font-bold text-red-500">
-          <AlertTriangle className="h-2.5 w-2.5" />
-          {entry.penaltiCount}
-        </span>
-      )}
-
       {/* Podium base */}
       <div
         className={cn('w-full rounded-t-xl shadow-inner', styles.podiumHeight, styles.podiumBg)}
@@ -158,7 +140,7 @@ function PodiumItem({
   )
 }
 
-export function Podium({ entries, scoreLabel: _scoreLabel, showPenalti }: PodiumProps) {
+export function Podium({ entries, scoreLabel: _scoreLabel }: PodiumProps) {
   const rank1 = entries.find((e) => e.rank === 1)
   const rank2 = entries.find((e) => e.rank === 2)
   const rank3 = entries.find((e) => e.rank === 3)
@@ -168,21 +150,9 @@ export function Podium({ entries, scoreLabel: _scoreLabel, showPenalti }: Podium
   return (
     <div className="from-muted to-card border-border shadow-card mx-4 overflow-hidden rounded-2xl border bg-gradient-to-b px-4 pt-6 pb-0">
       <div className="flex items-end justify-center gap-3">
-        {rank2 ? (
-          <PodiumItem entry={rank2} size="md" showPenalti={showPenalti} />
-        ) : (
-          <div className="flex-1" />
-        )}
-        {rank1 ? (
-          <PodiumItem entry={rank1} size="lg" showPenalti={showPenalti} />
-        ) : (
-          <div className="flex-1" />
-        )}
-        {rank3 ? (
-          <PodiumItem entry={rank3} size="md" showPenalti={showPenalti} />
-        ) : (
-          <div className="flex-1" />
-        )}
+        {rank2 ? <PodiumItem entry={rank2} size="md" /> : <div className="flex-1" />}
+        {rank1 ? <PodiumItem entry={rank1} size="lg" /> : <div className="flex-1" />}
+        {rank3 ? <PodiumItem entry={rank3} size="md" /> : <div className="flex-1" />}
       </div>
     </div>
   )
