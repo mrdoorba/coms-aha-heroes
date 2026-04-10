@@ -156,7 +156,9 @@ function LeaderboardPage() {
           <Select value={teamId || 'all'} onValueChange={handleTeamChange}>
             <SelectTrigger className="border-border bg-card h-9 w-36 rounded-xl text-sm">
               <Users className="text-muted-foreground mr-1 h-3.5 w-3.5" />
-              <SelectValue placeholder="All Teams" />
+              <SelectValue placeholder={m.leaderboard_all_teams()}>
+                {teamId ? teams.find((t) => t.id === teamId)?.name : undefined}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{m.leaderboard_all_teams()}</SelectItem>
@@ -203,13 +205,15 @@ function LeaderboardPage() {
         <Select value={months || 'all'} onValueChange={handleMonthsChange}>
           <SelectTrigger className="border-border bg-card h-9 w-full rounded-xl text-sm">
             <Calendar className="text-muted-foreground mr-1 h-3.5 w-3.5" />
-            <SelectValue />
+            <SelectValue placeholder={m.leaderboard_all_time()}>
+              {months ? m.leaderboard_last_months({ count: months }) : undefined}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{m.leaderboard_all_time()}</SelectItem>
-            <SelectItem value="1">1</SelectItem>
-            <SelectItem value="2">2</SelectItem>
-            <SelectItem value="3">3</SelectItem>
+            <SelectItem value="1">{m.leaderboard_last_months({ count: '1' })}</SelectItem>
+            <SelectItem value="2">{m.leaderboard_last_months({ count: '2' })}</SelectItem>
+            <SelectItem value="3">{m.leaderboard_last_months({ count: '3' })}</SelectItem>
           </SelectContent>
         </Select>
       </div>
