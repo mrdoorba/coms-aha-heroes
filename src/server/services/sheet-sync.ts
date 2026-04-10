@@ -84,26 +84,36 @@ export function buildHeaderIndex(
 }
 
 export function parseTimestamp(value: string): Date {
+  // 1. Try M/D/YYYY H:MM:SS format (Google Form timestamps)
   const match = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2}):(\d{2})$/)
-  if (!match) {
-    const fallback = new Date(value)
-    if (!isNaN(fallback.getTime())) return fallback
-    throw new Error(`Cannot parse timestamp: "${value}"`)
+  if (match) {
+    const [, month, day, year, hour, minute, second] = match
+    return new Date(
+      Date.UTC(
+        Number(year),
+        Number(month) - 1,
+        Number(day),
+        Number(hour),
+        Number(minute),
+        Number(second),
+      ),
+    )
   }
-  const [, month, day, year, hour, minute, second] = match
-  // Store as UTC so the sheet time is preserved exactly in the database.
-  // This avoids timezone drift between JS local time and PostgreSQL session timezone
-  // that would break dedup and month grouping.
-  return new Date(
-    Date.UTC(
-      Number(year),
-      Number(month) - 1,
-      Number(day),
-      Number(hour),
-      Number(minute),
-      Number(second),
-    ),
-  )
+
+  // 2. Try Google Sheets serial number (e.g. 45386.08680 = date + fractional day)
+  //    UNFORMATTED_VALUE returns dates as serial numbers (days since Dec 30, 1899)
+  const num = Number(value)
+  if (!isNaN(num) && num > 25000 && num < 100000) {
+    // Google Sheets epoch: Dec 30, 1899
+    const SHEETS_EPOCH = Date.UTC(1899, 11, 30) // Dec 30, 1899
+    const MS_PER_DAY = 86_400_000
+    return new Date(SHEETS_EPOCH + num * MS_PER_DAY)
+  }
+
+  // 3. Fallback: let JS Date parse it
+  const fallback = new Date(value)
+  if (!isNaN(fallback.getTime())) return fallback
+  throw new Error(`Cannot parse timestamp: "${value}"`)
 }
 
 export function parseReward(value: string): { name: string; cost: number } {
