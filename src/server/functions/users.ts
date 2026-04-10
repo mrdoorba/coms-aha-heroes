@@ -3,8 +3,9 @@ import { getRequest } from '@tanstack/react-start/server'
 import { createServerApi, unwrap } from '~/lib/api-client'
 import { auth } from '~/server/auth'
 import { db } from '~/db'
-import { users, branches, teams, user as authUser } from '~/db/schema'
+import { users, branches, teams, user as authUser, account as authAccount } from '~/db/schema'
 import { eq, and, ilike, count, asc } from 'drizzle-orm'
+import { hashPassword } from 'better-auth/crypto'
 import type { UserRole } from '~/shared/constants'
 
 const DEFAULT_PASSWORD = 'changeme123'
@@ -164,6 +165,8 @@ export const resetPasswordFn = createServerFn({ method: 'POST' })
 
     if (!appUser) throw new Error('User not found')
 
+    // Find the Better Auth credential account and update password directly
+    // (bypasses admin plugin role check which requires BA role="admin")
     const [baUser] = await db
       .select({ id: authUser.id })
       .from(authUser)
@@ -172,14 +175,20 @@ export const resetPasswordFn = createServerFn({ method: 'POST' })
 
     if (!baUser) throw new Error('Auth account not found for this user')
 
-    // Use Better Auth admin API to set password
-    await auth.api.setUserPassword({
-      body: {
-        userId: baUser.id,
-        newPassword: DEFAULT_PASSWORD,
-      },
-      headers: request.headers,
-    })
+    const hashedPassword = await hashPassword(DEFAULT_PASSWORD)
+
+    const updated = await db
+      .update(authAccount)
+      .set({ password: hashedPassword })
+      .where(
+        and(
+          eq(authAccount.userId, baUser.id),
+          eq(authAccount.providerId, 'credential'),
+        ),
+      )
+      .returning({ id: authAccount.id })
+
+    if (updated.length === 0) throw new Error('No credential account found for this user')
 
     // Set mustChangePassword flag
     await db.update(users).set({ mustChangePassword: true }).where(eq(users.id, data.userId))
