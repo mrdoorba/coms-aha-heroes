@@ -3,7 +3,7 @@ import { getRequest } from '@tanstack/react-start/server'
 import { createServerApi, unwrap } from '~/lib/api-client'
 import { auth } from '~/server/auth'
 import { db } from '~/db'
-import { users, branches, teams } from '~/db/schema'
+import { users, branches, teams, user as authUser } from '~/db/schema'
 import { eq, and, ilike, count, asc } from 'drizzle-orm'
 import type { UserRole } from '~/shared/constants'
 
@@ -155,7 +155,7 @@ export const resetPasswordFn = createServerFn({ method: 'POST' })
     const session = await auth.api.getSession({ headers: request.headers })
     if (!session) throw new Error('Not authenticated')
 
-    // Look up the app user to get their Better Auth account ID
+    // Look up the app user's email, then find the Better Auth user ID
     const [appUser] = await db
       .select({ id: users.id, email: users.email })
       .from(users)
@@ -164,10 +164,18 @@ export const resetPasswordFn = createServerFn({ method: 'POST' })
 
     if (!appUser) throw new Error('User not found')
 
+    const [baUser] = await db
+      .select({ id: authUser.id })
+      .from(authUser)
+      .where(eq(authUser.email, appUser.email))
+      .limit(1)
+
+    if (!baUser) throw new Error('Auth account not found for this user')
+
     // Use Better Auth admin API to set password
     await auth.api.setUserPassword({
       body: {
-        userId: data.userId,
+        userId: baUser.id,
         newPassword: DEFAULT_PASSWORD,
       },
       headers: request.headers,
