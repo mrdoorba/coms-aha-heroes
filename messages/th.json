@@ -384,6 +384,8 @@
   "employee_detail_col_reason": "เหตุผล",
   "employee_detail_col_screenshot": "อัพโหลดภาพหน้าจอ",
   "employee_detail_col_month": "MMM YYYY",
+  "employee_detail_col_level": "ระดับ",
+  "employee_detail_col_kitta": "องค์ประกอบ KITTA",
   "employee_detail_view": "ดู",
   "employee_detail_empty": "ยังไม่มีประวัติคะแนนดาว",
   "employee_detail_empty_aha": "ยังไม่มีประวัติคะแนน AHA",

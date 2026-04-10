@@ -51,3 +51,12 @@ export const triggerSyncFn = createServerFn({ method: 'POST' }).handler(async ()
   const res = unwrap(result, 'Failed to trigger sync')
   return res.data
 })
+
+export const triggerResyncFn = createServerFn({ method: 'POST' }).handler(async () => {
+  const request = getRequest()
+  const api = createServerApi(request)
+
+  const result = await api.api.v1['sheet-sync'].resync.post({})
+  const res = unwrap(result, 'Failed to trigger resync')
+  return res.data
+})

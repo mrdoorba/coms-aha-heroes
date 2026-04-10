@@ -384,6 +384,8 @@
   "employee_detail_col_reason": "Reason",
   "employee_detail_col_screenshot": "Upload screenshot",
   "employee_detail_col_month": "MMM YYYY",
+  "employee_detail_col_level": "Level",
+  "employee_detail_col_kitta": "KITTA Component",
   "employee_detail_view": "View",
   "employee_detail_empty": "No star points history yet",
   "employee_detail_empty_aha": "No AHA points history yet",

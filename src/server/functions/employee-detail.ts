@@ -31,11 +31,23 @@ function buildCondition(userId: string, categoryId: string) {
   )
 }
 
-function monthlyQuery(condition: ReturnType<typeof buildCondition>) {
+function monthlyCountQuery(condition: ReturnType<typeof buildCondition>) {
   return db
     .select({
       month: sql<string>`to_char(${achievementPoints.createdAt}, 'YYYY-MM')`,
       count: sql<number>`count(*)::int`,
+    })
+    .from(achievementPoints)
+    .where(condition)
+    .groupBy(sql`to_char(${achievementPoints.createdAt}, 'YYYY-MM')`)
+    .orderBy(sql`to_char(${achievementPoints.createdAt}, 'YYYY-MM')`)
+}
+
+function monthlySumQuery(condition: ReturnType<typeof buildCondition>) {
+  return db
+    .select({
+      month: sql<string>`to_char(${achievementPoints.createdAt}, 'YYYY-MM')`,
+      count: sql<number>`coalesce(sum(${achievementPoints.points}), 0)::int`,
     })
     .from(achievementPoints)
     .where(condition)
@@ -92,6 +104,7 @@ export const getEmployeeDetailFn = createServerFn({ method: 'GET' })
           reason: achievementPoints.reason,
           relatedStaff: achievementPoints.relatedStaff,
           screenshotUrl: achievementPoints.screenshotUrl,
+          kittaComponent: achievementPoints.kittaComponent,
           createdAt: achievementPoints.createdAt,
           _total: sql<number>`count(*) over()`.as('_total'),
         })
@@ -99,9 +112,9 @@ export const getEmployeeDetailFn = createServerFn({ method: 'GET' })
         .where(bintangCondition)
         .orderBy(desc(achievementPoints.createdAt))
         .limit(limit),
-      monthlyQuery(bintangCondition),
-      monthlyQuery(buildCondition(data.userId, categoryMap.PENALTI)),
-      monthlyQuery(buildCondition(data.userId, categoryMap.POIN_AHA)),
+      monthlyCountQuery(bintangCondition),
+      monthlySumQuery(buildCondition(data.userId, categoryMap.PENALTI)),
+      monthlySumQuery(buildCondition(data.userId, categoryMap.POIN_AHA)),
       db
         .select({
           bintangCount: pointSummaries.bintangCount,
@@ -153,6 +166,7 @@ export const getEmployeeHistoryFn = createServerFn({ method: 'GET' })
         reason: achievementPoints.reason,
         relatedStaff: achievementPoints.relatedStaff,
         screenshotUrl: achievementPoints.screenshotUrl,
+        kittaComponent: achievementPoints.kittaComponent,
         createdAt: achievementPoints.createdAt,
         _total: sql<number>`count(*) over()`.as('_total'),
       })

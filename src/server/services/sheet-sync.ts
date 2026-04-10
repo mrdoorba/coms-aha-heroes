@@ -91,13 +91,18 @@ export function parseTimestamp(value: string): Date {
     throw new Error(`Cannot parse timestamp: "${value}"`)
   }
   const [, month, day, year, hour, minute, second] = match
+  // Store as UTC so the sheet time is preserved exactly in the database.
+  // This avoids timezone drift between JS local time and PostgreSQL session timezone
+  // that would break dedup and month grouping.
   return new Date(
-    Number(year),
-    Number(month) - 1,
-    Number(day),
-    Number(hour),
-    Number(minute),
-    Number(second),
+    Date.UTC(
+      Number(year),
+      Number(month) - 1,
+      Number(day),
+      Number(hour),
+      Number(minute),
+      Number(second),
+    ),
   )
 }
 
@@ -180,15 +185,7 @@ async function findOrCreateUsersBatch(
   const created = await db
     .select({ id: users.id, name: users.name, email: users.email })
     .from(users)
-    .where(
-      and(
-        eq(users.branchId, branchId),
-        inArray(
-          sql`LOWER(${users.name})`,
-          missing,
-        ),
-      ),
-    )
+    .where(and(eq(users.branchId, branchId), inArray(sql`LOWER(${users.name})`, missing)))
 
   for (const u of created) {
     userCache.byEmail.set(u.email.toLowerCase(), { id: u.id })
@@ -263,7 +260,17 @@ export async function syncEmployees(
     if (teamName) teamNames.add(teamName)
     if (leaderAttendanceName && teamName) leaderMap.set(leaderAttendanceName, teamName)
 
-    parsed.push({ rowIdx: i, name, email, attendanceName, phone, teamName, position, employmentStatus, talentaId })
+    parsed.push({
+      rowIdx: i,
+      name,
+      email,
+      attendanceName,
+      phone,
+      teamName,
+      position,
+      employmentStatus,
+      talentaId,
+    })
   }
 
   // 4. Create missing teams in batch
@@ -307,7 +314,7 @@ export async function syncEmployees(
           })
           .where(eq(users.id, existing.id))
       } else {
-        const teamId = emp.teamName ? teamByName.get(emp.teamName) ?? null : null
+        const teamId = emp.teamName ? (teamByName.get(emp.teamName) ?? null) : null
         const [created] = await db
           .insert(users)
           .values({
@@ -436,7 +443,12 @@ export async function syncPoints(
 
     if (!timestampRaw || !nameRaw) {
       failed++
-      errors.push({ tab: tabName, row: i + 2, name: nameRaw ?? '', error: 'Missing timestamp or name' })
+      errors.push({
+        tab: tabName,
+        row: i + 2,
+        name: nameRaw ?? '',
+        error: 'Missing timestamp or name',
+      })
       continue
     }
 
@@ -496,16 +508,9 @@ export async function syncPoints(
       createdMinute: sql<string>`to_char(${achievementPoints.createdAt}, 'YYYY-MM-DD HH24:MI')`,
     })
     .from(achievementPoints)
-    .where(
-      and(
-        eq(achievementPoints.branchId, branchId),
-        eq(achievementPoints.categoryId, cat.id),
-      ),
-    )
+    .where(and(eq(achievementPoints.branchId, branchId), eq(achievementPoints.categoryId, cat.id)))
 
-  const dedupSet = new Set(
-    existingPoints.map((p) => `${p.userId}|${p.reason}|${p.createdMinute}`),
-  )
+  const dedupSet = new Set(existingPoints.map((p) => `${p.userId}|${p.reason}|${p.createdMinute}`))
 
   // 6. Insert new points in batches
   const toInsert: Array<{
@@ -526,11 +531,16 @@ export async function syncPoints(
     const user = userCache.byName.get(row.name.toLowerCase())
     if (!user) {
       failed++
-      errors.push({ tab: tabName, row: row.rowIdx + 2, name: row.name, error: `Could not find or create user: ${row.name}` })
+      errors.push({
+        tab: tabName,
+        row: row.rowIdx + 2,
+        name: row.name,
+        error: `Could not find or create user: ${row.name}`,
+      })
       continue
     }
 
-    const createdMinute = `${row.createdAt.getFullYear()}-${String(row.createdAt.getMonth() + 1).padStart(2, '0')}-${String(row.createdAt.getDate()).padStart(2, '0')} ${String(row.createdAt.getHours()).padStart(2, '0')}:${String(row.createdAt.getMinutes()).padStart(2, '0')}`
+    const createdMinute = `${row.createdAt.getUTCFullYear()}-${String(row.createdAt.getUTCMonth() + 1).padStart(2, '0')}-${String(row.createdAt.getUTCDate()).padStart(2, '0')} ${String(row.createdAt.getUTCHours()).padStart(2, '0')}:${String(row.createdAt.getUTCMinutes()).padStart(2, '0')}`
     const dedupKey = `${user.id}|${row.reason}|${createdMinute}`
 
     if (dedupSet.has(dedupKey)) {
@@ -538,8 +548,7 @@ export async function syncPoints(
       continue
     }
 
-    const submittedBy =
-      categoryCode === 'BINTANG' ? user.id : (adminUser?.id ?? user.id)
+    const submittedBy = categoryCode === 'BINTANG' ? user.id : (adminUser?.id ?? user.id)
 
     toInsert.push({
       branchId,
@@ -562,9 +571,7 @@ export async function syncPoints(
   // Batch insert
   for (let i = 0; i < toInsert.length; i += BATCH_SIZE) {
     try {
-      await db
-        .insert(achievementPoints)
-        .values(toInsert.slice(i, i + BATCH_SIZE))
+      await db.insert(achievementPoints).values(toInsert.slice(i, i + BATCH_SIZE))
     } catch (err) {
       // If batch fails, fall back to individual inserts for this chunk
       for (const row of toInsert.slice(i, i + BATCH_SIZE)) {
@@ -613,9 +620,7 @@ export async function syncRedemptions(
   const existingRewards = await db
     .select({ id: rewards.id, name: rewards.name, pointCost: rewards.pointCost })
     .from(rewards)
-  const rewardMap = new Map(
-    existingRewards.map((r) => [`${r.name}|${r.pointCost}`, r.id]),
-  )
+  const rewardMap = new Map(existingRewards.map((r) => [`${r.name}|${r.pointCost}`, r.id]))
 
   // 3. Pre-load existing redemptions for dedup (single query)
   const existingRedemptionRows = await db
@@ -652,7 +657,12 @@ export async function syncRedemptions(
 
     if (!timestampRaw || !nameRaw || !rewardRaw) {
       failed++
-      errors.push({ tab: tabName, row: i + 2, name: nameRaw ?? '', error: 'Missing required fields' })
+      errors.push({
+        tab: tabName,
+        row: i + 2,
+        name: nameRaw ?? '',
+        error: 'Missing required fields',
+      })
       continue
     }
 
@@ -760,7 +770,12 @@ export async function syncRedemptions(
 
     if (!user) {
       failed++
-      errors.push({ tab: tabName, row: row.rowIdx + 2, name: row.name, error: `Could not find or create user: ${row.name}` })
+      errors.push({
+        tab: tabName,
+        row: row.rowIdx + 2,
+        name: row.name,
+        error: `Could not find or create user: ${row.name}`,
+      })
       continue
     }
 
@@ -768,11 +783,16 @@ export async function syncRedemptions(
     const rewardId = rewardMap.get(rewardKey)
     if (!rewardId) {
       failed++
-      errors.push({ tab: tabName, row: row.rowIdx + 2, name: row.name, error: `Reward not found: ${row.reward.name}` })
+      errors.push({
+        tab: tabName,
+        row: row.rowIdx + 2,
+        name: row.name,
+        error: `Reward not found: ${row.reward.name}`,
+      })
       continue
     }
 
-    const createdMinute = `${row.createdAt.getFullYear()}-${String(row.createdAt.getMonth() + 1).padStart(2, '0')}-${String(row.createdAt.getDate()).padStart(2, '0')} ${String(row.createdAt.getHours()).padStart(2, '0')}:${String(row.createdAt.getMinutes()).padStart(2, '0')}`
+    const createdMinute = `${row.createdAt.getUTCFullYear()}-${String(row.createdAt.getUTCMonth() + 1).padStart(2, '0')}-${String(row.createdAt.getUTCDate()).padStart(2, '0')} ${String(row.createdAt.getUTCHours()).padStart(2, '0')}:${String(row.createdAt.getUTCMinutes()).padStart(2, '0')}`
     const dedupKey = `${user.id}|${rewardId}|${createdMinute}`
 
     if (redemptionDedupSet.has(dedupKey)) {
@@ -822,10 +842,7 @@ export async function syncRedemptions(
 
 // ── recalculatePointSummaries ───────────────────────────────────────
 
-export async function recalculatePointSummaries(
-  branchId: string,
-  tx?: DbClient,
-): Promise<void> {
+export async function recalculatePointSummaries(branchId: string, tx?: DbClient): Promise<void> {
   const db = getDb(tx)
 
   // Single SQL: compute all summaries and upsert in one shot
@@ -941,4 +958,25 @@ export async function runFullSync(
     failed: totalFailed,
     errors: allErrors,
   }
+}
+
+/**
+ * Wipe all transactional data for the branch, then re-import from the sheet.
+ * Use this to fix data issues or for initial setup.
+ * Once the app generates its own data, use runFullSync instead (incremental dedup).
+ */
+export async function runFullResync(
+  sheetIds: { points: string; employees: string },
+  tabNames: TabNames,
+  branchId: string,
+  startedBy?: string,
+  tx?: DbClient,
+) {
+  const db = getDb(tx ?? defaultDb)
+
+  await db.delete(redemptions).where(eq(redemptions.branchId, branchId))
+  await db.delete(achievementPoints).where(eq(achievementPoints.branchId, branchId))
+  await db.delete(pointSummaries).where(eq(pointSummaries.branchId, branchId))
+
+  return runFullSync(sheetIds, tabNames, branchId, startedBy, tx)
 }

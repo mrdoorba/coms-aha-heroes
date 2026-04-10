@@ -276,6 +276,16 @@ function EmployeeDetailPage() {
               <TableHead className="text-muted-foreground text-[13px] font-bold tracking-wider whitespace-nowrap uppercase">
                 {m.employee_detail_col_date()}
               </TableHead>
+              {tab === 'PENALTI' && (
+                <>
+                  <TableHead className="text-muted-foreground text-[13px] font-bold tracking-wider whitespace-nowrap uppercase">
+                    {m.employee_detail_col_level()}
+                  </TableHead>
+                  <TableHead className="text-muted-foreground text-[13px] font-bold tracking-wider whitespace-nowrap uppercase">
+                    {m.employee_detail_col_kitta()}
+                  </TableHead>
+                </>
+              )}
               <TableHead className="text-muted-foreground text-[13px] font-bold tracking-wider whitespace-nowrap uppercase">
                 {m.employee_detail_col_team()}
               </TableHead>
@@ -297,7 +307,7 @@ function EmployeeDetailPage() {
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i} className="border-border/50 border-b">
-                  {Array.from({ length: 6 }).map((_, j) => (
+                  {Array.from({ length: tab === 'PENALTI' ? 8 : 6 }).map((_, j) => (
                     <TableCell key={j}>
                       <div className="bg-primary/8 h-4 w-24 animate-pulse rounded" />
                     </TableCell>
@@ -306,7 +316,7 @@ function EmployeeDetailPage() {
               ))
             ) : currentPoints.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="py-16">
+                <TableCell colSpan={tab === 'PENALTI' ? 8 : 6} className="py-16">
                   <div className="flex flex-col items-center gap-3 text-center">
                     <div className="bg-primary/8 flex h-14 w-14 items-center justify-center rounded-full">
                       <Star className="text-primary/50 h-6 w-6" />
@@ -326,6 +336,16 @@ function EmployeeDetailPage() {
                   <TableCell className="text-foreground text-sm">
                     {formatDate(point.createdAt)}
                   </TableCell>
+                  {tab === 'PENALTI' && (
+                    <>
+                      <TableCell className="text-destructive text-sm font-semibold">
+                        {point.points}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
+                        {point.kittaComponent ?? '-'}
+                      </TableCell>
+                    </>
+                  )}
                   <TableCell className="text-muted-foreground text-sm">
                     {employee.teamName ?? '-'}
                   </TableCell>
