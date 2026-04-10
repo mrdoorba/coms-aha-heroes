@@ -85,9 +85,9 @@ export function buildHeaderIndex(
 
 export function parseTimestamp(value: string): Date {
   // 1. Try M/D/YYYY H:MM:SS format (Google Form timestamps)
-  const match = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2}):(\d{2})$/)
-  if (match) {
-    const [, month, day, year, hour, minute, second] = match
+  const matchDateTime = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2}):(\d{2})$/)
+  if (matchDateTime) {
+    const [, month, day, year, hour, minute, second] = matchDateTime
     return new Date(
       Date.UTC(
         Number(year),
@@ -100,17 +100,23 @@ export function parseTimestamp(value: string): Date {
     )
   }
 
-  // 2. Try Google Sheets serial number (e.g. 45386.08680 = date + fractional day)
-  //    UNFORMATTED_VALUE returns dates as serial numbers (days since Dec 30, 1899)
+  // 2. Try M/D/YYYY date-only format (FORMATTED_VALUE for date-only cells)
+  const matchDateOnly = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
+  if (matchDateOnly) {
+    const [, month, day, year] = matchDateOnly
+    return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)))
+  }
+
+  // 3. Try Google Sheets serial number (e.g. 45386.08680 = date + fractional day)
+  //    Fallback for UNFORMATTED_VALUE which returns dates as serial numbers
   const num = Number(value)
   if (!isNaN(num) && num > 25000 && num < 100000) {
-    // Google Sheets epoch: Dec 30, 1899
     const SHEETS_EPOCH = Date.UTC(1899, 11, 30) // Dec 30, 1899
     const MS_PER_DAY = 86_400_000
     return new Date(SHEETS_EPOCH + num * MS_PER_DAY)
   }
 
-  // 3. Fallback: let JS Date parse it
+  // 4. Fallback: let JS Date parse it (handles "4 Apr 2024", ISO, etc.)
   const fallback = new Date(value)
   if (!isNaN(fallback.getTime())) return fallback
   throw new Error(`Cannot parse timestamp: "${value}"`)
@@ -515,12 +521,21 @@ export async function syncPoints(
     .select({
       userId: achievementPoints.userId,
       reason: achievementPoints.reason,
+      points: achievementPoints.points,
       createdSecond: sql<string>`to_char(${achievementPoints.createdAt}, 'YYYY-MM-DD HH24:MI:SS')`,
     })
     .from(achievementPoints)
     .where(and(eq(achievementPoints.branchId, branchId), eq(achievementPoints.categoryId, cat.id)))
 
-  const dedupSet = new Set(existingPoints.map((p) => `${p.userId}|${p.reason}|${p.createdSecond}`))
+  // Count occurrences per dedup key already in the DB
+  const dbCounts = new Map<string, number>()
+  for (const p of existingPoints) {
+    const key = `${p.userId}|${p.reason}|${p.points}|${p.createdSecond}`
+    dbCounts.set(key, (dbCounts.get(key) ?? 0) + 1)
+  }
+
+  // Track how many times each key appears in this sheet batch
+  const sheetCounts = new Map<string, number>()
 
   // 6. Insert new points in batches
   const toInsert: Array<{
@@ -551,9 +566,13 @@ export async function syncPoints(
     }
 
     const createdSecond = `${row.createdAt.getUTCFullYear()}-${String(row.createdAt.getUTCMonth() + 1).padStart(2, '0')}-${String(row.createdAt.getUTCDate()).padStart(2, '0')} ${String(row.createdAt.getUTCHours()).padStart(2, '0')}:${String(row.createdAt.getUTCMinutes()).padStart(2, '0')}:${String(row.createdAt.getUTCSeconds()).padStart(2, '0')}`
-    const dedupKey = `${user.id}|${row.reason}|${createdSecond}`
+    const dedupKey = `${user.id}|${row.reason}|${row.points}|${createdSecond}`
 
-    if (dedupSet.has(dedupKey)) {
+    const seenInSheet = (sheetCounts.get(dedupKey) ?? 0) + 1
+    sheetCounts.set(dedupKey, seenInSheet)
+
+    // Only skip if DB already has enough copies of this entry
+    if (seenInSheet <= (dbCounts.get(dedupKey) ?? 0)) {
       processed++
       continue
     }
@@ -574,7 +593,6 @@ export async function syncPoints(
       updatedAt: new Date(),
     })
 
-    dedupSet.add(dedupKey) // prevent dupes within same batch
     processed++
   }
 

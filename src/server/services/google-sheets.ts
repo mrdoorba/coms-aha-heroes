@@ -47,7 +47,7 @@ export async function readSheet(
   const response = await client.spreadsheets.values.get({
     spreadsheetId: sheetId,
     range: fullRange,
-    valueRenderOption: 'UNFORMATTED_VALUE',
+    valueRenderOption: 'FORMATTED_VALUE',
     dateTimeRenderOption: 'FORMATTED_STRING',
   })
 
