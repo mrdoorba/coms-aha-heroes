@@ -162,6 +162,10 @@
   "poin_aha_form_submit": "Submit AHA Points",
 
   "leaderboard_all_teams": "All Teams",
+  "leaderboard_all_time": "All Time",
+  "leaderboard_last_months": "Last {count} months",
+  "leaderboard_last_month": "Last month",
+  "leaderboard_penalty": "Penalty",
 
   "notifications_mark_all_read": "Mark all read",
   "notifications_empty": "No notifications yet",

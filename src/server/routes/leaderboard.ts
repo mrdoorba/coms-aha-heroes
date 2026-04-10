@@ -8,19 +8,26 @@ type Ctx = { authUser: AuthUser }
 export const leaderboardRoute = new Elysia({ prefix: '/leaderboard' })
 
   // GET /leaderboard — ranked list by bintang or poin_aha
-  .get('/', async ({ query, ...c }) => {
-    const { authUser: actor } = c as unknown as Ctx
+  .get(
+    '/',
+    async ({ query, ...c }) => {
+      const { authUser: actor } = c as unknown as Ctx
 
-    const result = await leaderboardService.getLeaderboard(query, { actor })
+      const result = await leaderboardService.getLeaderboard(query, { actor })
 
-    return {
-      success: true,
-      data: result.entries,
-      error: null,
-      meta: result.meta,
-    }
-  }, { query: t.Object({
-    type: t.Union([t.Literal('bintang'), t.Literal('poin_aha')], { default: 'bintang' }),
-    teamId: t.Optional(t.String({ format: 'uuid' })),
-    ...paginationQuery,
-  }) })
+      return {
+        success: true,
+        data: result.entries,
+        error: null,
+        meta: result.meta,
+      }
+    },
+    {
+      query: t.Object({
+        type: t.Union([t.Literal('bintang'), t.Literal('poin_aha')], { default: 'bintang' }),
+        teamId: t.Optional(t.String({ format: 'uuid' })),
+        months: t.Optional(t.Number({ minimum: 1, maximum: 12 })),
+        ...paginationQuery,
+      }),
+    },
+  )

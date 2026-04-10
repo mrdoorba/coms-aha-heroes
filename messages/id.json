@@ -162,6 +162,10 @@
   "poin_aha_form_submit": "Kirim Poin AHA",
 
   "leaderboard_all_teams": "Semua Tim",
+  "leaderboard_all_time": "Semua Waktu",
+  "leaderboard_last_months": "{count} bulan terakhir",
+  "leaderboard_last_month": "Bulan terakhir",
+  "leaderboard_penalty": "Penalti",
 
   "notifications_mark_all_read": "Tandai semua dibaca",
   "notifications_empty": "Belum ada notifikasi",
