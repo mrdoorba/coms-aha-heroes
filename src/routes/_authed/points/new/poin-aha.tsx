@@ -244,7 +244,7 @@ function PoinAhaForm() {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-[#325FEC] hover:bg-[#1D388B] text-white font-semibold h-11 rounded-xl shadow-md transition-colors"
+            className="w-full bg-primary hover:bg-primary/80 text-primary-foreground font-semibold h-11 rounded-xl shadow-md transition-colors"
           >
             {isSubmitting ? m.common_submitting() : m.poin_aha_form_submit()}
           </Button>

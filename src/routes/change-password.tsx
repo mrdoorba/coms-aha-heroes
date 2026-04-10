@@ -74,11 +74,11 @@ function ChangePasswordPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#1D388B] to-[#0F0E7F]">
-      <div className="w-full max-w-sm rounded-xl bg-white p-8 shadow-lg">
-        <h1 className="text-center font-manrope text-xl font-bold text-[#1D388B]">
+      <div className="w-full max-w-sm rounded-xl bg-card p-8 shadow-lg">
+        <h1 className="text-center font-manrope text-xl font-bold text-foreground">
           {m.change_password_title()}
         </h1>
-        <p className="mt-1 text-center text-sm text-gray-500">
+        <p className="mt-1 text-center text-sm text-muted-foreground">
           {m.change_password_subtitle()}
         </p>
 
@@ -91,7 +91,7 @@ function ChangePasswordPage() {
           <div>
             <label
               htmlFor="currentPassword"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-foreground"
             >
               {m.change_password_current()}
             </label>
@@ -102,12 +102,12 @@ function ChangePasswordPage() {
                 required
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 pr-10 text-sm focus:border-[#325FEC] focus:outline-none focus:ring-1 focus:ring-[#325FEC]"
+                className="block w-full rounded-md border border-border bg-background px-3 py-2 pr-10 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               />
               <button
                 type="button"
                 onClick={() => setShowCurrent(!showCurrent)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 aria-label={showCurrent ? m.login_hide_password() : m.login_show_password()}
               >
                 {showCurrent ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -117,7 +117,7 @@ function ChangePasswordPage() {
           <div>
             <label
               htmlFor="newPassword"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-foreground"
             >
               {m.change_password_new()}
             </label>
@@ -129,12 +129,12 @@ function ChangePasswordPage() {
                 minLength={8}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 pr-10 text-sm focus:border-[#325FEC] focus:outline-none focus:ring-1 focus:ring-[#325FEC]"
+                className="block w-full rounded-md border border-border bg-background px-3 py-2 pr-10 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               />
               <button
                 type="button"
                 onClick={() => setShowNew(!showNew)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 aria-label={showNew ? m.login_hide_password() : m.login_show_password()}
               >
                 {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -146,18 +146,18 @@ function ChangePasswordPage() {
                   {[1, 2, 3, 4].map((i) => (
                     <div
                       key={i}
-                      className={`h-1 flex-1 rounded-full ${i <= strength.score ? strength.color : 'bg-gray-200'}`}
+                      className={`h-1 flex-1 rounded-full ${i <= strength.score ? strength.color : 'bg-muted'}`}
                     />
                   ))}
                 </div>
-                <p className="mt-1 text-xs text-gray-500">{getStrengthLabel(strength.score)}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{getStrengthLabel(strength.score)}</p>
               </div>
             )}
           </div>
           <div>
             <label
               htmlFor="confirmPassword"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-foreground"
             >
               {m.change_password_confirm()}
             </label>
@@ -168,16 +168,16 @@ function ChangePasswordPage() {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className={`block w-full rounded-md border px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-1 ${
+                className={`block w-full rounded-md border px-3 py-2 pr-10 text-sm bg-background text-foreground focus:outline-none focus:ring-1 ${
                   !passwordsMatch
-                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                    : 'border-gray-300 focus:border-[#325FEC] focus:ring-[#325FEC]'
+                    ? 'border-destructive focus:border-destructive focus:ring-destructive'
+                    : 'border-border focus:border-primary focus:ring-primary'
                 }`}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirm(!showConfirm)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 aria-label={showConfirm ? m.login_hide_password() : m.login_show_password()}
               >
                 {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -190,7 +190,7 @@ function ChangePasswordPage() {
           <button
             type="submit"
             disabled={loading || !passwordsMatch}
-            className="w-full rounded-md bg-[#325FEC] px-4 py-2 text-sm font-medium text-white hover:bg-[#2850d0] disabled:opacity-50"
+            className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/80 disabled:opacity-50"
           >
             {loading ? m.change_password_changing() : m.change_password_title()}
           </button>

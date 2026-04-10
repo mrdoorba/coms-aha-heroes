@@ -56,8 +56,8 @@ function getActionBadgeClass(action: string): string {
 }
 
 function getRoleBadgeClass(role: string | null): string {
-  if (role === 'admin') return 'bg-[#1D388B]/10 text-[#1D388B] border-[#1D388B]/20'
-  if (role === 'hr') return 'bg-[#325FEC]/10 text-[#325FEC] border-[#325FEC]/20'
+  if (role === 'admin') return 'bg-primary/10 text-primary border-primary/20'
+  if (role === 'hr') return 'bg-primary/10 text-primary border-primary/20'
   return 'bg-gray-100 text-gray-600 border-gray-200'
 }
 
@@ -77,7 +77,7 @@ function DetailsCell({ details }: { details: Record<string, unknown> | null }) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="text-xs text-[#325FEC] underline underline-offset-2 hover:text-[#1D388B] transition-colors"
+        className="text-xs text-primary underline underline-offset-2 hover:text-primary/70 transition-colors"
       >
         {open ? m.audit_hide() : m.audit_show()}
       </button>
@@ -109,10 +109,10 @@ function AuditLogSkeleton() {
           <div className="h-3 w-44 rounded bg-muted" />
         </div>
       </div>
-      <div className="h-32 rounded-xl border border-border bg-white" />
+      <div className="h-32 rounded-xl border border-border bg-card" />
       <div className="space-y-2">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-14 rounded-xl border border-border bg-white" />
+          <div key={i} className="h-14 rounded-xl border border-border bg-card" />
         ))}
       </div>
     </div>
@@ -141,7 +141,7 @@ function AuditLogPage() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center px-4">
         <Shield className="h-12 w-12 text-muted-foreground/40 mb-3" />
-        <h2 className="text-lg font-semibold text-[#1D388B]">{m.common_access_denied()}</h2>
+        <h2 className="text-lg font-semibold text-foreground">{m.common_access_denied()}</h2>
         <p className="text-sm text-muted-foreground mt-1">{m.common_no_permission()}</p>
       </div>
     )
@@ -202,17 +202,17 @@ function AuditLogPage() {
     <div className="max-w-4xl mx-auto p-4 space-y-6 pb-12">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#1D388B]/10">
-          <Shield className="h-5 w-5 text-[#1D388B]" />
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+          <Shield className="h-5 w-5 text-foreground" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-[#1D388B]">{m.audit_title()}</h1>
+          <h1 className="text-xl font-bold text-foreground">{m.audit_title()}</h1>
           <p className="text-xs text-muted-foreground">{m.audit_subtitle()}</p>
         </div>
       </div>
 
       {/* Filter bar */}
-      <div className="rounded-xl border border-[#325FEC]/8 bg-white shadow-[0_2px_12px_rgba(29,56,139,0.07)] p-4 space-y-4">
+      <div className="rounded-xl border border-border bg-card shadow-card p-4 space-y-4">
         {/* Action group pills */}
         <div className="flex flex-wrap gap-2">
           {ACTION_GROUP_VALUES.map((val) => {
@@ -230,8 +230,8 @@ function AuditLogPage() {
                 onClick={() => handleActionGroup(val)}
                 className={`rounded-full px-3 py-1 text-xs font-medium transition-colors border ${
                   actionGroup === val
-                    ? 'bg-[#325FEC] text-white border-[#325FEC]'
-                    : 'bg-[#325FEC]/5 text-[#1D388B]/60 border-[#325FEC]/15 hover:border-[#325FEC]/40 hover:text-[#325FEC] hover:bg-[#325FEC]/10'
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-primary/5 text-muted-foreground border-border hover:border-primary/40 hover:text-primary hover:bg-primary/10'
                 }`}
               >
                 {label}
@@ -278,7 +278,7 @@ function AuditLogPage() {
             size="sm"
             onClick={handleSearch}
             disabled={isLoading}
-            className="bg-[#325FEC] hover:bg-[#1D388B] text-white h-9 px-5"
+            className="bg-primary hover:bg-primary/80 text-primary-foreground h-9 px-5"
           >
             {isLoading ? m.common_loading() : m.audit_apply_filters()}
           </Button>
@@ -300,10 +300,10 @@ function AuditLogPage() {
       ) : (
         <>
           {/* Desktop table */}
-          <div className="hidden md:block rounded-xl border border-[#325FEC]/8 shadow-[0_2px_12px_rgba(29,56,139,0.07)] overflow-hidden">
+          <div className="hidden md:block rounded-xl border border-border shadow-card overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow className="bg-[#325FEC]/4">
+                <TableRow className="bg-muted/60">
                   <TableHead className="text-xs font-semibold text-muted-foreground w-36">{m.audit_col_timestamp()}</TableHead>
                   <TableHead className="text-xs font-semibold text-muted-foreground">{m.audit_col_actor()}</TableHead>
                   <TableHead className="text-xs font-semibold text-muted-foreground">{m.audit_col_action()}</TableHead>

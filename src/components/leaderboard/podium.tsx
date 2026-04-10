@@ -36,7 +36,7 @@ const RANK_STYLES: Record<number, {
     podiumBg: 'bg-gradient-to-t from-[#9a9a9a] to-[#d0d0d0]',
     podiumHeight: 'h-14',
     scoreBg: 'bg-[#C0C0C0]/15',
-    scoreText: 'text-[#666] font-bold',
+    scoreText: 'text-muted-foreground font-bold',
     nameBg: '',
     glow: '',
   },
@@ -89,7 +89,7 @@ function PodiumItem({
         </div>
       )}
       {entry.rank !== 1 && (
-        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white border-2 border-[#C0C0C0] shadow-sm mb-0.5">
+        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-card border-2 border-[#C0C0C0] shadow-sm mb-0.5">
           <span className="text-xs font-bold text-muted-foreground">{entry.rank}</span>
         </div>
       )}
@@ -97,7 +97,7 @@ function PodiumItem({
       {/* Avatar */}
       <div
         className={cn(
-          'flex items-center justify-center rounded-full bg-[#325FEC]/10 overflow-hidden shrink-0',
+          'flex items-center justify-center rounded-full bg-primary/10 overflow-hidden shrink-0',
           avatarSize,
           styles.avatarRing,
           styles.glow,
@@ -114,7 +114,7 @@ function PodiumItem({
             decoding="async"
           />
         ) : (
-          <span className="font-bold text-[#325FEC] text-lg">{initials}</span>
+          <span className="font-bold text-primary text-lg">{initials}</span>
         )}
       </div>
 
@@ -142,7 +142,7 @@ export function Podium({ entries, scoreLabel: _scoreLabel }: PodiumProps) {
   if (!rank1 && !rank2 && !rank3) return null
 
   return (
-    <div className="mx-4 rounded-2xl bg-gradient-to-b from-[#EDF1FA] to-white border border-[#325FEC]/8 px-4 pt-6 pb-0 overflow-hidden shadow-[0_2px_12px_rgba(29,56,139,0.08)]">
+    <div className="mx-4 rounded-2xl bg-gradient-to-b from-muted to-card border border-border px-4 pt-6 pb-0 overflow-hidden shadow-card">
       <div className="flex items-end justify-center gap-3">
         {rank2 ? <PodiumItem entry={rank2} size="md" /> : <div className="flex-1" />}
         {rank1 ? <PodiumItem entry={rank1} size="lg" /> : <div className="flex-1" />}

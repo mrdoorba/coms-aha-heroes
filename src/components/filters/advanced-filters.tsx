@@ -32,7 +32,7 @@ export function AdvancedFilters({
           size="sm"
           className={cn(
             'h-8 text-xs gap-1',
-            hasActiveFilters && 'border-[#325FEC] text-[#325FEC]',
+            hasActiveFilters && 'border-primary text-primary',
           )}
           onClick={() => setIsOpen((prev) => !prev)}
         >
@@ -62,7 +62,7 @@ export function AdvancedFilters({
       </div>
 
       {isOpen && (
-        <div className="grid gap-3 rounded-lg border border-border bg-white p-3 sm:grid-cols-2">
+        <div className="grid gap-3 rounded-lg border border-border bg-card p-3 sm:grid-cols-2">
           {children.map((child) => (
             <div key={child.key}>{child.node}</div>
           ))}

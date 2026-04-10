@@ -14,9 +14,9 @@ type PointCardProps = {
 }
 
 const POINT_VALUE_STYLE: Record<PointCategoryCode, string> = {
-  PENALTI: 'text-[#C73E3E] bg-[#C73E3E]/8',
+  PENALTI: 'text-destructive bg-destructive/8',
   BINTANG: 'text-[#a07700] bg-[#F4C144]/12',
-  POIN_AHA: 'text-[#325FEC] bg-[#325FEC]/8',
+  POIN_AHA: 'text-primary bg-primary/8',
 }
 
 export function PointCard({
@@ -35,7 +35,7 @@ export function PointCard({
     <Link
       to="/points/$id"
       params={{ id }}
-      className="tap-active flex items-center gap-3 rounded-2xl bg-white border border-[#325FEC]/8 px-4 py-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(29,56,139,0.10)] group"
+      className="tap-active flex items-center gap-3 rounded-2xl bg-card border border-border px-4 py-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)] group"
     >
       <CategoryIcon code={categoryCode} size="md" />
 

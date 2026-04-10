@@ -68,9 +68,9 @@ function DashboardPage() {
             <Link
               to="/points"
               search={{ status: 'pending' }}
-              className="group flex items-center justify-between rounded-xl bg-white border border-[#F4C144]/30 px-4 py-3 shadow-[0_2px_12px_rgba(244,193,68,0.15)] hover:shadow-[0_4px_20px_rgba(244,193,68,0.25)] hover:border-[#F4C144]/60 transition-all duration-200"
+              className="group flex items-center justify-between rounded-xl bg-card border border-[#F4C144]/30 px-4 py-3 shadow-[0_2px_12px_rgba(244,193,68,0.15)] hover:shadow-[0_4px_20px_rgba(244,193,68,0.25)] hover:border-[#F4C144]/60 transition-all duration-200"
             >
-              <span className="flex items-center gap-2.5 text-sm font-semibold text-[#1D388B]">
+              <span className="flex items-center gap-2.5 text-sm font-semibold text-foreground">
                 <span className="pulse-gold flex h-8 w-8 items-center justify-center rounded-full bg-[#F4C144]/15">
                   <Clock className="h-4 w-4 text-[#F4C144]" />
                 </span>
@@ -130,14 +130,14 @@ function DashboardPage() {
 
         {/* Recent Activity — 3 cols */}
         <div className="md:col-span-3">
-          <div className="overflow-hidden rounded-2xl bg-white border border-[#325FEC]/10 shadow-[0_2px_12px_rgba(50,95,236,0.10)] p-4">
+          <div className="overflow-hidden rounded-2xl bg-card border border-border p-4 shadow-card">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-[13px] font-bold uppercase tracking-wider text-[#1D388B]/60">
+              <h2 className="text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
                 {m.dashboard_recent_activity()}
               </h2>
               <Link
                 to="/points"
-                className="text-xs font-semibold text-[#325FEC] hover:underline flex items-center gap-0.5"
+                className="text-xs font-semibold text-primary hover:underline flex items-center gap-0.5"
               >
                 {m.mini_leaderboard_view_all()}
                 <ChevronRight className="h-3 w-3" />

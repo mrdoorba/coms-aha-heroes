@@ -47,8 +47,8 @@ function AuthedLayout() {
 
 function AuthedPending() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-white">
-      <span className="text-lg font-semibold tracking-tight text-[#1D388B]">AHA HEROES</span>
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background">
+      <span className="text-lg font-semibold tracking-tight text-foreground">AHA HEROES</span>
       <Loader2 className="size-6 animate-spin text-muted-foreground" />
     </div>
   )

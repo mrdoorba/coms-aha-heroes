@@ -46,10 +46,10 @@ export function ChallengeDialog({ pointId, trigger }: ChallengeDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={trigger ?? <Button variant="outline" className="text-[#6D50B8] border-[#6D50B8] hover:bg-purple-50">Challenge</Button>} />
+      <DialogTrigger render={trigger ?? <Button variant="outline" className="text-[#6D50B8] border-[#6D50B8] hover:bg-purple-50 dark:hover:bg-purple-900/20">Challenge</Button>} />
       <DialogContent className="sm:max-w-[425px] rounded-[20px]">
         <DialogHeader>
-          <DialogTitle className="text-[#1D388B]">{m.challenge_title()}</DialogTitle>
+          <DialogTitle>{m.challenge_title()}</DialogTitle>
           <DialogDescription>
             {m.challenge_description()}
           </DialogDescription>
@@ -65,8 +65,8 @@ export function ChallengeDialog({ pointId, trigger }: ChallengeDialogProps) {
               className="min-h-[120px] rounded-xl"
             />
           </div>
-          <div className="p-3 rounded-lg bg-blue-50 border border-blue-100">
-            <p className="text-xs text-blue-700 leading-relaxed">
+          <div className="p-3 rounded-lg bg-blue-50 border border-blue-100 dark:bg-blue-900/20 dark:border-blue-800/50">
+            <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
               <strong>Note:</strong> {m.challenge_note()}
             </p>
           </div>
@@ -76,7 +76,7 @@ export function ChallengeDialog({ pointId, trigger }: ChallengeDialogProps) {
             type="submit"
             onClick={onSubmit}
             disabled={isSubmitting || !reason.trim()}
-            className="w-full bg-[#325FEC] hover:bg-blue-700 rounded-xl"
+            className="w-full bg-primary hover:bg-primary/80 rounded-xl"
           >
             {isSubmitting ? m.common_submitting() : m.challenge_submit()}
           </Button>

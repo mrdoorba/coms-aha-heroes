@@ -25,17 +25,17 @@ export function LeaderboardRow({ entry, isCurrentUser }: LeaderboardRowProps) {
       className={cn(
         'tap-active flex items-center gap-3 rounded-2xl border px-4 py-3 transition-all duration-200 hover:-translate-y-0.5',
         isCurrentUser
-          ? 'border-[#325FEC]/25 bg-gradient-to-r from-[#325FEC]/8 to-transparent shadow-[0_2px_12px_rgba(50,95,236,0.12)]'
-          : 'border-[#325FEC]/8 bg-white hover:shadow-[0_4px_16px_rgba(29,56,139,0.10)]',
+          ? 'border-primary/25 bg-gradient-to-r from-primary/8 to-transparent shadow-[0_2px_12px_rgba(50,95,236,0.12)]'
+          : 'border-border bg-card hover:shadow-[0_4px_16px_rgba(0,0,0,0.10)]',
       )}
     >
       {/* Rank */}
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#EDF1FA] text-xs font-bold text-muted-foreground">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
         {entry.rank}
       </span>
 
       {/* Avatar */}
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#325FEC]/10 overflow-hidden">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 overflow-hidden">
         {entry.avatarUrl ? (
           <img
             src={entry.avatarUrl}
@@ -47,7 +47,7 @@ export function LeaderboardRow({ entry, isCurrentUser }: LeaderboardRowProps) {
             decoding="async"
           />
         ) : (
-          <span className="text-sm font-bold text-[#325FEC]">{initials}</span>
+          <span className="text-sm font-bold text-primary">{initials}</span>
         )}
       </div>
 
@@ -62,7 +62,7 @@ export function LeaderboardRow({ entry, isCurrentUser }: LeaderboardRowProps) {
       </div>
 
       {/* Score */}
-      <span className="shrink-0 rounded-xl bg-[#325FEC]/8 px-3 py-1 text-sm font-extrabold text-[#325FEC]">
+      <span className="shrink-0 rounded-xl bg-primary/8 px-3 py-1 text-sm font-extrabold text-primary">
         {entry.score}
       </span>
     </div>

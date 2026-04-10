@@ -57,17 +57,17 @@ function formatRelativeTime(date: Date): string {
 function NotificationIcon({ type }: { type: string }) {
   switch (type) {
     case 'point_received':
-      return <Award className="h-5 w-5 text-[#22C55E]" />
+      return <Award className="h-5 w-5 text-emerald-500" />
     case 'point_pending':
       return <Clock className="h-5 w-5 text-[#F4C144]" />
     case 'point_approved':
-      return <CheckCircle className="h-5 w-5 text-[#22C55E]" />
+      return <CheckCircle className="h-5 w-5 text-emerald-500" />
     case 'point_rejected':
-      return <XCircle className="h-5 w-5 text-[#C73E3E]" />
+      return <XCircle className="h-5 w-5 text-destructive" />
     case 'point_needs_approval':
       return <AlertCircle className="h-5 w-5 text-[#F4C144]" />
     default:
-      return <Bell className="h-5 w-5 text-[#325FEC]/50" />
+      return <Bell className="h-5 w-5 text-primary/50" />
   }
 }
 
@@ -162,18 +162,18 @@ function NotificationsPage() {
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#325FEC]/10 shrink-0">
-            <Bell className="h-5 w-5 text-[#325FEC]" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 shrink-0">
+            <Bell className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-xl font-extrabold text-[#1D388B]">{m.nav_notifications()}</h1>
-            <p className="text-xs font-medium text-[#1D388B]/50">{meta.total} {m.nav_notifications().toLowerCase()}</p>
+            <h1 className="text-xl font-extrabold text-foreground">{m.nav_notifications()}</h1>
+            <p className="text-xs font-medium text-muted-foreground">{meta.total} {m.nav_notifications().toLowerCase()}</p>
           </div>
         </div>
         <Button
           variant="outline"
           size="sm"
-          className="rounded-xl border-[#325FEC]/20 text-[#325FEC] hover:bg-[#325FEC]/8 hover:border-[#325FEC]/40 font-semibold text-xs min-h-[36px] transition-all duration-200"
+          className="rounded-xl border-border text-primary hover:bg-primary/8 hover:border-primary/40 font-semibold text-xs min-h-[36px] transition-all duration-200"
           onClick={handleMarkAllRead}
         >
           {m.notifications_mark_all_read()}
@@ -186,16 +186,16 @@ function NotificationsPage() {
             {Array.from({ length: 5 }).map((_, i) => (
               <div
                 key={i}
-                className="h-16 rounded-xl border border-[#325FEC]/8 bg-[#325FEC]/4 animate-pulse"
+                className="h-16 rounded-xl border border-border bg-primary/4 animate-pulse"
               />
             ))}
           </div>
         ) : notificationsList.length === 0 ? (
-          <div className="rounded-2xl border border-[#325FEC]/8 bg-white shadow-[0_2px_12px_rgba(29,56,139,0.07)] flex flex-col items-center justify-center py-16 text-center gap-3">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#325FEC]/8">
-              <Bell className="h-7 w-7 text-[#325FEC]/40" />
+          <div className="rounded-2xl border border-border bg-card shadow-card flex flex-col items-center justify-center py-16 text-center gap-3">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/8">
+              <Bell className="h-7 w-7 text-primary/40" />
             </div>
-            <p className="font-semibold text-[#1D388B]/60">{m.notifications_empty()}</p>
+            <p className="font-semibold text-muted-foreground">{m.notifications_empty()}</p>
           </div>
         ) : (
           notificationsList.map((notification) => (
@@ -207,15 +207,15 @@ function NotificationsPage() {
             >
               <div
                 className={cn(
-                  'flex items-start gap-3 rounded-xl border border-[#325FEC]/8 px-4 py-3 transition-colors hover:bg-[#325FEC]/4 bg-white',
-                  !notification.isRead && 'bg-[#325FEC]/5 border-[#325FEC]/15',
+                  'flex items-start gap-3 rounded-xl border border-border px-4 py-3 transition-colors hover:bg-primary/4 bg-card',
+                  !notification.isRead && 'bg-primary/5 border-primary/15',
                 )}
               >
                 <div className="mt-0.5 shrink-0">
                   <NotificationIcon type={notification.type} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium leading-snug">{notification.title}</p>
+                  <p className="text-sm font-medium leading-snug text-foreground">{notification.title}</p>
                   {notification.body && (
                     <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
                       {notification.body}
@@ -226,7 +226,7 @@ function NotificationsPage() {
                   </p>
                 </div>
                 {!notification.isRead && (
-                  <div className="mt-1.5 shrink-0 h-2 w-2 rounded-full bg-[#325FEC]" />
+                  <div className="mt-1.5 shrink-0 h-2 w-2 rounded-full bg-primary" />
                 )}
               </div>
             </button>
@@ -241,11 +241,11 @@ function NotificationsPage() {
             size="sm"
             disabled={page <= 1 || isLoading}
             onClick={() => loadPage(page - 1)}
-            className="rounded-xl border-[#325FEC]/15 hover:bg-[#325FEC]/6 hover:text-[#325FEC] min-h-[36px]"
+            className="rounded-xl border-border hover:bg-primary/6 hover:text-primary min-h-[36px]"
           >
             {m.common_previous()}
           </Button>
-          <span className="rounded-xl bg-white border border-[#325FEC]/12 px-3 py-1.5 text-sm font-semibold text-[#1D388B]/60">
+          <span className="rounded-xl bg-card border border-border px-3 py-1.5 text-sm font-semibold text-muted-foreground">
             {m.common_page_of({ page: String(page), total: String(totalPages) })}
           </span>
           <Button
@@ -253,7 +253,7 @@ function NotificationsPage() {
             size="sm"
             disabled={page >= totalPages || isLoading}
             onClick={() => loadPage(page + 1)}
-            className="rounded-xl border-[#325FEC]/15 hover:bg-[#325FEC]/6 hover:text-[#325FEC] min-h-[36px]"
+            className="rounded-xl border-border hover:bg-primary/6 hover:text-primary min-h-[36px]"
           >
             {m.common_next()}
           </Button>

@@ -39,18 +39,18 @@ const RANK_NUM_STYLE: Record<number, string> = {
 
 export function MiniLeaderboard({ entries, currentUserId }: MiniLeaderboardProps) {
   return (
-    <div className="overflow-hidden rounded-2xl bg-white border border-[#F4C144]/15 shadow-[0_2px_12px_rgba(244,193,68,0.12)]">
+    <div className="overflow-hidden rounded-2xl bg-card border border-[#F4C144]/15 shadow-card">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[#325FEC]/8">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#F4C144]/15">
             <Trophy className="h-3.5 w-3.5 text-[#F4C144]" />
           </div>
-          <h3 className="text-sm font-bold text-[#1D388B]">{m.mini_leaderboard_title()}</h3>
+          <h3 className="text-sm font-bold text-foreground">{m.mini_leaderboard_title()}</h3>
         </div>
         <Link
           to="/leaderboard"
-          className="group flex items-center gap-0.5 rounded-lg px-2 py-1 text-xs font-semibold text-[#325FEC] hover:bg-[#325FEC]/8 transition-colors"
+          className="group flex items-center gap-0.5 rounded-lg px-2 py-1 text-xs font-semibold text-primary hover:bg-primary/8 transition-colors"
         >
           {m.mini_leaderboard_view_all()}
           <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
@@ -60,7 +60,7 @@ export function MiniLeaderboard({ entries, currentUserId }: MiniLeaderboardProps
       {entries.length === 0 ? (
         <p className="py-8 text-center text-sm text-muted-foreground">{m.common_no_data()}</p>
       ) : (
-        <ul className="divide-y divide-[#325FEC]/5">
+        <ul className="divide-y divide-border/50">
           {entries.map((entry) => {
             const isCurrentUser = entry.userId === currentUserId
             const medal = RANK_MEDAL[entry.rank]
@@ -71,8 +71,8 @@ export function MiniLeaderboard({ entries, currentUserId }: MiniLeaderboardProps
                 className={cn(
                   'tap-active flex items-center gap-2.5 px-4 py-2.5 transition-colors',
                   isCurrentUser
-                    ? 'bg-gradient-to-r from-[#325FEC]/6 to-transparent'
-                    : 'hover:bg-[#325FEC]/3',
+                    ? 'bg-gradient-to-r from-primary/6 to-transparent'
+                    : 'hover:bg-primary/4',
                 )}
               >
                 {/* Rank */}
@@ -82,7 +82,7 @@ export function MiniLeaderboard({ entries, currentUserId }: MiniLeaderboardProps
 
                 {/* Avatar */}
                 <div className={cn(
-                  'flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#325FEC]/10',
+                  'flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10',
                   medal?.ring,
                 )}>
                   {entry.avatarUrl ? (
@@ -96,7 +96,7 @@ export function MiniLeaderboard({ entries, currentUserId }: MiniLeaderboardProps
                       decoding="async"
                     />
                   ) : (
-                    <span className="text-[10px] font-bold text-[#325FEC]">{getInitials(entry.name)}</span>
+                    <span className="text-[10px] font-bold text-primary">{getInitials(entry.name)}</span>
                   )}
                 </div>
 
@@ -111,7 +111,7 @@ export function MiniLeaderboard({ entries, currentUserId }: MiniLeaderboardProps
                 </span>
 
                 {/* Score */}
-                <span className="shrink-0 rounded-lg bg-[#325FEC]/8 px-2 py-0.5 text-xs font-extrabold text-[#325FEC]">
+                <span className="shrink-0 rounded-lg bg-primary/8 px-2 py-0.5 text-xs font-extrabold text-primary">
                   {entry.score}
                 </span>
               </li>

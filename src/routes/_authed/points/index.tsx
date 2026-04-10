@@ -63,10 +63,10 @@ export const Route = createFileRoute('/_authed/points/')({
 })
 
 const TAB_STYLES: Record<string, { active: string; dot: string }> = {
-  ALL: { active: 'text-[#1D388B] border-[#325FEC]/20 bg-[#325FEC]/6', dot: 'bg-[#325FEC]' },
+  ALL: { active: 'text-foreground border-primary/20 bg-primary/6', dot: 'bg-primary' },
   BINTANG: { active: 'text-[#a07700] border-[#F4C144]/30 bg-[#F4C144]/10', dot: 'bg-[#F4C144]' },
   PENALTI: { active: 'text-[#C73E3E] border-[#C73E3E]/25 bg-[#C73E3E]/8', dot: 'bg-[#C73E3E]' },
-  POIN_AHA: { active: 'text-[#325FEC] border-[#325FEC]/20 bg-[#325FEC]/8', dot: 'bg-[#325FEC]' },
+  POIN_AHA: { active: 'text-primary border-primary/20 bg-primary/8', dot: 'bg-primary' },
 }
 
 function PointsPage() {
@@ -208,16 +208,16 @@ function PointsPage() {
     <div className="space-y-4 max-w-3xl mx-auto px-4 py-5 pb-28 md:pb-8">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-extrabold text-[#1D388B]">{m.nav_points()}</h1>
+        <h1 className="text-xl font-extrabold text-foreground">{m.nav_points()}</h1>
         {meta?.total != null && (
-          <span className="rounded-xl bg-[#325FEC]/10 px-3 py-1 text-xs font-bold text-[#325FEC]">
+          <span className="rounded-xl bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
             {meta.total} {m.nav_points().toLowerCase()}
           </span>
         )}
       </div>
 
       {/* Category tabs */}
-      <div className="flex gap-1.5 rounded-2xl bg-white border border-[#325FEC]/8 p-1.5 shadow-[0_2px_8px_rgba(29,56,139,0.06)]">
+      <div className="flex gap-1.5 rounded-2xl bg-card border border-border p-1.5 shadow-card">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.value
           const styles = TAB_STYLES[tab.value]
@@ -240,7 +240,7 @@ function PointsPage() {
 
       {/* Filter row */}
       <div className="flex items-center gap-2">
-        <div className="flex items-center gap-1.5 rounded-xl border border-[#325FEC]/12 bg-white px-3 py-1.5 shadow-sm">
+        <div className="flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-1.5 shadow-sm">
           <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
           <Select value={statusFilter || 'all'} onValueChange={handleStatusChange}>
             <SelectTrigger className="w-36 h-7 border-0 shadow-none p-0 bg-transparent text-sm focus:ring-0">
@@ -274,7 +274,7 @@ function PointsPage() {
                     placeholder={m.filter_search_reason()}
                     value={searchFilter}
                     onChange={(e) => handleSearchChange(e.target.value)}
-                    className="h-9 pl-9 text-sm rounded-xl border-[#325FEC]/15"
+                    className="h-9 pl-9 text-sm rounded-xl border-border"
                   />
                 </div>
               </div>
@@ -290,7 +290,7 @@ function PointsPage() {
                     type="date"
                     value={dateFrom}
                     onChange={(e) => handleDateFromChange(e.target.value)}
-                    className="h-9 text-sm rounded-xl border-[#325FEC]/15"
+                    className="h-9 text-sm rounded-xl border-border"
                   />
                 </div>
                 <div className="space-y-1">
@@ -299,7 +299,7 @@ function PointsPage() {
                     type="date"
                     value={dateTo}
                     onChange={(e) => handleDateToChange(e.target.value)}
-                    className="h-9 text-sm rounded-xl border-[#325FEC]/15"
+                    className="h-9 text-sm rounded-xl border-border"
                   />
                 </div>
               </div>
@@ -315,14 +315,14 @@ function PointsPage() {
             {Array.from({ length: 5 }).map((_, i) => (
               <div
                 key={i}
-                className="h-[72px] rounded-2xl border border-[#325FEC]/8 bg-white animate-pulse"
+                className="h-[72px] rounded-2xl border border-border bg-card animate-pulse"
               />
             ))}
           </div>
         ) : points.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-14 text-center">
-            <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#325FEC]/8">
-              <SlidersHorizontal className="h-8 w-8 text-[#325FEC]/40" />
+            <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/8">
+              <SlidersHorizontal className="h-8 w-8 text-primary/40" />
             </div>
             <p className="font-medium text-muted-foreground">{m.points_empty()}</p>
           </div>
@@ -346,7 +346,7 @@ function PointsPage() {
               <div
                 key={point.id}
                 className={`flex items-start gap-2 rounded-2xl transition-all ${
-                  bulk.selectedIds.has(point.id) ? 'ring-2 ring-[#325FEC] ring-offset-1' : ''
+                  bulk.selectedIds.has(point.id) ? 'ring-2 ring-primary ring-offset-1' : ''
                 }`}
                 style={{ animationDelay: `${i * 30}ms` }}
               >
@@ -401,19 +401,19 @@ function PointsPage() {
           <Button
             variant="outline"
             size="sm"
-            className="rounded-xl border-[#325FEC]/15 hover:bg-[#325FEC]/6 hover:text-[#325FEC] min-h-[36px]"
+            className="rounded-xl border-border hover:bg-primary/6 hover:text-primary min-h-[36px]"
             disabled={page <= 1}
             onClick={() => handlePageChange(page - 1)}
           >
             {m.common_previous()}
           </Button>
-          <span className="rounded-xl bg-white border border-[#325FEC]/12 px-3 py-1.5 text-sm font-semibold text-muted-foreground">
+          <span className="rounded-xl bg-card border border-border px-3 py-1.5 text-sm font-semibold text-muted-foreground">
             {m.common_page_of({ page: String(page), total: String(totalPages) })}
           </span>
           <Button
             variant="outline"
             size="sm"
-            className="rounded-xl border-[#325FEC]/15 hover:bg-[#325FEC]/6 hover:text-[#325FEC] min-h-[36px]"
+            className="rounded-xl border-border hover:bg-primary/6 hover:text-primary min-h-[36px]"
             disabled={page >= totalPages}
             onClick={() => handlePageChange(page + 1)}
           >
@@ -436,7 +436,7 @@ function PointsPage() {
       <Dialog open={showTypeSelector} onOpenChange={setShowTypeSelector}>
         <DialogContent className="sm:max-w-md rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="text-[#1D388B] font-extrabold">{m.points_submit()}</DialogTitle>
+            <DialogTitle className="text-foreground font-extrabold">{m.points_submit()}</DialogTitle>
           </DialogHeader>
           <PointTypeSelector
             userRole={userRole}

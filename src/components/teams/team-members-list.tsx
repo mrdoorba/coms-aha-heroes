@@ -18,24 +18,24 @@ type TeamMembersListProps = {
 export function TeamMembersList({ members }: TeamMembersListProps) {
   if (members.length === 0) {
     return (
-      <p className="py-4 text-center text-sm text-gray-500">
+      <p className="py-4 text-center text-sm text-muted-foreground">
         No members in this team
       </p>
     )
   }
 
   return (
-    <ul className="divide-y">
+    <ul className="divide-y divide-border">
       {members.map((member) => (
         <li key={member.id} className="flex items-center gap-3 py-2.5">
-          <div className="flex size-8 items-center justify-center rounded-full bg-[#96ADF5]/20 text-[#325FEC]">
+          <div className="flex size-8 items-center justify-center rounded-full bg-primary/15 text-primary">
             <User className="size-4" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-medium text-gray-900">
+            <div className="truncate text-sm font-medium text-foreground">
               {member.name}
             </div>
-            <div className="truncate text-xs text-gray-500">
+            <div className="truncate text-xs text-muted-foreground">
               {member.position ?? member.department ?? member.email}
             </div>
           </div>

@@ -70,10 +70,10 @@ function SheetSyncSkeleton() {
           <div className="h-3 w-44 rounded bg-muted" />
         </div>
       </div>
-      <div className="h-28 rounded-xl border border-border bg-white" />
+      <div className="h-28 rounded-xl border border-border bg-card" />
       <div className="space-y-2">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="h-14 rounded-xl border border-border bg-white" />
+          <div key={i} className="h-14 rounded-xl border border-border bg-card" />
         ))}
       </div>
     </div>
@@ -141,7 +141,7 @@ function ErrorLogDialog({ job, onClose }: { job: SyncJob; onClose: () => void })
     <Dialog open onOpenChange={(open) => { if (!open) onClose() }}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-sm font-semibold text-[#1D388B]">
+          <DialogTitle className="text-sm font-semibold text-foreground">
             Job Details
           </DialogTitle>
         </DialogHeader>
@@ -206,7 +206,7 @@ function SheetSyncPage() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center px-4">
         <Shield className="h-12 w-12 text-muted-foreground/40 mb-3" />
-        <h2 className="text-lg font-semibold text-[#1D388B]">Access Denied</h2>
+        <h2 className="text-lg font-semibold text-foreground">Access Denied</h2>
         <p className="text-sm text-muted-foreground mt-1">Admin access required to view this page.</p>
       </div>
     )
@@ -252,17 +252,17 @@ function SheetSyncPage() {
     <div className="max-w-4xl mx-auto p-4 space-y-6 pb-12">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#1D388B]/10">
-          <RefreshCw className="h-5 w-5 text-[#1D388B]" />
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+          <RefreshCw className="h-5 w-5 text-foreground" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-[#1D388B]">Sheet Sync</h1>
+          <h1 className="text-xl font-bold text-foreground">Sheet Sync</h1>
           <p className="text-xs text-muted-foreground">Manage Google Sheets synchronisation</p>
         </div>
       </div>
 
       {/* Status card */}
-      <div className="rounded-xl border border-[#325FEC]/8 bg-white shadow-[0_2px_12px_rgba(29,56,139,0.07)] p-5 space-y-4">
+      <div className="rounded-xl border border-border bg-card shadow-card p-5 space-y-4">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="space-y-3">
             <div className="flex items-center gap-2">
@@ -316,7 +316,7 @@ function SheetSyncPage() {
             <Button
               onClick={handleTriggerSync}
               disabled={isTriggeringSync || status.isRunning}
-              className="bg-[#325FEC] hover:bg-[#1D388B] text-white h-9 px-5"
+              className="bg-primary hover:bg-primary/80 text-primary-foreground h-9 px-5"
             >
               {isTriggeringSync ? (
                 <>
@@ -340,7 +340,7 @@ function SheetSyncPage() {
       {/* Job history */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-[#1D388B]">Sync History</h2>
+          <h2 className="text-sm font-semibold text-foreground">Sync History</h2>
           <Button
             variant="outline"
             size="sm"
@@ -367,10 +367,10 @@ function SheetSyncPage() {
         ) : (
           <>
             {/* Desktop table */}
-            <div className="hidden md:block rounded-xl border border-[#325FEC]/8 shadow-[0_2px_12px_rgba(29,56,139,0.07)] overflow-hidden">
+            <div className="hidden md:block rounded-xl border border-border shadow-card overflow-hidden">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-[#325FEC]/4">
+                  <TableRow className="bg-muted/60">
                     <TableHead className="text-xs font-semibold text-muted-foreground w-36">Started at</TableHead>
                     <TableHead className="text-xs font-semibold text-muted-foreground">Direction</TableHead>
                     <TableHead className="text-xs font-semibold text-muted-foreground">Sheet</TableHead>
@@ -403,7 +403,7 @@ function SheetSyncPage() {
                           <button
                             type="button"
                             onClick={() => setSelectedJob(job)}
-                            className="text-xs text-[#325FEC] underline underline-offset-2 hover:text-[#1D388B] transition-colors"
+                            className="text-xs text-primary underline underline-offset-2 hover:text-primary/70 transition-colors"
                           >
                             Details
                           </button>
@@ -420,7 +420,7 @@ function SheetSyncPage() {
               {jobs.map((job) => {
                 const { date, time } = formatTimestamp(job.startedAt ?? job.createdAt)
                 return (
-                  <div key={job.id} className="rounded-xl border border-[#325FEC]/8 bg-white shadow-[0_2px_12px_rgba(29,56,139,0.07)] p-4 space-y-3">
+                  <div key={job.id} className="rounded-xl border border-border bg-card shadow-card p-4 space-y-3">
                     <div className="flex items-start justify-between gap-2">
                       {getStatusBadge(job.status)}
                       <span className="text-[10px] text-muted-foreground text-right">
@@ -447,7 +447,7 @@ function SheetSyncPage() {
                     <button
                       type="button"
                       onClick={() => setSelectedJob(job)}
-                      className="text-xs text-[#325FEC] underline underline-offset-2 hover:text-[#1D388B] transition-colors"
+                      className="text-xs text-primary underline underline-offset-2 hover:text-primary/70 transition-colors"
                     >
                       View details
                     </button>

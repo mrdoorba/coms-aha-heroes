@@ -41,10 +41,10 @@ const VARIANT_STYLES = {
     border: 'border-[#C73E3E]/30',
   },
   pending: {
-    gradient: 'from-white to-white',
+    gradient: 'from-card to-card',
     iconBg: 'bg-[#F4C144]/15',
     iconColor: 'text-[#F4C144]',
-    valueColor: 'text-[#1D388B]',
+    valueColor: 'text-foreground',
     titleColor: 'text-muted-foreground',
     glow: 'shadow-card',
     border: 'border-[#F4C144]/25',
@@ -59,7 +59,7 @@ export function SummaryCard({ title, value, icon, variant = 'blue', href }: Summ
     <div className={cn(
       'relative overflow-hidden rounded-2xl border p-4 shine-on-hover',
       !isPending && `bg-gradient-to-br ${styles.gradient}`,
-      isPending && 'bg-white',
+      isPending && 'bg-card',
       styles.border,
       styles.glow,
       'transition-all duration-200 hover:-translate-y-0.5',

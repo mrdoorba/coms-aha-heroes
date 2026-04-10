@@ -29,7 +29,7 @@ export function ChallengesList({ pointId }: IssueListsProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold text-[#1D388B] flex items-center gap-2">
+      <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
         <span className="w-1.5 h-1.5 rounded-full bg-[#6D50B8]" />
         {m.issue_challenges()}
       </h3>
@@ -52,12 +52,12 @@ export function ChallengesList({ pointId }: IssueListsProps) {
                 <ResolveDialog type="challenge" id={challenge.id} />
               )}
             </div>
-            
+
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center">
                 <UserIcon className="h-3 w-3 text-muted-foreground" />
               </div>
-              <span className="text-sm font-medium">{challenge.challenger?.name ?? 'Unknown'}</span>
+              <span className="text-sm font-medium text-foreground">{challenge.challenger?.name ?? 'Unknown'}</span>
             </div>
 
             <p className="text-sm text-muted-foreground leading-relaxed italic bg-muted/30 p-2 rounded-lg">
@@ -65,8 +65,8 @@ export function ChallengesList({ pointId }: IssueListsProps) {
             </p>
 
             {challenge.status !== 'open' && challenge.resolutionNote && (
-              <div className="p-3 rounded-lg bg-[#325FEC]/5 border border-[#325FEC]/10 space-y-1">
-                <div className="flex items-center gap-1.5 text-[#325FEC] text-[10px] font-bold uppercase tracking-wider">
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/10 space-y-1">
+                <div className="flex items-center gap-1.5 text-primary text-[10px] font-bold uppercase tracking-wider">
                   {challenge.status === 'upheld' ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
                   {m.issue_resolution()}: {challenge.status}
                 </div>
@@ -102,7 +102,7 @@ export function AppealsList({ pointId }: IssueListsProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold text-[#1D388B] flex items-center gap-2">
+      <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
         <span className="w-1.5 h-1.5 rounded-full bg-[#F4C144]" />
         {m.issue_appeals()}
       </h3>
@@ -125,14 +125,14 @@ export function AppealsList({ pointId }: IssueListsProps) {
                 <ResolveDialog type="appeal" id={appeal.id} />
               )}
             </div>
-            
+
             <p className="text-sm text-muted-foreground leading-relaxed italic bg-muted/30 p-2 rounded-lg">
               "{appeal.reason}"
             </p>
 
             {appeal.status !== 'open' && appeal.resolutionNote && (
-              <div className="p-3 rounded-lg bg-[#325FEC]/5 border border-[#325FEC]/10 space-y-1">
-                <div className="flex items-center gap-1.5 text-[#325FEC] text-[10px] font-bold uppercase tracking-wider">
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/10 space-y-1">
+                <div className="flex items-center gap-1.5 text-primary text-[10px] font-bold uppercase tracking-wider">
                   {appeal.status === 'upheld' ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
                   {m.issue_resolution()}: {appeal.status}
                 </div>
@@ -154,9 +154,9 @@ export function AppealsList({ pointId }: IssueListsProps) {
 
 function StatusBadge({ status }: { status: string }) {
   const colors = {
-    open: "bg-yellow-100 text-yellow-700 border-yellow-200",
-    upheld: "bg-green-100 text-green-700 border-green-200",
-    overturned: "bg-red-100 text-red-700 border-red-200",
+    open: "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800/50",
+    upheld: "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800/50",
+    overturned: "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/50",
   }[status as 'open' | 'upheld' | 'overturned'] || "bg-muted text-muted-foreground"
 
   return (

@@ -72,7 +72,7 @@ export function PullToRefresh({ children, className }: PullToRefreshProps) {
           style={{ height: refreshing ? 40 : pullDistance * 0.6 }}
         >
           <Loader2
-            className={`h-5 w-5 text-[#325FEC] ${refreshing ? 'animate-spin' : ''}`}
+            className={`h-5 w-5 text-primary ${refreshing ? 'animate-spin' : ''}`}
             style={{
               opacity: Math.min(pullDistance / THRESHOLD, 1),
               transform: `rotate(${pullDistance * 3}deg)`,

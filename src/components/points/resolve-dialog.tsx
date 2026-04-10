@@ -55,10 +55,10 @@ export function ResolveDialog({ type, id, trigger }: ResolveDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={trigger ?? <Button size="sm" className="bg-[#1D388B] hover:bg-blue-900 rounded-xl">Resolve</Button>} />
+      <DialogTrigger render={trigger ?? <Button size="sm" className="bg-primary hover:bg-primary/80 rounded-xl">Resolve</Button>} />
       <DialogContent className="sm:max-w-[425px] rounded-[20px]">
         <DialogHeader>
-          <DialogTitle className="text-[#1D388B]">
+          <DialogTitle>
             {type === 'challenge' ? m.resolve_challenge_title() : m.resolve_appeal_title()}
           </DialogTitle>
           <DialogDescription>
@@ -74,9 +74,9 @@ export function ResolveDialog({ type, id, trigger }: ResolveDialogProps) {
                 onClick={() => setStatus('upheld')}
                 className={cn(
                   "flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-lg transition-all",
-                  status === 'upheld' 
-                    ? "bg-white text-green-600 shadow-sm" 
-                    : "text-muted-foreground hover:bg-white/50"
+                  status === 'upheld'
+                    ? "bg-card text-emerald-600 shadow-sm"
+                    : "text-muted-foreground hover:bg-card/50"
                 )}
               >
                 <Check className={cn("h-4 w-4", status === 'upheld' ? "opacity-100" : "opacity-0")} />
@@ -88,8 +88,8 @@ export function ResolveDialog({ type, id, trigger }: ResolveDialogProps) {
                 className={cn(
                   "flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-lg transition-all",
                   status === 'overturned'
-                    ? "bg-white text-red-600 shadow-sm"
-                    : "text-muted-foreground hover:bg-white/50"
+                    ? "bg-card text-destructive shadow-sm"
+                    : "text-muted-foreground hover:bg-card/50"
                 )}
               >
                 <X className={cn("h-4 w-4", status === 'overturned' ? "opacity-100" : "opacity-0")} />
@@ -113,7 +113,7 @@ export function ResolveDialog({ type, id, trigger }: ResolveDialogProps) {
             type="submit"
             onClick={onSubmit}
             disabled={isSubmitting || !resolutionNote.trim()}
-            className="w-full bg-[#325FEC] hover:bg-blue-700 rounded-xl"
+            className="w-full bg-primary hover:bg-primary/80 rounded-xl"
           >
             {isSubmitting ? m.common_submitting() : m.resolve_submit()}
           </Button>

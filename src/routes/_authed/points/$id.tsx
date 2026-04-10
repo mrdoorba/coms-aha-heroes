@@ -37,25 +37,25 @@ function PointDetailPage() {
   return (
     <div className="max-w-2xl mx-auto p-0 min-h-screen bg-background pb-32">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-md px-4 py-3 border-b border-[#325FEC]/10 flex items-center gap-3">
+      <div className="sticky top-0 z-10 bg-card/90 backdrop-blur-md px-4 py-3 border-b border-border flex items-center gap-3">
         <Link to="/points">
-          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full hover:bg-[#325FEC]/8 hover:text-[#325FEC]">
+          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full hover:bg-primary/8 hover:text-primary">
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
         <div className="flex flex-col min-w-0">
-          <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#1D388B]/40">
-            <Link to="/points" className="hover:text-[#325FEC] transition-colors">{m.nav_points()}</Link>
+          <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+            <Link to="/points" className="hover:text-primary transition-colors">{m.nav_points()}</Link>
             <span>/</span>
             <span>{m.point_detail_title()}</span>
           </div>
-          <h1 className="text-base font-bold text-[#1D388B] leading-tight truncate">{m.point_detail_title()}</h1>
+          <h1 className="text-base font-bold text-foreground leading-tight truncate">{m.point_detail_title()}</h1>
         </div>
       </div>
 
       <div className="p-4 space-y-6">
         {/* Main info card */}
-        <div className="rounded-2xl border border-[#325FEC]/8 bg-white p-5 space-y-5 shadow-[0_2px_12px_rgba(29,56,139,0.07)]">
+        <div className="rounded-2xl border border-border bg-card p-5 space-y-5 shadow-card">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
               <CategoryIcon code={categoryCode} size="lg" />
@@ -118,9 +118,9 @@ function PointDetailPage() {
 
           {/* KITTA (Penalti only) */}
           {categoryCode === 'PENALTI' && point.kittaComponent && (
-            <div className="rounded-xl border border-[#C73E3E]/15 bg-[#C73E3E]/5 p-3">
-              <p className="text-[10px] uppercase tracking-wider font-bold text-[#C73E3E] mb-1">{m.point_detail_kitta_category()}</p>
-              <p className="text-sm font-semibold text-[#1D388B]">
+            <div className="rounded-xl border border-destructive/15 bg-destructive/5 p-3">
+              <p className="text-[10px] uppercase tracking-wider font-bold text-destructive mb-1">{m.point_detail_kitta_category()}</p>
+              <p className="text-sm font-semibold text-foreground">
                 {point.kittaComponent} — {KITTA_LABELS[point.kittaComponent as KittaCode]}
               </p>
             </div>
@@ -168,7 +168,7 @@ function PointDetailPage() {
       </div>
 
       {/* Sticky Action Buttons at bottom */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-lg border-t border-[#325FEC]/10 shadow-[0_-4px_20px_rgba(29,56,139,0.08)] max-w-2xl mx-auto z-20">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-card/90 backdrop-blur-lg border-t border-border shadow-[0_-4px_20px_rgba(0,0,0,0.08)] max-w-2xl mx-auto z-20">
         <PointActions point={point} />
       </div>
     </div>

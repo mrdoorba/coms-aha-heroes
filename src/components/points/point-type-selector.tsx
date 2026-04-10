@@ -14,8 +14,8 @@ const pointTypeBases = [
     code: 'bintang' as const,
     icon: Star,
     color: 'text-yellow-500',
-    bg: 'bg-yellow-50 hover:bg-yellow-100',
-    border: 'border-yellow-200',
+    bg: 'bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-900/20 dark:hover:bg-yellow-900/30',
+    border: 'border-yellow-200 dark:border-yellow-800/50',
     href: '/points/new/bintang' as const,
     roles: ['admin', 'hr', 'leader', 'employee'] as const,
   },
@@ -23,8 +23,8 @@ const pointTypeBases = [
     code: 'penalti' as const,
     icon: AlertTriangle,
     color: 'text-purple-500',
-    bg: 'bg-purple-50 hover:bg-purple-100',
-    border: 'border-purple-200',
+    bg: 'bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:hover:bg-purple-900/30',
+    border: 'border-purple-200 dark:border-purple-800/50',
     href: '/points/new/penalti' as const,
     roles: ['admin', 'hr', 'leader'] as const,
   },
@@ -32,8 +32,8 @@ const pointTypeBases = [
     code: 'poin-aha' as const,
     icon: Award,
     color: 'text-blue-500',
-    bg: 'bg-blue-50 hover:bg-blue-100',
-    border: 'border-blue-200',
+    bg: 'bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30',
+    border: 'border-blue-200 dark:border-blue-800/50',
     href: '/points/new/poin-aha' as const,
     roles: ['admin', 'hr', 'leader'] as const,
   },
@@ -64,11 +64,11 @@ export function PointTypeSelector({ userRole, className }: PointTypeSelectorProp
               type.border,
             )}
           >
-            <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-white/80">
+            <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-card/80">
               <Icon className={cn('h-6 w-6', type.color)} />
             </div>
             <div>
-              <p className="font-semibold text-sm">{type.label}</p>
+              <p className="font-semibold text-sm text-foreground">{type.label}</p>
               <p className="text-xs text-muted-foreground">{type.description}</p>
             </div>
           </Link>

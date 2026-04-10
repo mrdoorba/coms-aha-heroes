@@ -47,13 +47,13 @@ const redemptionStatusConfig: Record<
   { className: string }
 > = {
   pending: {
-    className: 'bg-[#F4C144]/15 text-[#a07700] border-[#F4C144]/30',
+    className: 'bg-[#F4C144]/15 text-[#a07700] border-[#F4C144]/30 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800/40',
   },
   approved: {
-    className: 'bg-[#22C55E]/12 text-[#22C55E] border-[#22C55E]/20',
+    className: 'bg-emerald-50 text-emerald-700 border-emerald-200/70 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800/50',
   },
   rejected: {
-    className: 'bg-[#C73E3E]/10 text-[#C73E3E] border-[#C73E3E]/20',
+    className: 'bg-red-50 text-red-700 border-red-200/70 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/50',
   },
 }
 
@@ -102,16 +102,16 @@ function RedemptionsSkeleton() {
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6 animate-pulse">
       <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl bg-[#325FEC]/8" />
-        <div className="h-6 w-32 rounded bg-[#325FEC]/8" />
+        <div className="h-10 w-10 rounded-xl bg-primary/8" />
+        <div className="h-6 w-32 rounded bg-primary/8" />
       </div>
-      <div className="flex gap-1.5 rounded-2xl border border-[#325FEC]/8 bg-white p-1.5">
-        <div className="h-10 flex-1 rounded-xl bg-[#325FEC]/8" />
-        <div className="h-10 flex-1 rounded-xl bg-[#325FEC]/5" />
+      <div className="flex gap-1.5 rounded-2xl border border-border bg-card p-1.5">
+        <div className="h-10 flex-1 rounded-xl bg-primary/8" />
+        <div className="h-10 flex-1 rounded-xl bg-primary/5" />
       </div>
       <div className="space-y-3">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-24 rounded-xl border border-[#325FEC]/8 bg-white shadow-[0_2px_12px_rgba(29,56,139,0.07)]" />
+          <div key={i} className="h-24 rounded-xl border border-border bg-card shadow-card" />
         ))}
       </div>
     </div>
@@ -254,19 +254,19 @@ function RedemptionsPage() {
           <Gift className="h-5 w-5 text-[#7a5800]" />
         </div>
         <div>
-          <h1 className="text-xl font-extrabold text-[#1D388B]">{m.redemptions_title()}</h1>
-          <p className="text-[13px] font-medium text-[#1D388B]/50">{m.nav_redemptions?.() ?? 'Reward redemptions'}</p>
+          <h1 className="text-xl font-extrabold text-foreground">{m.redemptions_title()}</h1>
+          <p className="text-[13px] font-medium text-muted-foreground">{m.nav_redemptions?.() ?? 'Reward redemptions'}</p>
         </div>
       </div>
 
-      {/* Tab switcher — pill style matching leaderboard */}
-      <div className="flex gap-1.5 rounded-2xl bg-white border border-[#325FEC]/8 p-1.5 shadow-[0_2px_8px_rgba(29,56,139,0.06)]">
+      {/* Tab switcher */}
+      <div className="flex gap-1.5 rounded-2xl bg-card border border-border p-1.5 shadow-card">
         <button
           type="button"
           className={cn(
             'flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-bold transition-all duration-200 min-h-[44px]',
             activeTab === 'mine'
-              ? 'bg-gradient-to-br from-[#F4C144]/18 to-[#F4C144]/8 text-[#a07700] shadow-[0_2px_8px_rgba(244,193,68,0.20)] border border-[#F4C144]/30'
+              ? 'bg-gradient-to-br from-[#F4C144]/18 to-[#F4C144]/8 text-[#a07700] dark:text-yellow-300 shadow-[0_2px_8px_rgba(244,193,68,0.20)] border border-[#F4C144]/30'
               : 'text-muted-foreground hover:text-foreground',
           )}
           onClick={() => handleTabChange('mine')}
@@ -280,7 +280,7 @@ function RedemptionsPage() {
             className={cn(
               'flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-bold transition-all duration-200 min-h-[44px]',
               activeTab === 'pending'
-                ? 'bg-gradient-to-br from-[#325FEC]/18 to-[#325FEC]/8 text-[#325FEC] shadow-[0_2px_8px_rgba(50,95,236,0.20)] border border-[#325FEC]/30'
+                ? 'bg-gradient-to-br from-primary/18 to-primary/8 text-primary shadow-[0_2px_8px_rgba(50,95,236,0.20)] border border-primary/30'
                 : 'text-muted-foreground hover:text-foreground',
             )}
             onClick={() => handleTabChange('pending')}
@@ -356,7 +356,7 @@ function RedemptionsPage() {
           Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="h-24 rounded-xl border border-[#325FEC]/8 bg-white shadow-[0_2px_12px_rgba(29,56,139,0.07)] animate-pulse"
+              className="h-24 rounded-xl border border-border bg-card shadow-card animate-pulse"
             />
           ))
         ) : redemptions.length === 0 ? (
@@ -364,17 +364,17 @@ function RedemptionsPage() {
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#F4C144]/12">
               <Gift className="h-7 w-7 text-[#F4C144]" />
             </div>
-            <p className="text-sm font-medium text-[#1D388B]/60">{m.redemptions_empty()}</p>
+            <p className="text-sm font-medium text-muted-foreground">{m.redemptions_empty()}</p>
           </div>
         ) : (
           redemptions.map((item) => (
             <div
               key={item.id}
               className={cn(
-                'flex items-start gap-3 rounded-xl border bg-white px-4 py-3 shadow-[0_2px_12px_rgba(29,56,139,0.07)] transition-all duration-200',
+                'flex items-start gap-3 rounded-xl border bg-card px-4 py-3 shadow-card transition-all duration-200',
                 activeTab === 'pending' && bulk.selectedIds.has(item.id)
-                  ? 'border-[#325FEC]/40 bg-[#EDF1FA]/50 shadow-[0_2px_12px_rgba(50,95,236,0.12)]'
-                  : 'border-[#325FEC]/8 hover:border-[#325FEC]/20 hover:shadow-[0_4px_16px_rgba(29,56,139,0.10)]',
+                  ? 'border-primary/40 bg-primary/5 shadow-[0_2px_12px_rgba(50,95,236,0.12)]'
+                  : 'border-border hover:border-border hover:shadow-[0_4px_16px_rgba(0,0,0,0.10)]',
               )}
             >
               {activeTab === 'pending' && isHrOrAdmin && item.status === 'pending' && (
@@ -386,7 +386,7 @@ function RedemptionsPage() {
                 </div>
               )}
               {/* Thumbnail */}
-              <div className="shrink-0 h-12 w-12 rounded-xl bg-[#325FEC]/8 flex items-center justify-center overflow-hidden border border-[#325FEC]/10">
+              <div className="shrink-0 h-12 w-12 rounded-xl bg-primary/8 flex items-center justify-center overflow-hidden border border-border">
                 {item.rewardImageUrl ? (
                   <img
                     src={item.rewardImageUrl}
@@ -394,42 +394,42 @@ function RedemptionsPage() {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <Gift className="h-6 w-6 text-[#325FEC]/50" />
+                  <Gift className="h-6 w-6 text-primary/50" />
                 )}
               </div>
 
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="text-sm font-semibold text-[#1D388B] leading-snug line-clamp-1">
+                  <p className="text-sm font-semibold text-foreground leading-snug line-clamp-1">
                     {item.rewardName}
                   </p>
                   <RedemptionStatusBadge status={item.status} />
                 </div>
 
                 {activeTab === 'pending' && (
-                  <p className="text-xs text-[#1D388B]/50 mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     {m.redemptions_requested_by()}{' '}
-                    <span className="font-semibold text-[#1D388B]/80">{item.userName}</span>
+                    <span className="font-semibold text-foreground/80">{item.userName}</span>
                   </p>
                 )}
 
-                <p className="text-xs font-semibold text-[#325FEC] mt-0.5">
+                <p className="text-xs font-semibold text-primary mt-0.5">
                   {item.pointsSpent} {m.points_poin_aha()}
                 </p>
 
                 <div className="flex items-center gap-2 mt-1 flex-wrap">
-                  <span className="text-xs text-[#1D388B]/40">
+                  <span className="text-xs text-muted-foreground/60">
                     {formatDate(item.createdAt)}
                   </span>
                   {item.approverName && item.status !== 'pending' && (
-                    <span className="text-xs text-[#1D388B]/40">
+                    <span className="text-xs text-muted-foreground/60">
                       · {item.status === 'approved' ? m.redemptions_approved_by() : m.redemptions_rejected_by()}{' '}
-                      <span className="font-medium text-[#1D388B]/70">{item.approverName}</span>
+                      <span className="font-medium text-muted-foreground">{item.approverName}</span>
                     </span>
                   )}
                   {item.rejectionReason && (
-                    <span className="text-xs text-[#C73E3E] italic">
+                    <span className="text-xs text-destructive italic">
                       "{item.rejectionReason}"
                     </span>
                   )}
@@ -449,7 +449,7 @@ function RedemptionsPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-7 px-3 text-xs border-[#C73E3E]/25 text-[#C73E3E] hover:bg-[#C73E3E]/8 hover:text-[#C73E3E] rounded-lg font-semibold"
+                      className="h-7 px-3 text-xs border-destructive/25 text-destructive hover:bg-destructive/8 rounded-lg font-semibold"
                       disabled={isSubmitting}
                       onClick={() => openRejectDialog(item.id)}
                     >
@@ -495,7 +495,7 @@ function RedemptionsPage() {
             </label>
             <textarea
               id="rejection-reason"
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#325FEC] resize-none"
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
               rows={3}
               placeholder={m.redemptions_reject_placeholder()}
               value={rejectionReason}

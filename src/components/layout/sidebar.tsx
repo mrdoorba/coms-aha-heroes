@@ -52,7 +52,7 @@ export function Sidebar({ user, collapsed, onMouseEnter, onMouseLeave, className
     <aside
       className={cn(
         'fixed top-0 left-0 z-40 flex h-full flex-col transition-[width] duration-200',
-        'bg-white border-r border-[#325FEC]/10',
+        'bg-card border-r border-border',
         collapsed ? 'w-16' : 'w-64',
         className,
       )}
@@ -61,7 +61,7 @@ export function Sidebar({ user, collapsed, onMouseEnter, onMouseLeave, className
     >
       {/* Logo */}
       <div className={cn(
-        'flex h-16 items-center border-b border-[#325FEC]/10',
+        'flex h-16 items-center border-b border-border',
         collapsed ? 'justify-center px-0' : 'px-4',
       )}>
         <div className="flex items-center gap-2">
@@ -69,7 +69,7 @@ export function Sidebar({ user, collapsed, onMouseEnter, onMouseLeave, className
             <Trophy className="h-4 w-4 text-[#7a5800]" />
           </div>
           {!collapsed && (
-            <span className="font-manrope text-[15px] font-extrabold tracking-wide text-[#1D388B]">
+            <span className="font-manrope text-[15px] font-extrabold tracking-wide text-foreground">
               AHA HEROES
             </span>
           )}
@@ -83,7 +83,7 @@ export function Sidebar({ user, collapsed, onMouseEnter, onMouseLeave, className
             key={to}
             to={to}
             className={cn(
-              'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[#1D388B]/50 transition-all duration-150 hover:bg-[#325FEC]/8 hover:text-[#1D388B]',
+              'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-150 hover:bg-primary/8 hover:text-foreground',
               collapsed && 'justify-center px-0',
             )}
             activeProps={{ className: 'sidebar-link-active' }}
@@ -98,11 +98,11 @@ export function Sidebar({ user, collapsed, onMouseEnter, onMouseLeave, className
           <>
             <div className={cn('pt-4 pb-1.5', collapsed ? 'px-1' : 'px-3')}>
               {!collapsed ? (
-                <span className="section-label text-[#1D388B]/30">
+                <span className="section-label text-muted-foreground/50">
                   {m.nav_admin()}
                 </span>
               ) : (
-                <div className="border-t border-[#325FEC]/10" />
+                <div className="border-t border-border" />
               )}
             </div>
             {adminNavItems.map(({ to, icon: Icon }, index) => (
@@ -110,7 +110,7 @@ export function Sidebar({ user, collapsed, onMouseEnter, onMouseLeave, className
                 key={to}
                 to={to}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[#1D388B]/50 transition-all duration-150 hover:bg-[#325FEC]/8 hover:text-[#1D388B]',
+                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-150 hover:bg-primary/8 hover:text-foreground',
                   collapsed && 'justify-center px-0',
                 )}
                 activeProps={{ className: 'sidebar-link-active' }}
@@ -125,12 +125,12 @@ export function Sidebar({ user, collapsed, onMouseEnter, onMouseLeave, className
       </nav>
 
       {/* User footer */}
-      <div className="border-t border-[#325FEC]/10 p-2">
+      <div className="border-t border-border p-2">
         <div className={cn(
           'flex items-center gap-3 rounded-lg px-3 py-2.5',
           collapsed && 'justify-center px-0',
         )}>
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#325FEC]/10 text-xs font-bold text-[#325FEC] ring-1 ring-[#325FEC]/15">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-xs font-bold text-primary ring-1 ring-primary/15">
             {user.avatarUrl ? (
               <img
                 src={user.avatarUrl}
@@ -147,8 +147,8 @@ export function Sidebar({ user, collapsed, onMouseEnter, onMouseLeave, className
           </div>
           {!collapsed && (
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-[#1D388B]">{user.name}</p>
-              <span className="inline-block rounded-full bg-[#325FEC]/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#325FEC]">
+              <p className="truncate text-sm font-semibold text-foreground">{user.name}</p>
+              <span className="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary">
                 {user.role}
               </span>
             </div>
