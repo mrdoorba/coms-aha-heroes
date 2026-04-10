@@ -33,6 +33,7 @@ type TeamRow = {
   id: string
   name: string
   branchId: string
+  branchCode: string
   leaderId: string | null
   memberCount: number
   createdAt: string
@@ -160,19 +161,19 @@ function TeamsPage() {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 shrink-0">
-            <Users className="size-5 text-primary" />
+          <div className="bg-primary/10 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
+            <Users className="text-primary size-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{m.nav_teams()}</h1>
-            <p className="mt-0.5 text-sm font-medium text-muted-foreground">
+            <h1 className="text-foreground text-2xl font-bold">{m.nav_teams()}</h1>
+            <p className="text-muted-foreground mt-0.5 text-sm font-medium">
               {m.teams_total({ count: String(meta.total) })}
             </p>
           </div>
         </div>
         <Button
           onClick={() => setCreateOpen(true)}
-          className="bg-primary hover:bg-primary/80 text-primary-foreground shadow-[0_2px_12px_rgba(50,95,236,0.30)] min-h-[44px] rounded-xl font-semibold transition-all duration-200"
+          className="bg-primary hover:bg-primary/80 text-primary-foreground min-h-[44px] rounded-xl font-semibold shadow-[0_2px_12px_rgba(50,95,236,0.30)] transition-all duration-200"
         >
           <Plus className="size-4" data-icon="inline-start" />
           {m.teams_create()}
@@ -182,12 +183,12 @@ function TeamsPage() {
       {/* Search */}
       <div className="mb-4">
         <div className="relative max-w-sm">
-          <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-primary/40" />
+          <Search className="text-primary/40 absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
           <Input
             placeholder={m.teams_search_placeholder()}
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="pl-9 rounded-xl border-border focus-visible:ring-primary/30"
+            className="border-border focus-visible:ring-primary/30 rounded-xl pl-9"
           />
         </div>
       </div>
@@ -198,38 +199,44 @@ function TeamsPage() {
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="rounded-2xl border border-border bg-card shadow-card p-5 space-y-3 animate-pulse"
+              className="border-border bg-card shadow-card animate-pulse space-y-3 rounded-2xl border p-5"
             >
-              <div className="h-5 w-32 rounded-lg bg-primary/8" />
-              <div className="h-4 w-24 rounded-lg bg-primary/6" />
-              <div className="h-4 w-20 rounded-lg bg-primary/6" />
-              <div className="h-8 w-full rounded-xl bg-primary/5" />
+              <div className="bg-primary/8 h-5 w-32 rounded-lg" />
+              <div className="bg-primary/6 h-4 w-24 rounded-lg" />
+              <div className="bg-primary/6 h-4 w-20 rounded-lg" />
+              <div className="bg-primary/5 h-8 w-full rounded-xl" />
             </div>
           ))}
         </div>
       ) : teams.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/8">
-            <Users className="h-8 w-8 text-primary/40" />
+          <div className="bg-primary/8 mb-4 flex h-16 w-16 items-center justify-center rounded-2xl">
+            <Users className="text-primary/40 h-8 w-8" />
           </div>
-          <p className="font-semibold text-muted-foreground">{m.teams_empty()}</p>
+          <p className="text-muted-foreground font-semibold">{m.teams_empty()}</p>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {teams.map((team) => (
             <Card
               key={team.id}
-              className="relative card-hover border-border shadow-card rounded-2xl bg-card overflow-hidden"
+              className="card-hover border-border shadow-card bg-card relative overflow-hidden rounded-2xl"
             >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
-                  <CardTitle className="text-lg text-foreground">
-                    {team.name}
-                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-foreground text-lg">{team.name}</CardTitle>
+                    <span
+                      className="text-base leading-none"
+                      title={team.branchCode === 'TH' ? 'Thailand' : 'Indonesia'}
+                    >
+                      {team.branchCode === 'TH' ? '\u{1F1F9}\u{1F1ED}' : '\u{1F1EE}\u{1F1E9}'}
+                    </span>
+                  </div>
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    className="rounded-lg hover:bg-primary/8 hover:text-primary min-h-[36px] min-w-[36px]"
+                    className="hover:bg-primary/8 hover:text-primary min-h-[36px] min-w-[36px] rounded-lg"
                     onClick={() => {
                       setSelectedTeam(team)
                       setEditOpen(true)
@@ -243,17 +250,17 @@ function TeamsPage() {
                 {/* Leader */}
                 <div className="flex items-center gap-2 text-sm">
                   <Crown className="size-4 text-[#F4C144]" />
-                  <span className="font-medium text-foreground/70">
+                  <span className="text-foreground/70 font-medium">
                     {team.leaderId
-                      ? userMap.get(team.leaderId) ?? m.common_unknown()
+                      ? (userMap.get(team.leaderId) ?? m.common_unknown())
                       : m.teams_no_leader()}
                   </span>
                 </div>
 
                 {/* Member count */}
                 <div className="flex items-center gap-2 text-sm">
-                  <Users className="size-4 text-primary" />
-                  <span className="font-medium text-foreground/70">
+                  <Users className="text-primary size-4" />
+                  <span className="text-foreground/70 font-medium">
                     {m.teams_members({ count: String(team.memberCount) })}
                   </span>
                 </div>
@@ -262,7 +269,7 @@ function TeamsPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full justify-between text-xs font-semibold text-primary hover:text-primary hover:bg-primary/6 rounded-xl min-h-[36px]"
+                  className="text-primary hover:text-primary hover:bg-primary/6 min-h-[36px] w-full justify-between rounded-xl text-xs font-semibold"
                   onClick={() => handleToggleMembers(team.id)}
                 >
                   {expandedTeamId === team.id ? m.teams_hide_members() : m.teams_view_members()}
@@ -275,11 +282,11 @@ function TeamsPage() {
 
                 {/* Expanded members list */}
                 {expandedTeamId === team.id && (
-                  <div className="border-t border-border pt-3 mt-1">
+                  <div className="border-border mt-1 border-t pt-3">
                     {loadingMembers ? (
                       <div className="space-y-2 py-1">
                         {Array.from({ length: 3 }).map((_, i) => (
-                          <div key={i} className="h-8 rounded-lg bg-primary/6 animate-pulse" />
+                          <div key={i} className="bg-primary/6 h-8 animate-pulse rounded-lg" />
                         ))}
                       </div>
                     ) : (
@@ -296,7 +303,7 @@ function TeamsPage() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="mt-6 flex items-center justify-between">
-          <p className="text-sm font-semibold text-muted-foreground">
+          <p className="text-muted-foreground text-sm font-semibold">
             {m.common_page_of({ page: String(page), total: String(totalPages) })}
           </p>
           <div className="flex items-center gap-1">
@@ -305,7 +312,7 @@ function TeamsPage() {
               size="icon-sm"
               disabled={page <= 1}
               onClick={() => handlePageChange(page - 1)}
-              className="rounded-xl border-border hover:bg-primary/6 hover:text-primary min-h-[36px] min-w-[36px]"
+              className="border-border hover:bg-primary/6 hover:text-primary min-h-[36px] min-w-[36px] rounded-xl"
             >
               <ChevronLeft className="size-4" />
             </Button>
@@ -314,7 +321,7 @@ function TeamsPage() {
               size="icon-sm"
               disabled={page >= totalPages}
               onClick={() => handlePageChange(page + 1)}
-              className="rounded-xl border-border hover:bg-primary/6 hover:text-primary min-h-[36px] min-w-[36px]"
+              className="border-border hover:bg-primary/6 hover:text-primary min-h-[36px] min-w-[36px] rounded-xl"
             >
               <ChevronRight className="size-4" />
             </Button>

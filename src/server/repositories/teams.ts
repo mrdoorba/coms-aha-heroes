@@ -1,5 +1,5 @@
 import { eq, count, ilike, and } from 'drizzle-orm'
-import { teams, users } from '~/db/schema'
+import { teams, users, branches } from '~/db/schema'
 import type { DbClient } from './base'
 import { getDb } from './base'
 
@@ -19,8 +19,17 @@ export async function listTeams(
 
   const [rows, [{ total }]] = await Promise.all([
     db
-      .select()
+      .select({
+        id: teams.id,
+        name: teams.name,
+        branchId: teams.branchId,
+        leaderId: teams.leaderId,
+        createdAt: teams.createdAt,
+        updatedAt: teams.updatedAt,
+        branchCode: branches.code,
+      })
       .from(teams)
+      .innerJoin(branches, eq(teams.branchId, branches.id))
       .where(where)
       .orderBy(teams.name)
       .limit(opts.limit)
@@ -63,10 +72,7 @@ export async function getTeamById(id: string, tx?: DbClient) {
   return team ?? null
 }
 
-export async function createTeam(
-  data: typeof teams.$inferInsert,
-  tx?: DbClient,
-) {
+export async function createTeam(data: typeof teams.$inferInsert, tx?: DbClient) {
   const db = getDb(tx)
   const [created] = await db.insert(teams).values(data).returning()
   return created
@@ -78,10 +84,6 @@ export async function updateTeam(
   tx?: DbClient,
 ) {
   const db = getDb(tx)
-  const [updated] = await db
-    .update(teams)
-    .set(data)
-    .where(eq(teams.id, id))
-    .returning()
+  const [updated] = await db.update(teams).set(data).where(eq(teams.id, id)).returning()
   return updated ?? null
 }
