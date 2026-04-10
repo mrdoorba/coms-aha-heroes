@@ -4,6 +4,7 @@ import {
   triggerSyncInBackground,
   triggerResyncInBackground,
   isSyncRunning,
+  cleanupStaleJobs,
 } from '../services/sheet-sync-scheduler'
 import * as repo from '../repositories/sheet-sync'
 import { auth } from '../auth'
@@ -160,7 +161,9 @@ export const sheetSyncRoute = new Elysia({ prefix: '/sheet-sync' })
       }
     }
 
-    const isRunning = isSyncRunning()
+    // Clean up any stale jobs so the UI doesn't show "running" forever
+    await cleanupStaleJobs()
+    const isRunning = await isSyncRunning()
     const lastJob = await repo.getLatestJob()
 
     return {
