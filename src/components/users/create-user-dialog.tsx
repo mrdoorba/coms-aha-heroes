@@ -74,8 +74,8 @@ export function CreateUserDialog({
         <DialogHeader>
           <DialogTitle>Create New User</DialogTitle>
           <DialogDescription>
-            Add a new user to the system. They will receive a default password and
-            must change it on first login.
+            Add a new user to the system. They will receive a default password and must change it on
+            first login.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-4">
@@ -103,10 +103,7 @@ export function CreateUserDialog({
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-2">
               <Label htmlFor="create-role">Role</Label>
-              <Select
-                value={form.role}
-                onValueChange={(v) => handleChange('role', v)}
-              >
+              <Select value={form.role} onValueChange={(v) => handleChange('role', v)}>
                 <SelectTrigger id="create-role">
                   <SelectValue />
                 </SelectTrigger>
@@ -127,7 +124,9 @@ export function CreateUserDialog({
                 required
               >
                 <SelectTrigger id="create-branch">
-                  <SelectValue placeholder="Select branch" />
+                  <SelectValue placeholder="Select branch">
+                    {form.branchId ? branches.find((b) => b.id === form.branchId)?.name : undefined}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {branches.map((b) => (
@@ -146,7 +145,9 @@ export function CreateUserDialog({
               onValueChange={(v) => handleChange('teamId', v || null)}
             >
               <SelectTrigger id="create-team">
-                <SelectValue placeholder="No team" />
+                <SelectValue placeholder="No team">
+                  {form.teamId ? teams.find((t) => t.id === form.teamId)?.name : undefined}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {teams.map((t) => (
@@ -177,16 +178,18 @@ export function CreateUserDialog({
               />
             </div>
           </div>
-          <label className="flex items-center gap-3 rounded-lg border border-border p-3 cursor-pointer hover:bg-muted/50 transition-colors">
+          <label className="border-border hover:bg-muted/50 flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors">
             <input
               type="checkbox"
               checked={form.canSubmitPoints ?? false}
               onChange={(e) => setForm((prev) => ({ ...prev, canSubmitPoints: e.target.checked }))}
-              className="h-4 w-4 rounded border-border"
+              className="border-border h-4 w-4 rounded"
             />
             <div>
-              <p className="text-sm font-medium leading-none">Can Submit Points</p>
-              <p className="text-xs text-muted-foreground mt-1">Allow this user to give points to others</p>
+              <p className="text-sm leading-none font-medium">Can Submit Points</p>
+              <p className="text-muted-foreground mt-1 text-xs">
+                Allow this user to give points to others
+              </p>
             </div>
           </label>
           <div className="grid gap-2">
@@ -200,11 +203,7 @@ export function CreateUserDialog({
             />
           </div>
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
