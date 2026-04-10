@@ -23,7 +23,7 @@ let isSyncing = false
 const STALE_JOB_MINUTES = 30
 
 /** Mark any in_progress jobs older than 30 minutes as failed (crashed/timed out). */
-async function cleanupStaleJobs(): Promise<void> {
+export async function cleanupStaleJobs(): Promise<void> {
   await db
     .update(sheetSyncJobs)
     .set({
@@ -65,8 +65,18 @@ function buildConfigFromEnv(): Omit<SyncConfig, 'branchId'> {
   }
 }
 
-export function isSyncRunning(): boolean {
-  return isSyncing
+export async function isSyncRunning(): Promise<boolean> {
+  if (isSyncing) return true
+
+  // Also check the database for in_progress jobs that might be running
+  // from a previous server instance (e.g. after restart/deploy)
+  const [activeJob] = await db
+    .select({ id: sheetSyncJobs.id })
+    .from(sheetSyncJobs)
+    .where(eq(sheetSyncJobs.status, 'in_progress'))
+    .limit(1)
+
+  return !!activeJob
 }
 
 export async function triggerManualSync(startedBy?: string) {
