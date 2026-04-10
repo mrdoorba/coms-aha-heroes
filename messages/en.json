@@ -373,7 +373,11 @@
   "employee_detail_poin_aha": "AHA Points",
   "employee_detail_penalti": "Penalty",
   "employee_detail_chart_title": "Star Points",
+  "employee_detail_chart_title_aha": "AHA Points",
+  "employee_detail_chart_title_penalti": "Penalty",
   "employee_detail_history_title": "Star Points History ({count})",
+  "employee_detail_history_title_aha": "AHA Points History ({count})",
+  "employee_detail_history_title_penalti": "Penalty History ({count})",
   "employee_detail_col_date": "Date",
   "employee_detail_col_team": "Team",
   "employee_detail_col_related_staff": "Related Staff",
@@ -382,5 +386,7 @@
   "employee_detail_col_month": "MMM YYYY",
   "employee_detail_view": "View",
   "employee_detail_empty": "No star points history yet",
+  "employee_detail_empty_aha": "No AHA points history yet",
+  "employee_detail_empty_penalti": "No penalty history yet",
   "employee_detail_page_of": "Page {page} of {total}"
 }

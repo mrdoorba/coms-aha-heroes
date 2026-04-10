@@ -373,7 +373,11 @@
   "employee_detail_poin_aha": "Poin AHA",
   "employee_detail_penalti": "Penalti",
   "employee_detail_chart_title": "Poin Bintang",
+  "employee_detail_chart_title_aha": "Poin AHA",
+  "employee_detail_chart_title_penalti": "Penalti",
   "employee_detail_history_title": "Riwayat Poin Bintang ({count})",
+  "employee_detail_history_title_aha": "Riwayat Poin AHA ({count})",
+  "employee_detail_history_title_penalti": "Riwayat Penalti ({count})",
   "employee_detail_col_date": "Tanggal",
   "employee_detail_col_team": "Team",
   "employee_detail_col_related_staff": "Staff yang bersangkutan",
@@ -382,5 +386,7 @@
   "employee_detail_col_month": "MMM YYYY",
   "employee_detail_view": "Lihat",
   "employee_detail_empty": "Belum ada riwayat poin bintang",
+  "employee_detail_empty_aha": "Belum ada riwayat poin AHA",
+  "employee_detail_empty_penalti": "Belum ada riwayat penalti",
   "employee_detail_page_of": "Halaman {page} dari {total}"
 }
