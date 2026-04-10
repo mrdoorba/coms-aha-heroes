@@ -166,7 +166,7 @@ async function getLeaderboardFiltered(
       ${users.isActive} = true
       AND ${users.branchId} = ${ctx.actor.branchId}
       ${teamCondition}
-      AND ${achievementPoints.approvedAt} >= ${sinceDate}
+      AND ${achievementPoints.createdAt} >= ${sinceDate}
     `
 
     const offset = (input.page - 1) * input.limit

@@ -214,6 +214,8 @@ function LeaderboardPage() {
             <SelectItem value="1">{m.leaderboard_last_months({ count: '1' })}</SelectItem>
             <SelectItem value="2">{m.leaderboard_last_months({ count: '2' })}</SelectItem>
             <SelectItem value="3">{m.leaderboard_last_months({ count: '3' })}</SelectItem>
+            <SelectItem value="6">{m.leaderboard_last_months({ count: '6' })}</SelectItem>
+            <SelectItem value="12">{m.leaderboard_last_months({ count: '12' })}</SelectItem>
           </SelectContent>
         </Select>
       </div>
