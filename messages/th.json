@@ -373,7 +373,11 @@
   "employee_detail_poin_aha": "คะแนน AHA",
   "employee_detail_penalti": "บทลงโทษ",
   "employee_detail_chart_title": "คะแนนดาว",
+  "employee_detail_chart_title_aha": "คะแนน AHA",
+  "employee_detail_chart_title_penalti": "บทลงโทษ",
   "employee_detail_history_title": "ประวัติคะแนนดาว ({count})",
+  "employee_detail_history_title_aha": "ประวัติคะแนน AHA ({count})",
+  "employee_detail_history_title_penalti": "ประวัติบทลงโทษ ({count})",
   "employee_detail_col_date": "วันที่",
   "employee_detail_col_team": "ทีม",
   "employee_detail_col_related_staff": "พนักงานที่เกี่ยวข้อง",
@@ -382,5 +386,7 @@
   "employee_detail_col_month": "MMM YYYY",
   "employee_detail_view": "ดู",
   "employee_detail_empty": "ยังไม่มีประวัติคะแนนดาว",
+  "employee_detail_empty_aha": "ยังไม่มีประวัติคะแนน AHA",
+  "employee_detail_empty_penalti": "ยังไม่มีประวัติบทลงโทษ",
   "employee_detail_page_of": "หน้า {page} จาก {total}"
 }
