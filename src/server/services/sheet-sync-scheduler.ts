@@ -96,23 +96,27 @@ export function triggerSyncInBackground(startedBy?: string) {
   return { started: true }
 }
 
-/** Wipe all transactional data then re-import from the sheet. */
-export async function triggerFullResync(startedBy?: string) {
-  if (isSyncing) return null
+/** Wipe all transactional data then re-import from the sheet (runs in background). */
+export function triggerResyncInBackground(startedBy?: string) {
+  if (isSyncing) return { started: false, reason: 'Sync already in progress' }
+
   isSyncing = true
-  try {
-    await cleanupStaleJobs()
-    const config = buildConfigFromEnv()
-    const branchId = await getDefaultBranchId()
-    if (!branchId) throw new Error('No branch found')
-    if (!config.sheetIds.points && !config.sheetIds.employees) {
-      throw new Error('GOOGLE_SHEET_ID_POINTS/EMPLOYEES env vars not set')
+  void (async () => {
+    try {
+      await cleanupStaleJobs()
+      const config = buildConfigFromEnv()
+      const branchId = await getDefaultBranchId()
+      if (!branchId) throw new Error('No branch found')
+      if (!config.sheetIds.points && !config.sheetIds.employees) {
+        throw new Error('GOOGLE_SHEET_ID_POINTS/EMPLOYEES env vars not set')
+      }
+      await runFullResync(config.sheetIds, config.tabNames, branchId, startedBy)
+    } catch (err) {
+      console.error('[sheet-sync] resync error:', err)
+    } finally {
+      isSyncing = false
     }
-    return await runFullResync(config.sheetIds, config.tabNames, branchId, startedBy)
-  } catch (err) {
-    console.error('[sheet-sync] resync error:', err)
-    throw err
-  } finally {
-    isSyncing = false
-  }
+  })()
+
+  return { started: true }
 }

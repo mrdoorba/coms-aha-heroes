@@ -2,7 +2,7 @@ import { Elysia, t } from 'elysia'
 import { paginationQuery } from './_query'
 import {
   triggerSyncInBackground,
-  triggerFullResync,
+  triggerResyncInBackground,
   isSyncRunning,
 } from '../services/sheet-sync-scheduler'
 import * as repo from '../repositories/sheet-sync'
@@ -92,7 +92,7 @@ export const sheetSyncRoute = new Elysia({ prefix: '/sheet-sync' })
       }
     }
 
-    const result = await triggerFullResync(actor.id)
+    const result = await triggerResyncInBackground(actor.id)
     return { success: true, data: result, error: null }
   })
 
