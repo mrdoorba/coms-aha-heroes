@@ -180,12 +180,7 @@ export const resetPasswordFn = createServerFn({ method: 'POST' })
     const updated = await db
       .update(authAccount)
       .set({ password: hashedPassword })
-      .where(
-        and(
-          eq(authAccount.userId, baUser.id),
-          eq(authAccount.providerId, 'credential'),
-        ),
-      )
+      .where(and(eq(authAccount.userId, baUser.id), eq(authAccount.providerId, 'credential')))
       .returning({ id: authAccount.id })
 
     if (updated.length === 0) throw new Error('No credential account found for this user')

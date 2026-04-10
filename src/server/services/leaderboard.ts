@@ -127,7 +127,12 @@ async function getLeaderboardFiltered(
   penaltiPointImpact: number,
 ): Promise<{ entries: LeaderboardEntry[]; meta: { total: number; page: number; limit: number } }> {
   return withRLS(ctx.actor, async (db) => {
-    console.log('[leaderboard:filtered] months=%d, teamId=%s, type=%s', input.months, input.teamId, input.type)
+    console.log(
+      '[leaderboard:filtered] months=%d, teamId=%s, type=%s',
+      input.months,
+      input.teamId,
+      input.type,
+    )
     const sinceDate = sql`now() - make_interval(months => ${input.months}::int)`
 
     // NOTE: Do NOT use .as() aliases on expressions used in raw sql`` templates.
