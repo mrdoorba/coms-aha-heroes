@@ -24,7 +24,9 @@ export const leaderboardRoute = new Elysia({ prefix: '/leaderboard' })
     },
     {
       query: t.Object({
-        type: t.Union([t.Literal('bintang'), t.Literal('poin_aha')], { default: 'bintang' }),
+        type: t.Union([t.Literal('bintang'), t.Literal('poin_aha'), t.Literal('penalti')], {
+          default: 'bintang',
+        }),
         teamId: t.Optional(t.String({ format: 'uuid' })),
         months: t.Optional(t.Number({ minimum: 1, maximum: 12 })),
         ...paginationQuery,

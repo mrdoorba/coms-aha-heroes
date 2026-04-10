@@ -10,7 +10,7 @@ type ServiceContext = {
 }
 
 export type LeaderboardInput = {
-  type: 'bintang' | 'poin_aha'
+  type: 'bintang' | 'poin_aha' | 'penalti'
   teamId?: string
   months?: number
   page: number
@@ -57,7 +57,11 @@ export async function getLeaderboard(
     )`.as('poin_aha_balance')
 
     const orderExpr =
-      input.type === 'bintang' ? desc(pointSummaries.bintangCount) : desc(poinAhaBalanceExpr)
+      input.type === 'bintang'
+        ? desc(pointSummaries.bintangCount)
+        : input.type === 'penalti'
+          ? desc(pointSummaries.penaltiPointsSum)
+          : desc(poinAhaBalanceExpr)
 
     const offset = (input.page - 1) * input.limit
 
@@ -95,7 +99,12 @@ export async function getLeaderboard(
       name: row.name,
       avatarUrl: row.avatarUrl,
       teamId: row.teamId,
-      score: input.type === 'bintang' ? row.bintangCount : Number(row.poinAhaBalance ?? 0),
+      score:
+        input.type === 'bintang'
+          ? row.bintangCount
+          : input.type === 'penalti'
+            ? row.penaltiPointsSum
+            : Number(row.poinAhaBalance ?? 0),
       bintangCount: row.bintangCount,
       penaltiCount: row.penaltiPointsSum,
     }))
@@ -144,7 +153,12 @@ async function getLeaderboardFiltered(
       ), 0) * ${penaltiPointImpact}
     )`.as('poin_aha_balance')
 
-    const orderExpr = input.type === 'bintang' ? desc(bintangCountExpr) : desc(poinAhaBalanceExpr)
+    const orderExpr =
+      input.type === 'bintang'
+        ? desc(bintangCountExpr)
+        : input.type === 'penalti'
+          ? desc(penaltiSumExpr)
+          : desc(poinAhaBalanceExpr)
 
     const teamCondition = input.teamId ? sql`AND ${users.teamId} = ${input.teamId}` : sql``
 
@@ -202,7 +216,11 @@ async function getLeaderboardFiltered(
       avatarUrl: row.avatar_url,
       teamId: row.team_id,
       score:
-        input.type === 'bintang' ? Number(row.bintang_count) : Number(row.poin_aha_balance ?? 0),
+        input.type === 'bintang'
+          ? Number(row.bintang_count)
+          : input.type === 'penalti'
+            ? Number(row.penalti_sum)
+            : Number(row.poin_aha_balance ?? 0),
       bintangCount: Number(row.bintang_count),
       penaltiCount: Number(row.penalti_sum),
     }))
