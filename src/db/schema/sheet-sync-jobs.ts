@@ -22,10 +22,5 @@ export const sheetSyncJobs = pgTable(
     completedAt: timestamp('completed_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [
-    check(
-      'chk_sync_direction',
-      sql`direction IN ('import', 'export')`,
-    ),
-  ],
+  (t) => [check('chk_sync_direction', sql`direction IN ('import', 'export', 'resync')`)],
 )
