@@ -127,7 +127,8 @@ async function getLeaderboardFiltered(
   penaltiPointImpact: number,
 ): Promise<{ entries: LeaderboardEntry[]; meta: { total: number; page: number; limit: number } }> {
   return withRLS(ctx.actor, async (db) => {
-    const sinceDate = sql`now() - make_interval(months => ${input.months})`
+    console.log('[leaderboard:filtered] months=%d, teamId=%s, type=%s', input.months, input.teamId, input.type)
+    const sinceDate = sql`now() - make_interval(months => ${input.months}::int)`
 
     // NOTE: Do NOT use .as() aliases on expressions used in raw sql`` templates.
     // Drizzle renders SQL.Aliased as just the alias name (e.g. "bintang_count"),
@@ -174,17 +175,23 @@ async function getLeaderboardFiltered(
     const offset = (input.page - 1) * input.limit
 
     // Count distinct users who have any points in the period
-    const countResult = await db.execute<{ total: string }>(sql`
-      SELECT COUNT(DISTINCT ${users.id}) AS total
-      FROM ${users}
-      INNER JOIN ${achievementPoints} ON ${achievementPoints.userId} = ${users.id}
-      INNER JOIN ${pointCategories} ON ${pointCategories.id} = ${achievementPoints.categoryId}
-      WHERE ${baseWhere}
-    `)
+    let countResult: { rows: Array<{ total: string }> }
+    try {
+      countResult = await db.execute<{ total: string }>(sql`
+        SELECT COUNT(DISTINCT ${users.id}) AS total
+        FROM ${users}
+        INNER JOIN ${achievementPoints} ON ${achievementPoints.userId} = ${users.id}
+        INNER JOIN ${pointCategories} ON ${pointCategories.id} = ${achievementPoints.categoryId}
+        WHERE ${baseWhere}
+      `)
+    } catch (err) {
+      console.error('[leaderboard:filtered] COUNT query failed:', err)
+      throw err
+    }
 
     const total = Number(countResult.rows[0]?.total ?? 0)
 
-    const rows = await db.execute<{
+    type FilteredRow = {
       user_id: string
       name: string
       avatar_url: string | null
@@ -192,24 +199,32 @@ async function getLeaderboardFiltered(
       bintang_count: string
       penalti_sum: string
       poin_aha_balance: string
-    }>(sql`
-      SELECT
-        ${users.id} AS user_id,
-        ${users.name} AS name,
-        ${users.avatarUrl} AS avatar_url,
-        ${users.teamId} AS team_id,
-        ${bintangCountExpr} AS bintang_count,
-        ${penaltiSumExpr} AS penalti_sum,
-        ${poinAhaBalanceExpr} AS poin_aha_balance
-      FROM ${users}
-      INNER JOIN ${achievementPoints} ON ${achievementPoints.userId} = ${users.id}
-      INNER JOIN ${pointCategories} ON ${pointCategories.id} = ${achievementPoints.categoryId}
-      WHERE ${baseWhere}
-      GROUP BY ${users.id}, ${users.name}, ${users.avatarUrl}, ${users.teamId}
-      ORDER BY ${orderExpr}
-      LIMIT ${input.limit}
-      OFFSET ${offset}
-    `)
+    }
+
+    let rows: { rows: FilteredRow[] }
+    try {
+      rows = await db.execute<FilteredRow>(sql`
+        SELECT
+          ${users.id} AS user_id,
+          ${users.name} AS name,
+          ${users.avatarUrl} AS avatar_url,
+          ${users.teamId} AS team_id,
+          ${bintangCountExpr} AS bintang_count,
+          ${penaltiSumExpr} AS penalti_sum,
+          ${poinAhaBalanceExpr} AS poin_aha_balance
+        FROM ${users}
+        INNER JOIN ${achievementPoints} ON ${achievementPoints.userId} = ${users.id}
+        INNER JOIN ${pointCategories} ON ${pointCategories.id} = ${achievementPoints.categoryId}
+        WHERE ${baseWhere}
+        GROUP BY ${users.id}, ${users.name}, ${users.avatarUrl}, ${users.teamId}
+        ORDER BY ${orderExpr}
+        LIMIT ${input.limit}
+        OFFSET ${offset}
+      `)
+    } catch (err) {
+      console.error('[leaderboard:filtered] SELECT query failed:', err)
+      throw err
+    }
 
     const entries: LeaderboardEntry[] = rows.rows.map((row, index) => ({
       rank: offset + index + 1,
