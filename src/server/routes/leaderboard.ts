@@ -28,7 +28,7 @@ export const leaderboardRoute = new Elysia({ prefix: '/leaderboard' })
           default: 'bintang',
         }),
         teamId: t.Optional(t.String({ format: 'uuid' })),
-        months: t.Optional(t.Number({ minimum: 1, maximum: 12 })),
+        months: t.Optional(t.Numeric({ minimum: 1, maximum: 12 })),
         ...paginationQuery,
       }),
     },
