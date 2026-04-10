@@ -390,5 +390,11 @@
   "employee_detail_empty": "ยังไม่มีประวัติคะแนนดาว",
   "employee_detail_empty_aha": "ยังไม่มีประวัติคะแนน AHA",
   "employee_detail_empty_penalti": "ยังไม่มีประวัติบทลงโทษ",
-  "employee_detail_page_of": "หน้า {page} จาก {total}"
+  "employee_detail_page_of": "หน้า {page} จาก {total}",
+
+  "reset_password_title": "รีเซ็ตรหัสผ่าน",
+  "reset_password_confirm": "รีเซ็ตรหัสผ่านสำหรับ {name} ({email})? รหัสผ่านจะถูกตั้งเป็นค่าเริ่มต้นและต้องเปลี่ยนเมื่อเข้าสู่ระบบครั้งถัดไป",
+  "reset_password_button": "รีเซ็ตรหัสผ่าน",
+  "reset_password_resetting": "กำลังรีเซ็ต...",
+  "reset_password_success": "รีเซ็ตรหัสผ่านสำเร็จแล้ว"
 }
