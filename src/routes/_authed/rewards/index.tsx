@@ -36,7 +36,7 @@ function RewardsSkeleton() {
       </div>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-52 rounded-2xl border border-[#325FEC]/8 bg-white" />
+          <div key={i} className="h-52 rounded-2xl border border-border bg-card" />
         ))}
       </div>
     </div>
@@ -120,7 +120,7 @@ function RewardsCatalogPage() {
 
       {/* Header row */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-extrabold text-[#1D388B]">{m.rewards_catalog_title()}</h1>
+        <h1 className="text-xl font-extrabold text-foreground">{m.rewards_catalog_title()}</h1>
         {isAdmin && (
           <Button
             size="sm"
@@ -136,8 +136,8 @@ function RewardsCatalogPage() {
       {/* Grid */}
       {rewards.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-[#325FEC]/8">
-            <Gift className="h-10 w-10 text-[#325FEC]/40" />
+          <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/8">
+            <Gift className="h-10 w-10 text-primary/40" />
           </div>
           <div>
             <p className="font-bold text-foreground">{m.rewards_empty()}</p>

@@ -3,7 +3,6 @@ import { Button } from '~/components/ui/button'
 import * as m from '~/paraglide/messages'
 import { ChallengeDialog } from './challenge-dialog'
 import { AppealDialog } from './appeal-dialog'
-import { ResolveDialog } from './resolve-dialog'
 import { useSession } from '~/lib/auth-client'
 import type { PointStatus, PointCategoryCode } from '~/shared/constants'
 
@@ -32,42 +31,34 @@ export function PointActions({ point }: PointActionsProps) {
   const isPenalti = point.category.code === 'PENALTI'
   const status = point.status as PointStatus
 
-  // Action buttons visibility logic
   const canChallenge = isLeader && !isSubmitter && isPenalti && status === 'active'
   const canAppeal = isRecipient && isPenalti && status === 'active'
-  
-  // Resolve buttons are shown if there are open challenges/appeals
-  // But for the detail page, we might just show them if status is 'challenged' or 'frozen'
-  const canResolve = isHRorAdmin && (status === 'challenged' || status === 'frozen')
 
-  if (!canChallenge && !canAppeal && !canResolve) return null
+  if (!canChallenge && !canAppeal) return null
 
   return (
     <div className="flex flex-col gap-2 w-full mt-4">
       {canChallenge && (
-        <ChallengeDialog 
-          pointId={point.id} 
+        <ChallengeDialog
+          pointId={point.id}
           trigger={
-            <Button className="w-full bg-[#6D50B8] hover:bg-purple-700 rounded-xl py-6 text-base font-semibold shadow-lg shadow-purple-200">
+            <Button className="w-full btn-gradient-purple rounded-xl py-6 text-base font-semibold shadow-lg shadow-purple-900/20">
               {m.point_action_challenge()}
             </Button>
           }
         />
       )}
-      
+
       {canAppeal && (
-        <AppealDialog 
-          pointId={point.id} 
+        <AppealDialog
+          pointId={point.id}
           trigger={
-            <Button className="w-full bg-[#325FEC] hover:bg-blue-700 rounded-xl py-6 text-base font-semibold shadow-lg shadow-blue-200">
+            <Button className="w-full btn-gradient-blue rounded-xl py-6 text-base font-semibold shadow-lg shadow-blue-900/20">
               {m.point_action_appeal()}
             </Button>
           }
         />
       )}
-
-      {/* Resolve buttons for HR/Admin are usually per challenge/appeal, 
-          but we can show a general resolve button that opens a list or the most recent one */}
     </div>
   )
 }

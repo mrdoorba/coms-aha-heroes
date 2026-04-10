@@ -93,7 +93,7 @@ function EmployeeDetailPage() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 rounded-full hover:bg-[#325FEC]/8 hover:text-[#325FEC]"
+            className="h-9 w-9 rounded-full hover:bg-primary/8 hover:text-primary"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -103,8 +103,8 @@ function EmployeeDetailPage() {
             <User className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-extrabold text-[#1D388B]">{employee.name}</h1>
-            <p className="mt-0.5 text-[13px] font-medium text-[#1D388B]/50">
+            <h1 className="text-xl font-extrabold text-foreground">{employee.name}</h1>
+            <p className="mt-0.5 text-[13px] font-medium text-muted-foreground">
               {employee.teamName ?? '-'} &middot; {employee.department ?? '-'} &middot;{' '}
               {employee.position ?? '-'}
             </p>
@@ -114,28 +114,28 @@ function EmployeeDetailPage() {
 
       {/* Summary Cards */}
       <div className="mb-6 grid grid-cols-3 gap-4">
-        <div className="rounded-xl border border-[#325FEC]/8 bg-white p-4 shadow-[0_2px_12px_rgba(29,56,139,0.07)]">
-          <div className="flex items-center gap-2 text-[13px] font-semibold text-[#1D388B]/50">
+        <div className="rounded-xl border border-border bg-card p-4 shadow-card">
+          <div className="flex items-center gap-2 text-[13px] font-semibold text-muted-foreground">
             <Star className="h-4 w-4 text-yellow-500" />
             {m.employee_detail_poin_bintang()}
           </div>
-          <div className="mt-1 text-2xl font-extrabold text-[#1D388B]">
+          <div className="mt-1 text-2xl font-extrabold text-foreground">
             {summary.bintangCount}
           </div>
         </div>
-        <div className="rounded-xl border border-[#325FEC]/8 bg-white p-4 shadow-[0_2px_12px_rgba(29,56,139,0.07)]">
-          <div className="text-[13px] font-semibold text-[#1D388B]/50">
+        <div className="rounded-xl border border-border bg-card p-4 shadow-card">
+          <div className="text-[13px] font-semibold text-muted-foreground">
             {m.employee_detail_poin_aha()}
           </div>
-          <div className="mt-1 text-2xl font-extrabold text-[#1D388B]">
+          <div className="mt-1 text-2xl font-extrabold text-primary">
             {summary.directPoinAha}
           </div>
         </div>
-        <div className="rounded-xl border border-[#325FEC]/8 bg-white p-4 shadow-[0_2px_12px_rgba(29,56,139,0.07)]">
-          <div className="text-[13px] font-semibold text-[#C73E3E]/70">
+        <div className="rounded-xl border border-border bg-card p-4 shadow-card">
+          <div className="text-[13px] font-semibold text-destructive/70">
             {m.employee_detail_penalti()}
           </div>
-          <div className="mt-1 text-2xl font-extrabold text-[#C73E3E]">
+          <div className="mt-1 text-2xl font-extrabold text-destructive">
             {summary.penaltiPointsSum}
           </div>
         </div>
@@ -143,30 +143,32 @@ function EmployeeDetailPage() {
 
       {/* Poin Bintang Chart */}
       {chartData.length > 0 && (
-        <div className="mb-6 rounded-xl border border-[#325FEC]/8 bg-white p-5 shadow-[0_2px_12px_rgba(29,56,139,0.07)]">
-          <h2 className="mb-4 text-sm font-bold text-[#1D388B]">
+        <div className="mb-6 rounded-xl border border-border bg-card p-5 shadow-card">
+          <h2 className="mb-4 text-sm font-bold text-foreground">
             {m.employee_detail_chart_title()}
           </h2>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis
                   dataKey="label"
-                  tick={{ fontSize: 11, fill: '#1D388B80' }}
-                  axisLine={{ stroke: '#E5E7EB' }}
+                  tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                  axisLine={{ stroke: 'var(--border)' }}
                   tickLine={false}
                 />
                 <YAxis
                   allowDecimals={false}
-                  tick={{ fontSize: 11, fill: '#1D388B80' }}
+                  tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <Tooltip
                   contentStyle={{
                     borderRadius: 8,
-                    border: '1px solid #E5E7EB',
+                    border: '1px solid var(--border)',
+                    background: 'var(--card)',
+                    color: 'var(--foreground)',
                     fontSize: 12,
                   }}
                 />
@@ -182,31 +184,31 @@ function EmployeeDetailPage() {
       )}
 
       {/* Points History Table */}
-      <div className="rounded-xl border border-[#325FEC]/8 bg-white shadow-[0_2px_12px_rgba(29,56,139,0.07)] overflow-hidden">
-        <div className="px-5 py-3 border-b border-[#325FEC]/8 bg-[#EDF1FA]/40">
-          <h2 className="text-sm font-bold text-[#1D388B]">
+      <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden">
+        <div className="px-5 py-3 border-b border-border bg-muted/40">
+          <h2 className="text-sm font-bold text-foreground">
             {m.employee_detail_history_title({ count: String(currentMeta.total) })}
           </h2>
         </div>
         <Table>
           <TableHeader>
-            <TableRow className="bg-[#EDF1FA]/60 border-b border-[#325FEC]/8">
-              <TableHead className="whitespace-nowrap text-[13px] font-bold uppercase tracking-wider text-[#1D388B]/60">
+            <TableRow className="bg-muted/60 border-b border-border">
+              <TableHead className="whitespace-nowrap text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
                 {m.employee_detail_col_date()}
               </TableHead>
-              <TableHead className="whitespace-nowrap text-[13px] font-bold uppercase tracking-wider text-[#1D388B]/60">
+              <TableHead className="whitespace-nowrap text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
                 {m.employee_detail_col_team()}
               </TableHead>
-              <TableHead className="whitespace-nowrap text-[13px] font-bold uppercase tracking-wider text-[#1D388B]/60">
+              <TableHead className="whitespace-nowrap text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
                 {m.employee_detail_col_related_staff()}
               </TableHead>
-              <TableHead className="whitespace-nowrap text-[13px] font-bold uppercase tracking-wider text-[#1D388B]/60">
+              <TableHead className="whitespace-nowrap text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
                 {m.employee_detail_col_reason()}
               </TableHead>
-              <TableHead className="whitespace-nowrap text-[13px] font-bold uppercase tracking-wider text-[#1D388B]/60">
+              <TableHead className="whitespace-nowrap text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
                 {m.employee_detail_col_screenshot()}
               </TableHead>
-              <TableHead className="whitespace-nowrap text-[13px] font-bold uppercase tracking-wider text-[#1D388B]/60">
+              <TableHead className="whitespace-nowrap text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
                 {m.employee_detail_col_month()}
               </TableHead>
             </TableRow>
@@ -214,10 +216,10 @@ function EmployeeDetailPage() {
           <TableBody>
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i} className="border-b border-[#325FEC]/5">
+                <TableRow key={i} className="border-b border-border/50">
                   {Array.from({ length: 6 }).map((_, j) => (
                     <TableCell key={j}>
-                      <div className="h-4 w-24 rounded bg-[#325FEC]/8 animate-pulse" />
+                      <div className="h-4 w-24 rounded bg-primary/8 animate-pulse" />
                     </TableCell>
                   ))}
                 </TableRow>
@@ -226,10 +228,10 @@ function EmployeeDetailPage() {
               <TableRow>
                 <TableCell colSpan={6} className="py-16">
                   <div className="flex flex-col items-center gap-3 text-center">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#325FEC]/8">
-                      <Star className="h-6 w-6 text-[#325FEC]/50" />
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/8">
+                      <Star className="h-6 w-6 text-primary/50" />
                     </div>
-                    <p className="text-sm font-medium text-[#1D388B]/60">
+                    <p className="text-sm font-medium text-muted-foreground">
                       {m.employee_detail_empty()}
                     </p>
                   </div>
@@ -239,18 +241,18 @@ function EmployeeDetailPage() {
               currentPoints.map((point) => (
                 <TableRow
                   key={point.id}
-                  className="border-b border-[#325FEC]/5 hover:bg-[#EDF1FA]/40 transition-colors"
+                  className="border-b border-border/50 hover:bg-muted/40 transition-colors"
                 >
-                  <TableCell className="text-sm text-[#1D388B]">
+                  <TableCell className="text-sm text-foreground">
                     {formatDate(point.createdAt)}
                   </TableCell>
-                  <TableCell className="text-sm text-[#1D388B]/70">
+                  <TableCell className="text-sm text-muted-foreground">
                     {employee.teamName ?? '-'}
                   </TableCell>
-                  <TableCell className="text-sm text-[#1D388B]/70">
+                  <TableCell className="text-sm text-muted-foreground">
                     {point.relatedStaff ?? '-'}
                   </TableCell>
-                  <TableCell className="text-sm text-[#1D388B]/70 max-w-[300px] truncate">
+                  <TableCell className="text-sm text-muted-foreground max-w-[300px] truncate">
                     {point.reason}
                   </TableCell>
                   <TableCell>
@@ -259,16 +261,16 @@ function EmployeeDetailPage() {
                         href={point.screenshotUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-sm text-[#325FEC] hover:underline"
+                        className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
                       >
                         {m.employee_detail_view()}
                         <ExternalLink className="h-3 w-3" />
                       </a>
                     ) : (
-                      <span className="text-sm text-[#1D388B]/40">-</span>
+                      <span className="text-sm text-muted-foreground/40">-</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-sm text-[#1D388B]/70">
+                  <TableCell className="text-sm text-muted-foreground">
                     {formatMonthYear(point.createdAt)}
                   </TableCell>
                 </TableRow>
@@ -279,8 +281,8 @@ function EmployeeDetailPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-[#325FEC]/8 bg-[#EDF1FA]/40 px-4 py-3">
-            <p className="text-[13px] font-medium text-[#1D388B]/60">
+          <div className="flex items-center justify-between border-t border-border bg-muted/40 px-4 py-3">
+            <p className="text-[13px] font-medium text-muted-foreground">
               {m.employee_detail_page_of({ page: String(page), total: String(totalPages) })}
             </p>
             <div className="flex items-center gap-1">
@@ -289,7 +291,7 @@ function EmployeeDetailPage() {
                 size="icon-sm"
                 disabled={page <= 1}
                 onClick={() => handlePageChange(page - 1)}
-                className="border-[#325FEC]/15 text-[#325FEC] hover:bg-[#325FEC]/8 disabled:opacity-40"
+                className="border-border text-primary hover:bg-primary/8 disabled:opacity-40"
               >
                 <ChevronLeft className="size-4" />
               </Button>
@@ -298,7 +300,7 @@ function EmployeeDetailPage() {
                 size="icon-sm"
                 disabled={page >= totalPages}
                 onClick={() => handlePageChange(page + 1)}
-                className="border-[#325FEC]/15 text-[#325FEC] hover:bg-[#325FEC]/8 disabled:opacity-40"
+                className="border-border text-primary hover:bg-primary/8 disabled:opacity-40"
               >
                 <ChevronRight className="size-4" />
               </Button>

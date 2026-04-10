@@ -36,8 +36,8 @@ export function Header({ user, unreadCount, onOpenPalette, className }: HeaderPr
     <header
       className={cn(
         'sticky top-0 z-30 flex h-14 items-center justify-between px-6',
-        'bg-white/80 dark:bg-[oklch(0.12_0.025_265)]/80 backdrop-blur-md border-b border-[#325FEC]/8 dark:border-white/8',
-        'shadow-[0_1px_0_0_rgba(29,56,139,0.06)]',
+        'bg-card/80 backdrop-blur-md border-b border-border',
+        'shadow-[0_1px_0_0_rgba(29,56,139,0.06)] dark:shadow-none',
         className,
       )}
     >
@@ -46,23 +46,23 @@ export function Header({ user, unreadCount, onOpenPalette, className }: HeaderPr
         type="button"
         onClick={onOpenPalette}
         className={cn(
-          'flex w-full max-w-xs items-center gap-2.5 rounded-xl border border-[#325FEC]/12 bg-[#EDF1FA]',
+          'flex w-full max-w-xs items-center gap-2.5 rounded-xl border border-border bg-muted',
           'h-9 px-3 text-sm text-muted-foreground/70 transition-all',
-          'hover:border-[#325FEC]/25 hover:bg-white hover:text-muted-foreground',
+          'hover:border-primary/25 hover:bg-card hover:text-muted-foreground',
           'cursor-pointer select-none',
         )}
         aria-label="Open command palette"
       >
         <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
         <span className="flex-1 text-left">{m.header_search_placeholder()}</span>
-        <kbd className="flex items-center gap-0.5 rounded-md border border-[#325FEC]/15 bg-white/70 px-1.5 py-0.5 text-[10px] font-semibold text-[#325FEC]/50 shadow-sm">
+        <kbd className="flex items-center gap-0.5 rounded-md border border-border bg-card/70 px-1.5 py-0.5 text-[10px] font-semibold text-primary/50 shadow-sm">
           <span className="text-[11px]">⌘</span>K
         </kbd>
       </button>
 
       <div className="flex items-center gap-2">
         {/* Language switcher */}
-        <div className="flex items-center rounded-lg border border-[#325FEC]/12 bg-[#EDF1FA] overflow-hidden">
+        <div className="flex items-center rounded-lg border border-border bg-muted overflow-hidden">
           {LANGUAGES.map((lang) => {
             const isActive = getLocale() === lang
             return (
@@ -89,7 +89,7 @@ export function Header({ user, unreadCount, onOpenPalette, className }: HeaderPr
         {/* Notifications */}
         <Link
           to="/notifications"
-          className="relative flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-[#325FEC]/8 hover:text-[#325FEC] transition-colors"
+          className="relative flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-primary/8 hover:text-primary transition-colors"
           aria-label="Notifications"
         >
           <Bell className="h-4.5 w-4.5" />
@@ -102,8 +102,8 @@ export function Header({ user, unreadCount, onOpenPalette, className }: HeaderPr
 
         {/* User dropdown */}
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-2 rounded-xl px-2.5 py-1.5 hover:bg-[#325FEC]/6 transition-colors">
-            <div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-[#325FEC]/15 text-xs font-bold text-[#325FEC] ring-1 ring-[#325FEC]/20">
+          <DropdownMenuTrigger className="flex items-center gap-2 rounded-xl px-2.5 py-1.5 hover:bg-primary/6 transition-colors">
+            <div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-primary/15 text-xs font-bold text-primary ring-1 ring-primary/20">
               {user.avatarUrl ? (
                 <img
                   src={user.avatarUrl}

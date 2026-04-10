@@ -32,14 +32,14 @@ function ReportsSkeleton() {
           <div className="h-3 w-40 rounded bg-muted" />
         </div>
       </div>
-      <div className="h-16 rounded-xl border border-border bg-white" />
+      <div className="h-16 rounded-xl border border-border bg-card" />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-20 rounded-xl border border-border bg-white" />
+          <div key={i} className="h-20 rounded-xl border border-border bg-card" />
         ))}
       </div>
       {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="h-40 rounded-xl border border-border bg-white" />
+        <div key={i} className="h-40 rounded-xl border border-border bg-card" />
       ))}
     </div>
   )
@@ -80,13 +80,13 @@ function HorizontalBar({
   return (
     <div className="flex items-center gap-3">
       <span className="w-28 shrink-0 truncate text-sm text-muted-foreground">{label}</span>
-      <div className="relative flex-1 h-5 rounded-full bg-[#96ADF5]/20 overflow-hidden">
+      <div className="relative flex-1 h-5 rounded-full bg-primary/15 overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-500 ${barClass}`}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="w-8 shrink-0 text-right text-sm font-semibold text-[#1D388B]">{value}</span>
+      <span className="w-8 shrink-0 text-right text-sm font-semibold text-foreground">{value}</span>
     </div>
   )
 }
@@ -109,7 +109,7 @@ function ReportsPage() {
     return (
       <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
         <ShieldOff className="mb-4 h-12 w-12 text-muted-foreground/40" />
-        <h2 className="text-lg font-semibold text-[#1D388B]">{m.common_access_denied()}</h2>
+        <h2 className="text-lg font-semibold text-foreground">{m.common_access_denied()}</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           {m.common_no_permission()}
         </p>
@@ -157,17 +157,17 @@ function ReportsPage() {
     <div className="max-w-4xl mx-auto p-4 space-y-6 pb-24 md:pb-8">
       {/* Header */}
       <div className="flex items-center gap-3 pt-2">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#325FEC]/10">
-          <BarChart3 className="h-5 w-5 text-[#325FEC]" />
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+          <BarChart3 className="h-5 w-5 text-primary" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-[#1D388B]">{m.reports_title()}</h1>
+          <h1 className="text-xl font-bold text-foreground">{m.reports_title()}</h1>
           <p className="text-xs text-muted-foreground">{m.reports_subtitle()}</p>
         </div>
       </div>
 
       {/* Filter bar */}
-      <Card className="border-[#325FEC]/8 shadow-[0_2px_12px_rgba(29,56,139,0.07)]">
+      <Card className="border-border shadow-card">
         <CardContent className="flex flex-wrap items-center gap-3 p-4">
           <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-muted-foreground">{m.reports_start_date()}</label>
@@ -176,7 +176,7 @@ function ReportsPage() {
               value={startDate}
               max={endDate}
               onChange={(e) => handleStartDate(e.target.value)}
-              className="h-9 rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#325FEC]/40"
+              className="h-9 rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
           </div>
           <div className="flex flex-col gap-1">
@@ -186,7 +186,7 @@ function ReportsPage() {
               value={endDate}
               min={startDate}
               onChange={(e) => handleEndDate(e.target.value)}
-              className="h-9 rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#325FEC]/40"
+              className="h-9 rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
           </div>
           {isLoading && (
@@ -231,9 +231,9 @@ function ReportsPage() {
       </div>
 
       {/* By Category */}
-      <Card className="border-[#325FEC]/8 shadow-[0_2px_12px_rgba(29,56,139,0.07)]">
+      <Card className="border-border shadow-card">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold text-[#1D388B]">
+          <CardTitle className="text-sm font-semibold text-foreground">
             {m.reports_by_category()}
           </CardTitle>
         </CardHeader>
@@ -249,7 +249,7 @@ function ReportsPage() {
                     {categoryIcon(cat.name)}
                     <span className="truncate text-sm text-muted-foreground">{cat.name}</span>
                   </div>
-                  <div className="relative flex-1 h-5 rounded-full bg-[#96ADF5]/20 overflow-hidden">
+                  <div className="relative flex-1 h-5 rounded-full bg-primary/15 overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${color.bar}`}
                       style={{
@@ -257,7 +257,7 @@ function ReportsPage() {
                       }}
                     />
                   </div>
-                  <span className="w-8 shrink-0 text-right text-sm font-semibold text-[#1D388B]">
+                  <span className="w-8 shrink-0 text-right text-sm font-semibold text-foreground">
                     {cat.count}
                   </span>
                 </div>
@@ -268,9 +268,9 @@ function ReportsPage() {
       </Card>
 
       {/* Top Teams */}
-      <Card className="border-[#325FEC]/8 shadow-[0_2px_12px_rgba(29,56,139,0.07)]">
+      <Card className="border-border shadow-card">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold text-[#1D388B]">
+          <CardTitle className="text-sm font-semibold text-foreground">
             {m.reports_top_teams()}
           </CardTitle>
         </CardHeader>
@@ -292,9 +292,9 @@ function ReportsPage() {
       </Card>
 
       {/* Submissions Over Time */}
-      <Card className="border-[#325FEC]/8 shadow-[0_2px_12px_rgba(29,56,139,0.07)]">
+      <Card className="border-border shadow-card">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold text-[#1D388B]">
+          <CardTitle className="text-sm font-semibold text-foreground">
             {m.reports_over_time()}
           </CardTitle>
         </CardHeader>
@@ -310,7 +310,7 @@ function ReportsPage() {
                   const shortDate = dateStr.slice(5) // MM-DD
                   return (
                     <div key={dateStr} className="flex flex-1 flex-col items-center gap-1">
-                      <span className="text-[10px] font-medium text-[#1D388B]">{point.count}</span>
+                      <span className="text-[10px] font-medium text-foreground">{point.count}</span>
                       <div
                         className="w-full rounded-t-md bg-[#325FEC] transition-all duration-500"
                         style={{ height: `${heightPct * 1.2}px`, minHeight: '8px' }}

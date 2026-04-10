@@ -19,9 +19,9 @@ type RewardCardProps = {
 
 export function RewardCard({ reward, isAdmin, onRedeem, onEdit }: RewardCardProps) {
   return (
-    <div className="card-hover shine-on-hover group flex flex-col overflow-hidden rounded-2xl bg-white border border-[#325FEC]/8 shadow-[0_2px_12px_rgba(29,56,139,0.07)]">
+    <div className="card-hover shine-on-hover group flex flex-col overflow-hidden rounded-2xl bg-card border border-border shadow-card">
       {/* Image / icon area */}
-      <div className="relative aspect-square w-full overflow-hidden bg-gradient-to-br from-[#EDF1FA] to-[#E2E8F4]">
+      <div className="relative aspect-square w-full overflow-hidden bg-gradient-to-br from-muted to-secondary">
         {reward.imageUrl ? (
           <img
             src={reward.imageUrl}
@@ -30,8 +30,8 @@ export function RewardCard({ reward, isAdmin, onRedeem, onEdit }: RewardCardProp
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#325FEC]/10">
-              <Gift className="h-7 w-7 text-[#325FEC]/50" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+              <Gift className="h-7 w-7 text-primary/50" />
             </div>
           </div>
         )}
@@ -41,17 +41,17 @@ export function RewardCard({ reward, isAdmin, onRedeem, onEdit }: RewardCardProp
           <button
             type="button"
             onClick={() => onEdit(reward)}
-            className="absolute top-2 right-2 h-8 w-8 rounded-full bg-white/95 shadow-md flex items-center justify-center hover:bg-white transition-all hover:scale-110 active:scale-95"
+            className="absolute top-2 right-2 h-8 w-8 rounded-full bg-card/95 shadow-md flex items-center justify-center hover:bg-card transition-all hover:scale-110 active:scale-95"
             aria-label="Edit reward"
           >
-            <Pencil className="h-3.5 w-3.5 text-[#1D388B]" />
+            <Pencil className="h-3.5 w-3.5 text-foreground" />
           </button>
         )}
 
         {/* Inactive overlay */}
         {reward.isActive === false && (
-          <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center">
-            <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-muted-foreground shadow-sm">
+          <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center">
+            <span className="rounded-full bg-card/90 px-3 py-1 text-xs font-bold text-muted-foreground shadow-sm">
               Inactive
             </span>
           </div>

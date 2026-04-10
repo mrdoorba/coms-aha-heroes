@@ -54,12 +54,12 @@ function RedeemPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
-        <h1 className="text-xl font-bold text-[#1D388B]">{m.redeem_title()}</h1>
+        <h1 className="text-xl font-bold text-foreground">{m.redeem_title()}</h1>
       </div>
 
       {/* Reward card */}
       <div className="rounded-xl border border-border bg-card p-5 flex gap-4 items-start">
-        <div className="h-20 w-20 shrink-0 rounded-lg overflow-hidden bg-[#325FEC]/10 flex items-center justify-center">
+        <div className="h-20 w-20 shrink-0 rounded-lg overflow-hidden bg-primary/10 flex items-center justify-center">
           {reward.imageUrl ? (
             <img
               src={reward.imageUrl as string}
@@ -67,7 +67,7 @@ function RedeemPage() {
               className="h-full w-full object-cover"
             />
           ) : (
-            <Gift className="h-8 w-8 text-[#325FEC]/60" />
+            <Gift className="h-8 w-8 text-primary/60" />
           )}
         </div>
         <div className="flex-1 min-w-0">
@@ -77,7 +77,7 @@ function RedeemPage() {
               {reward.description as string}
             </p>
           )}
-          <span className="mt-2 inline-flex items-center rounded-full bg-[#F4C144]/20 px-2.5 py-0.5 text-xs font-semibold text-[#b58a00]">
+          <span className="mt-2 inline-flex items-center rounded-full bg-[#F4C144]/20 dark:bg-yellow-900/30 px-2.5 py-0.5 text-xs font-semibold text-[#b58a00] dark:text-yellow-300">
             {reward.pointCost as number} Poin AHA
           </span>
         </div>
@@ -91,9 +91,9 @@ function RedeemPage() {
 
       {/* Insufficient balance warning */}
       {!canRedeem && (
-        <div className="flex items-start gap-2 rounded-xl border border-[#F4C144]/40 bg-[#F4C144]/10 px-4 py-3">
-          <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-[#b58a00]" />
-          <p className="text-sm text-[#b58a00] font-medium">
+        <div className="flex items-start gap-2 rounded-xl border border-[#F4C144]/40 bg-[#F4C144]/10 dark:border-yellow-800/40 dark:bg-yellow-900/20 px-4 py-3">
+          <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-[#b58a00] dark:text-yellow-400" />
+          <p className="text-sm text-[#b58a00] dark:text-yellow-300 font-medium">
             {m.redeem_insufficient({ count: String((reward.pointCost as number) - currentBalance) })}
           </p>
         </div>
@@ -119,7 +119,7 @@ function RedeemPage() {
         <Button
           type="submit"
           disabled={!canRedeem || isSubmitting}
-          className="w-full rounded-lg bg-[#325FEC] hover:bg-[#1D388B] text-white disabled:opacity-50"
+          className="w-full rounded-lg bg-primary hover:bg-primary/80 text-primary-foreground disabled:opacity-50"
         >
           {isSubmitting ? (
             <>

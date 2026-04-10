@@ -173,19 +173,19 @@ export function CommandPalette({ open, onClose, role }: CommandPaletteProps) {
         className={cn(
           'fixed z-[101]',
           // Mobile: full-screen
-          'inset-0 flex flex-col bg-white',
+          'inset-0 flex flex-col bg-card',
           // Desktop: centered modal
           'md:inset-auto md:top-[20vh] md:left-1/2 md:-translate-x-1/2',
           'md:w-full md:max-w-xl md:rounded-2xl',
-          'md:border md:border-[#325FEC]/15',
-          'md:bg-white/95 md:backdrop-blur-xl',
-          'md:shadow-[0_24px_80px_rgba(29,56,139,0.18),0_4px_16px_rgba(29,56,139,0.08)]',
+          'md:border md:border-border',
+          'md:bg-card/95 md:backdrop-blur-xl',
+          'md:shadow-[0_24px_80px_rgba(0,0,0,0.25),0_4px_16px_rgba(0,0,0,0.12)]',
           'md:overflow-hidden',
         )}
       >
         {/* Search input row */}
-        <div className="flex items-center gap-3 border-b border-[#325FEC]/10 px-4 py-3">
-          <Search className="h-4 w-4 shrink-0 text-[#325FEC]/60" />
+        <div className="flex items-center gap-3 border-b border-border px-4 py-3">
+          <Search className="h-4 w-4 shrink-0 text-primary/60" />
           <input
             ref={inputRef}
             type="text"
@@ -198,14 +198,14 @@ export function CommandPalette({ open, onClose, role }: CommandPaletteProps) {
             aria-activedescendant={flatFiltered[activeIndex] ? `cmd-item-${flatFiltered[activeIndex].id}` : undefined}
           />
           {/* ⌘K badge — desktop only */}
-          <kbd className="hidden md:flex items-center gap-0.5 rounded-md border border-[#325FEC]/15 bg-[#EDF1FA] px-1.5 py-0.5 text-[10px] font-semibold text-[#325FEC]/60 select-none">
+          <kbd className="hidden md:flex items-center gap-0.5 rounded-md border border-border bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground select-none">
             <span className="text-[11px]">⌘</span>K
           </kbd>
           {/* Close button — mobile only */}
           <button
             type="button"
             onClick={onClose}
-            className="flex md:hidden h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-[#325FEC]/8 hover:text-[#325FEC] transition-colors"
+            className="flex md:hidden h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-primary/8 hover:text-primary transition-colors"
             aria-label="Close"
           >
             <X className="h-4 w-4" />
@@ -228,7 +228,7 @@ export function CommandPalette({ open, onClose, role }: CommandPaletteProps) {
             <>
               {navFiltered.length > 0 && (
                 <div>
-                  <p className="px-3 pb-1 pt-1.5 text-[10px] font-bold uppercase tracking-widest text-[#325FEC]/40">
+                  <p className="px-3 pb-1 pt-1.5 text-[10px] font-bold uppercase tracking-widest text-primary/40">
                     Navigation
                   </p>
                   {navFiltered.map((item) => {
@@ -250,7 +250,7 @@ export function CommandPalette({ open, onClose, role }: CommandPaletteProps) {
 
               {adminFiltered.length > 0 && (
                 <div className={navFiltered.length > 0 ? 'mt-2' : ''}>
-                  <p className="px-3 pb-1 pt-1.5 text-[10px] font-bold uppercase tracking-widest text-[#325FEC]/40">
+                  <p className="px-3 pb-1 pt-1.5 text-[10px] font-bold uppercase tracking-widest text-primary/40">
                     Admin
                   </p>
                   {adminFiltered.map((item) => {
@@ -274,17 +274,17 @@ export function CommandPalette({ open, onClose, role }: CommandPaletteProps) {
         </div>
 
         {/* Footer hint — desktop only */}
-        <div className="hidden md:flex items-center gap-3 border-t border-[#325FEC]/8 px-4 py-2">
+        <div className="hidden md:flex items-center gap-3 border-t border-border px-4 py-2">
           <span className="flex items-center gap-1 text-[10px] text-muted-foreground/50">
-            <kbd className="rounded border border-[#325FEC]/10 bg-[#EDF1FA] px-1 py-0.5 font-mono text-[9px]">↑↓</kbd>
+            <kbd className="rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px]">↑↓</kbd>
             navigate
           </span>
           <span className="flex items-center gap-1 text-[10px] text-muted-foreground/50">
-            <kbd className="rounded border border-[#325FEC]/10 bg-[#EDF1FA] px-1 py-0.5 font-mono text-[9px]">↵</kbd>
+            <kbd className="rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px]">↵</kbd>
             open
           </span>
           <span className="flex items-center gap-1 text-[10px] text-muted-foreground/50">
-            <kbd className="rounded border border-[#325FEC]/10 bg-[#EDF1FA] px-1 py-0.5 font-mono text-[9px]">esc</kbd>
+            <kbd className="rounded border border-border bg-muted px-1 py-0.5 font-mono text-[9px]">esc</kbd>
             close
           </span>
         </div>
@@ -314,14 +314,14 @@ function ItemRow({ item, label, isActive, onSelect, onHover }: ItemRowProps) {
       onMouseEnter={onHover}
       className={cn(
         'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors',
-        'text-foreground/80 hover:bg-[#325FEC]/8 hover:text-foreground',
-        isActive && 'bg-[#325FEC]/10 text-[#325FEC]',
+        'text-foreground/80 hover:bg-primary/8 hover:text-foreground',
+        isActive && 'bg-primary/10 text-primary',
       )}
     >
       <span
         className={cn(
           'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg',
-          isActive ? 'bg-[#325FEC]/15 text-[#325FEC]' : 'bg-[#EDF1FA] text-[#325FEC]/60',
+          isActive ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground',
         )}
       >
         <Icon className="h-3.5 w-3.5" />

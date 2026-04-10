@@ -68,7 +68,7 @@ export function QuickActions({ role }: QuickActionsProps) {
           className={cn(
             'flex h-14 w-14 items-center justify-center rounded-full shadow-xl transition-all duration-200 active:scale-95 min-h-[44px]',
             open
-              ? 'bg-[#1D388B] text-white rotate-45'
+              ? 'bg-primary-dark dark:bg-primary text-white rotate-45'
               : 'btn-gradient-blue text-white',
           )}
           aria-label={m.quick_actions_label()}

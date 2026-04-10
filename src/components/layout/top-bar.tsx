@@ -123,21 +123,21 @@ export function TopBar({ user, unreadCount, onOpenPalette, className }: TopBarPr
           />
 
           {/* Panel */}
-          <div className="fixed inset-y-0 left-0 z-[70] w-72 bg-white shadow-2xl md:hidden animate-slide-in-left">
+          <div className="fixed inset-y-0 left-0 z-[70] w-72 bg-card shadow-2xl md:hidden animate-slide-in-left">
             {/* Header */}
-            <div className="flex h-14 items-center justify-between border-b border-[#325FEC]/10 px-4">
+            <div className="flex h-14 items-center justify-between border-b border-border px-4">
               <div className="flex items-center gap-2">
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#F4C144] to-[#FFD97D] shadow-md">
                   <Trophy className="h-3.5 w-3.5 text-[#7a5800]" />
                 </div>
-                <span className="font-manrope text-[15px] font-extrabold tracking-wide text-[#1D388B]">
+                <span className="font-manrope text-[15px] font-extrabold tracking-wide text-foreground">
                   AHA HEROES
                 </span>
               </div>
               <button
                 type="button"
                 onClick={() => setMenuOpen(false)}
-                className="flex h-10 w-10 items-center justify-center rounded-full text-[#1D388B]/50 hover:bg-[#325FEC]/8 hover:text-[#1D388B] transition-colors"
+                className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-primary/8 hover:text-foreground transition-colors"
                 aria-label="Close menu"
               >
                 <X className="h-5 w-5" />
@@ -151,8 +151,8 @@ export function TopBar({ user, unreadCount, onOpenPalette, className }: TopBarPr
                   key={to}
                   to={to}
                   onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-[#1D388B]/60 transition-all duration-150 hover:bg-[#325FEC]/8 hover:text-[#1D388B] min-h-[44px]"
-                  activeProps={{ className: '!bg-[#325FEC]/10 !text-[#325FEC] !font-bold' }}
+                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-muted-foreground transition-all duration-150 hover:bg-primary/8 hover:text-foreground min-h-[44px]"
+                  activeProps={{ className: 'sidebar-link-active' }}
                 >
                   <Icon className="h-[18px] w-[18px] shrink-0" />
                   <span>{label()}</span>
@@ -161,9 +161,9 @@ export function TopBar({ user, unreadCount, onOpenPalette, className }: TopBarPr
             </nav>
 
             {/* User footer */}
-            <div className="border-t border-[#325FEC]/10 p-3">
+            <div className="border-t border-border p-3">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#325FEC]/10 text-xs font-bold text-[#325FEC] ring-1 ring-[#325FEC]/15">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-xs font-bold text-primary ring-1 ring-primary/15">
                   {user.avatarUrl ? (
                     <img
                       src={user.avatarUrl}
@@ -179,8 +179,8 @@ export function TopBar({ user, unreadCount, onOpenPalette, className }: TopBarPr
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-[#1D388B]">{user.name}</p>
-                  <span className="inline-block rounded-full bg-[#325FEC]/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#325FEC]">
+                  <p className="truncate text-sm font-semibold text-foreground">{user.name}</p>
+                  <span className="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary">
                     {user.role}
                   </span>
                 </div>

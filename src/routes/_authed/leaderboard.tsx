@@ -105,11 +105,11 @@ function LeaderboardPage() {
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#F4C144] to-[#FFD97D] shadow-md">
             <Trophy className="h-4.5 w-4.5 text-[#7a5800]" />
           </div>
-          <h1 className="text-xl font-extrabold text-[#1D388B]">{m.nav_leaderboard()}</h1>
+          <h1 className="text-xl font-extrabold text-foreground">{m.nav_leaderboard()}</h1>
         </div>
         {teams.length > 0 && (
           <Select value={teamId || 'all'} onValueChange={handleTeamChange}>
-            <SelectTrigger className="w-36 h-9 text-sm rounded-xl border-[#325FEC]/15 bg-white">
+            <SelectTrigger className="w-36 h-9 text-sm rounded-xl border-border bg-card">
               <Users className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
               <SelectValue placeholder="All Teams" />
             </SelectTrigger>
@@ -126,7 +126,7 @@ function LeaderboardPage() {
       </div>
 
       {/* Tab switcher */}
-      <div className="mx-4 flex gap-1.5 rounded-2xl bg-white border border-[#325FEC]/8 p-1.5 shadow-[0_2px_8px_rgba(29,56,139,0.06)]">
+      <div className="mx-4 flex gap-1.5 rounded-2xl bg-card border border-border p-1.5 shadow-card">
         {tabs.map((tab) => {
           const isActive = activeType === tab.value
           return (
@@ -158,14 +158,14 @@ function LeaderboardPage() {
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="h-16 rounded-2xl border border-[#325FEC]/8 bg-white animate-pulse"
+              className="h-16 rounded-2xl border border-border bg-card animate-pulse"
             />
           ))}
         </div>
       ) : entries.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#325FEC]/8">
-            <Trophy className="h-8 w-8 text-[#325FEC]/40" />
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/8">
+            <Trophy className="h-8 w-8 text-primary/40" />
           </div>
           <p className="text-muted-foreground">{m.common_no_data()}</p>
         </div>

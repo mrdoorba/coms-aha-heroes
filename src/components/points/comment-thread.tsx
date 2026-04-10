@@ -44,8 +44,8 @@ export function CommentThread({ entityId, entityType }: CommentThreadProps) {
 
   return (
     <div className="space-y-6 pt-4">
-      <h3 className="text-sm font-semibold text-[#1D388B] flex items-center gap-2">
-        <span className="w-1.5 h-1.5 rounded-full bg-[#325FEC]" />
+      <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+        <span className="w-1.5 h-1.5 rounded-full bg-primary" />
         Comments ({comments.length})
       </h3>
 
@@ -64,7 +64,7 @@ export function CommentThread({ entityId, entityType }: CommentThreadProps) {
               </div>
               <div className="flex-1 space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#1D388B]">{comment.user?.name ?? 'Unknown'}</span>
+                  <span className="text-xs font-bold text-foreground">{comment.user?.name ?? 'Unknown'}</span>
                   <span className="text-[10px] text-muted-foreground">
                     {new Date(comment.createdAt).toLocaleDateString('id-ID', {
                       day: 'numeric',
@@ -88,13 +88,13 @@ export function CommentThread({ entityId, entityType }: CommentThreadProps) {
           placeholder="Write a comment..."
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          className="pr-12 min-h-[100px] rounded-2xl bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-[#325FEC] transition-all"
+          className="pr-12 min-h-[100px] rounded-2xl bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary transition-all"
         />
         <Button
           type="submit"
           size="icon"
           disabled={!body.trim() || isSubmitting}
-          className="absolute right-2 bottom-2 h-8 w-8 rounded-xl bg-[#325FEC] hover:bg-blue-700 shadow-md shadow-blue-100"
+          className="absolute right-2 bottom-2 h-8 w-8 rounded-xl bg-primary hover:bg-primary/80 shadow-md shadow-primary/10"
         >
           <Send className="h-4 w-4" />
         </Button>

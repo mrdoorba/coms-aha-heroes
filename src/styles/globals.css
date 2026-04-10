@@ -518,6 +518,11 @@
   font-weight: 700;
 }
 
+:is(.dark *).sidebar-link-active {
+  background: linear-gradient(90deg, rgba(100, 149, 255, 0.18) 0%, rgba(100, 149, 255, 0.06) 100%);
+  color: oklch(0.72 0.18 264);
+}
+
 /* ───────────────────────────────────────────────────────
    STAGGER ENTER (for list items)
 ─────────────────────────────────────────────────────── */
@@ -570,6 +575,10 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(149, 163, 180, 0.9);
+}
+
+:is(.dark *).section-label {
+  color: rgba(149, 163, 180, 0.6);
 }
 
 /* ───────────────────────────────────────────────────────

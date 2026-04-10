@@ -180,7 +180,7 @@ export function CreateRewardDialog({
             </Button>
             <Button
               type="submit"
-              className="bg-[#325FEC] hover:bg-[#1D388B] text-white"
+              className="bg-primary hover:bg-primary/80 text-primary-foreground"
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Saving…' : isEditMode ? 'Save Changes' : 'Add Reward'}

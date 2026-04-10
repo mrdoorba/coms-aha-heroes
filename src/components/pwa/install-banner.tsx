@@ -56,7 +56,7 @@ export function PwaInstallBanner() {
         <button
           type="button"
           onClick={handleInstall}
-          className="rounded-md bg-white px-3 py-1 text-xs font-semibold text-[#325FEC] hover:bg-white/90"
+          className="rounded-md bg-card px-3 py-1 text-xs font-semibold text-primary hover:bg-card/90"
         >
           {m.pwa_install_button()}
         </button>
