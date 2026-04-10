@@ -111,6 +111,8 @@ function LeaderboardPage() {
         },
       })
       setEntries(data.entries as LeaderboardEntry[])
+    } catch (err) {
+      console.error('[leaderboard] fetch failed', err)
     } finally {
       setIsLoading(false)
     }
