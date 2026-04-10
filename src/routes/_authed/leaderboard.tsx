@@ -14,7 +14,7 @@ import { LeaderboardRow } from '~/components/leaderboard/leaderboard-row'
 import { getLeaderboardFn } from '~/server/functions/leaderboard'
 import { listTeamsFn } from '~/server/functions/teams'
 
-type LeaderboardType = 'bintang' | 'poin_aha'
+type LeaderboardType = 'bintang' | 'poin_aha' | 'penalti'
 
 type LeaderboardEntry = {
   rank: number
@@ -68,6 +68,16 @@ function LeaderboardPage() {
       icon: <Trophy className="h-4 w-4" />,
       color: '#325FEC',
     },
+    ...(showPenalti
+      ? [
+          {
+            label: m.points_penalti(),
+            value: 'penalti' as LeaderboardType,
+            icon: <AlertTriangle className="h-4 w-4" />,
+            color: '#EF4444',
+          },
+        ]
+      : []),
   ]
 
   const [activeType, setActiveType] = useState<LeaderboardType>('bintang')
@@ -125,7 +135,12 @@ function LeaderboardPage() {
 
   const top3 = entries.filter((e) => e.rank <= 3)
   const rest = entries.filter((e) => e.rank > 3)
-  const scoreLabel = activeType === 'bintang' ? m.points_bintang() : m.points_poin_aha()
+  const scoreLabel =
+    activeType === 'bintang'
+      ? m.points_bintang()
+      : activeType === 'penalti'
+        ? m.points_penalti()
+        : m.points_poin_aha()
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 pb-8">
@@ -192,9 +207,9 @@ function LeaderboardPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{m.leaderboard_all_time()}</SelectItem>
-            <SelectItem value="1">{m.leaderboard_last_month()}</SelectItem>
-            <SelectItem value="2">{m.leaderboard_last_months({ count: '2' })}</SelectItem>
-            <SelectItem value="3">{m.leaderboard_last_months({ count: '3' })}</SelectItem>
+            <SelectItem value="1">1</SelectItem>
+            <SelectItem value="2">2</SelectItem>
+            <SelectItem value="3">3</SelectItem>
           </SelectContent>
         </Select>
       </div>

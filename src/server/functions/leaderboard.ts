@@ -3,7 +3,7 @@ import { getRequest } from '@tanstack/react-start/server'
 import { createServerApi, unwrap } from '~/lib/api-client'
 
 type LeaderboardParams = {
-  type?: 'bintang' | 'poin_aha'
+  type?: 'bintang' | 'poin_aha' | 'penalti'
   teamId?: string
   months?: number
   page?: number
