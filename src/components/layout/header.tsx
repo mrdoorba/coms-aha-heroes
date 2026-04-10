@@ -1,5 +1,5 @@
 import { Link, useNavigate } from '@tanstack/react-router'
-import { Bell, User, ChevronDown, Search, KeyRound, LogOut } from 'lucide-react'
+import { Bell, User, ChevronDown, Search, LogOut } from 'lucide-react'
 import { cn } from '~/lib/utils'
 import { getLocale, setLocale } from '~/paraglide/runtime.js'
 import * as m from '~/paraglide/messages'
@@ -36,7 +36,7 @@ export function Header({ user, unreadCount, onOpenPalette, className }: HeaderPr
     <header
       className={cn(
         'sticky top-0 z-30 flex h-14 items-center justify-between px-6',
-        'bg-card/80 backdrop-blur-md border-b border-border',
+        'bg-card/80 border-border border-b backdrop-blur-md',
         'shadow-[0_1px_0_0_rgba(29,56,139,0.06)] dark:shadow-none',
         className,
       )}
@@ -46,30 +46,32 @@ export function Header({ user, unreadCount, onOpenPalette, className }: HeaderPr
         type="button"
         onClick={onOpenPalette}
         className={cn(
-          'flex w-full max-w-xs items-center gap-2.5 rounded-xl border border-border bg-muted',
-          'h-9 px-3 text-sm text-muted-foreground/70 transition-all',
+          'border-border bg-muted flex w-full max-w-xs items-center gap-2.5 rounded-xl border',
+          'text-muted-foreground/70 h-9 px-3 text-sm transition-all',
           'hover:border-primary/25 hover:bg-card hover:text-muted-foreground',
           'cursor-pointer select-none',
         )}
         aria-label="Open command palette"
       >
-        <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
+        <Search className="text-muted-foreground/60 h-3.5 w-3.5 shrink-0" />
         <span className="flex-1 text-left">{m.header_search_placeholder()}</span>
-        <kbd className="flex items-center gap-0.5 rounded-md border border-border bg-card/70 px-1.5 py-0.5 text-[10px] font-semibold text-primary/50 shadow-sm">
+        <kbd className="border-border bg-card/70 text-primary/50 flex items-center gap-0.5 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold shadow-sm">
           <span className="text-[11px]">⌘</span>K
         </kbd>
       </button>
 
       <div className="flex items-center gap-2">
         {/* Language switcher */}
-        <div className="flex items-center rounded-lg border border-border bg-muted overflow-hidden">
+        <div className="border-border bg-muted flex items-center overflow-hidden rounded-lg border">
           {LANGUAGES.map((lang) => {
             const isActive = getLocale() === lang
             return (
               <button
                 key={lang}
                 type="button"
-                onClick={() => { if (!isActive) setLocale(lang) }}
+                onClick={() => {
+                  if (!isActive) setLocale(lang)
+                }}
                 className={cn(
                   'px-2.5 py-1.5 text-[11px] font-bold tracking-wide transition-all',
                   isActive
@@ -89,12 +91,12 @@ export function Header({ user, unreadCount, onOpenPalette, className }: HeaderPr
         {/* Notifications */}
         <Link
           to="/notifications"
-          className="relative flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-primary/8 hover:text-primary transition-colors"
+          className="text-muted-foreground hover:bg-primary/8 hover:text-primary relative flex h-9 w-9 items-center justify-center rounded-full transition-colors"
           aria-label="Notifications"
         >
           <Bell className="h-4.5 w-4.5" />
           {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#F4C144] text-[9px] font-bold leading-none text-[#7a5800]">
+            <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#F4C144] text-[9px] leading-none font-bold text-[#7a5800]">
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}
@@ -102,8 +104,8 @@ export function Header({ user, unreadCount, onOpenPalette, className }: HeaderPr
 
         {/* User dropdown */}
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-2 rounded-xl px-2.5 py-1.5 hover:bg-primary/6 transition-colors">
-            <div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-primary/15 text-xs font-bold text-primary ring-1 ring-primary/20">
+          <DropdownMenuTrigger className="hover:bg-primary/6 flex items-center gap-2 rounded-xl px-2.5 py-1.5 transition-colors">
+            <div className="bg-primary/15 text-primary ring-primary/20 flex h-7 w-7 items-center justify-center overflow-hidden rounded-full text-xs font-bold ring-1">
               {user.avatarUrl ? (
                 <img
                   src={user.avatarUrl}
@@ -118,8 +120,10 @@ export function Header({ user, unreadCount, onOpenPalette, className }: HeaderPr
                 <span>{initials || <User className="h-3.5 w-3.5" />}</span>
               )}
             </div>
-            <span className="text-sm font-semibold text-foreground max-w-[120px] truncate">{user.name}</span>
-            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-foreground max-w-[120px] truncate text-sm font-semibold">
+              {user.name}
+            </span>
+            <ChevronDown className="text-muted-foreground h-3.5 w-3.5" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuItem
@@ -128,13 +132,6 @@ export function Header({ user, unreadCount, onOpenPalette, className }: HeaderPr
             >
               <User className="h-4 w-4" />
               {m.nav_profile()}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="flex items-center gap-2"
-              onClick={() => navigate({ to: '/change-password' })}
-            >
-              <KeyRound className="h-4 w-4" />
-              {m.change_password_title()}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
