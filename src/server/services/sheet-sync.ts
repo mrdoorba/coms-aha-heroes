@@ -970,13 +970,18 @@ export async function runFullResync(
   tabNames: TabNames,
   branchId: string,
   startedBy?: string,
-  tx?: DbClient,
 ) {
-  const db = getDb(tx ?? defaultDb)
+  const db = defaultDb as unknown as DbClient
 
-  await db.delete(redemptions).where(eq(redemptions.branchId, branchId))
-  await db.delete(achievementPoints).where(eq(achievementPoints.branchId, branchId))
-  await db.delete(pointSummaries).where(eq(pointSummaries.branchId, branchId))
+  // Run everything inside a single transaction so the old data stays
+  // visible until the re-import completes — no downtime for users.
+  return db.transaction(async (tx) => {
+    const txDb = tx as unknown as DbClient
 
-  return runFullSync(sheetIds, tabNames, branchId, startedBy, tx)
+    await txDb.delete(redemptions).where(eq(redemptions.branchId, branchId))
+    await txDb.delete(achievementPoints).where(eq(achievementPoints.branchId, branchId))
+    await txDb.delete(pointSummaries).where(eq(pointSummaries.branchId, branchId))
+
+    return runFullSync(sheetIds, tabNames, branchId, startedBy, txDb)
+  })
 }
