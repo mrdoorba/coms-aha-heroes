@@ -7,6 +7,8 @@ import { users, branches, teams } from '~/db/schema'
 import { eq, and, ilike, count, asc } from 'drizzle-orm'
 import type { UserRole } from '~/shared/constants'
 
+const DEFAULT_PASSWORD = 'changeme123'
+
 type ListUsersParams = {
   page?: number
   limit?: number
@@ -68,20 +70,18 @@ export const listUsersFn = createServerFn({ method: 'GET' })
   })
 
 // Pattern B — Direct DB access (no API call)
-export const getLookupDataFn = createServerFn({ method: 'GET' }).handler(
-  async () => {
-    const request = getRequest()
-    const session = await auth.api.getSession({ headers: request.headers })
-    if (!session) throw new Error('Not authenticated')
+export const getLookupDataFn = createServerFn({ method: 'GET' }).handler(async () => {
+  const request = getRequest()
+  const session = await auth.api.getSession({ headers: request.headers })
+  if (!session) throw new Error('Not authenticated')
 
-    const [branchRows, teamRows] = await Promise.all([
-      db.select({ id: branches.id, name: branches.name }).from(branches).orderBy(asc(branches.name)),
-      db.select({ id: teams.id, name: teams.name }).from(teams).orderBy(asc(teams.name)),
-    ])
+  const [branchRows, teamRows] = await Promise.all([
+    db.select({ id: branches.id, name: branches.name }).from(branches).orderBy(asc(branches.name)),
+    db.select({ id: teams.id, name: teams.name }).from(teams).orderBy(asc(teams.name)),
+  ])
 
-    return { branches: branchRows, teams: teamRows }
-  },
-)
+  return { branches: branchRows, teams: teamRows }
+})
 
 export const createUserFn = createServerFn({ method: 'POST' })
   .inputValidator(
@@ -146,4 +146,35 @@ export const bulkToggleUsersFn = createServerFn({ method: 'POST' })
     const result = await api.api.v1.users.bulk.post(data as any)
     const res = unwrap(result, 'Failed to bulk update users')
     return res.data
+  })
+
+export const resetPasswordFn = createServerFn({ method: 'POST' })
+  .inputValidator((data: { userId: string }) => data)
+  .handler(async ({ data }) => {
+    const request = getRequest()
+    const session = await auth.api.getSession({ headers: request.headers })
+    if (!session) throw new Error('Not authenticated')
+
+    // Look up the app user to get their Better Auth account ID
+    const [appUser] = await db
+      .select({ id: users.id, email: users.email })
+      .from(users)
+      .where(eq(users.id, data.userId))
+      .limit(1)
+
+    if (!appUser) throw new Error('User not found')
+
+    // Use Better Auth admin API to set password
+    await auth.api.setUserPassword({
+      body: {
+        userId: data.userId,
+        newPassword: DEFAULT_PASSWORD,
+      },
+      headers: request.headers,
+    })
+
+    // Set mustChangePassword flag
+    await db.update(users).set({ mustChangePassword: true }).where(eq(users.id, data.userId))
+
+    return { success: true }
   })

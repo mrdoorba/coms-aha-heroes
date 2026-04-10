@@ -394,5 +394,11 @@
   "employee_detail_empty": "Belum ada riwayat poin bintang",
   "employee_detail_empty_aha": "Belum ada riwayat poin AHA",
   "employee_detail_empty_penalti": "Belum ada riwayat penalti",
-  "employee_detail_page_of": "Halaman {page} dari {total}"
+  "employee_detail_page_of": "Halaman {page} dari {total}",
+
+  "reset_password_title": "Reset Kata Sandi",
+  "reset_password_confirm": "Reset kata sandi untuk {name} ({email})? Kata sandi akan diatur ke default dan mereka harus mengubahnya saat login berikutnya.",
+  "reset_password_button": "Reset Kata Sandi",
+  "reset_password_resetting": "Mereset...",
+  "reset_password_success": "Kata sandi berhasil direset"
 }

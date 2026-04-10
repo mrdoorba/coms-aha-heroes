@@ -394,5 +394,11 @@
   "employee_detail_empty": "No star points history yet",
   "employee_detail_empty_aha": "No AHA points history yet",
   "employee_detail_empty_penalti": "No penalty history yet",
-  "employee_detail_page_of": "Page {page} of {total}"
+  "employee_detail_page_of": "Page {page} of {total}",
+
+  "reset_password_title": "Reset Password",
+  "reset_password_confirm": "Reset password for {name} ({email})? Their password will be set to the default and they will be required to change it on next login.",
+  "reset_password_button": "Reset Password",
+  "reset_password_resetting": "Resetting...",
+  "reset_password_success": "Password has been reset successfully"
 }

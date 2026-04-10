@@ -7,7 +7,16 @@ import {
   flexRender,
   createColumnHelper,
 } from '@tanstack/react-table'
-import { Search, Plus, Pencil, Archive, ChevronLeft, ChevronRight, User } from 'lucide-react'
+import {
+  Search,
+  Plus,
+  Pencil,
+  Archive,
+  KeyRound,
+  ChevronLeft,
+  ChevronRight,
+  User,
+} from 'lucide-react'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
 import {
@@ -29,6 +38,7 @@ import { UserRoleBadge } from '~/components/users/user-role-badge'
 import { CreateUserDialog } from '~/components/users/create-user-dialog'
 import { EditUserDialog } from '~/components/users/edit-user-dialog'
 import { ArchiveUserDialog } from '~/components/users/archive-user-dialog'
+import { ResetPasswordDialog } from '~/components/users/reset-password-dialog'
 import {
   listUsersFn,
   getLookupDataFn,
@@ -36,6 +46,7 @@ import {
   updateUserFn,
   archiveUserFn,
   bulkToggleUsersFn,
+  resetPasswordFn,
 } from '~/server/functions/users'
 import { useBulkSelection } from '~/hooks/use-bulk-selection'
 import { BulkCheckbox } from '~/components/bulk/bulk-checkbox'
@@ -91,6 +102,7 @@ function UsersPage() {
   const [createOpen, setCreateOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
   const [archiveOpen, setArchiveOpen] = useState(false)
+  const [resetPwOpen, setResetPwOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState<UserRow | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -223,6 +235,17 @@ function UsersPage() {
     }
   }
 
+  async function handleResetPassword(id: string) {
+    setIsSubmitting(true)
+    try {
+      await resetPasswordFn({ data: { userId: id } })
+      setResetPwOpen(false)
+      setSelectedUser(null)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   async function handleBulkAction(action: 'archive' | 'activate') {
     try {
       await bulkToggleUsersFn({ data: { ids: [...bulk.selectedIds], action } })
@@ -256,7 +279,7 @@ function UsersPage() {
       id: 'avatar',
       header: '',
       cell: () => (
-        <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+        <div className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-full">
           <User className="size-4" />
         </div>
       ),
@@ -265,10 +288,10 @@ function UsersPage() {
       header: () => m.users_col_name(),
       cell: (info) => (
         <Link to="/users/$id" params={{ id: info.row.original.id }} className="block">
-          <div className="font-semibold text-foreground hover:text-primary transition-colors">
+          <div className="text-foreground hover:text-primary font-semibold transition-colors">
             {info.getValue()}
           </div>
-          <div className="text-xs text-muted-foreground">{info.row.original.email}</div>
+          <div className="text-muted-foreground text-xs">{info.row.original.email}</div>
         </Link>
       ),
     }),
@@ -282,7 +305,7 @@ function UsersPage() {
         const tid = info.getValue()
         return (
           <span className="text-muted-foreground text-sm">
-            {tid ? teamMap.get(tid) ?? '-' : '-'}
+            {tid ? (teamMap.get(tid) ?? '-') : '-'}
           </span>
         )
       },
@@ -322,6 +345,17 @@ function UsersPage() {
           >
             <Pencil className="size-3.5" />
           </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => {
+              setSelectedUser(info.row.original)
+              setResetPwOpen(true)
+            }}
+            title={m.reset_password_title()}
+          >
+            <KeyRound className="size-3.5" />
+          </Button>
           {info.row.original.isActive && (
             <Button
               variant="ghost"
@@ -348,7 +382,7 @@ function UsersPage() {
   const totalPages = Math.ceil(meta.total / meta.limit)
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 page-transition">
+    <div className="page-transition mx-auto max-w-6xl px-4 py-6 sm:px-6">
       {/* Header */}
       <div className="mb-6 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -356,15 +390,15 @@ function UsersPage() {
             <User className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-extrabold text-foreground">{m.nav_users()}</h1>
-            <p className="mt-0.5 text-[13px] font-medium text-muted-foreground">
+            <h1 className="text-foreground text-xl font-extrabold">{m.nav_users()}</h1>
+            <p className="text-muted-foreground mt-0.5 text-[13px] font-medium">
               {m.users_total({ count: String(meta.total) })}
             </p>
           </div>
         </div>
         <Button
           onClick={() => setCreateOpen(true)}
-          className="btn-gradient-blue shrink-0 text-white h-9 px-4 rounded-xl font-semibold shadow-[0_2px_8px_rgba(50,95,236,0.25)]"
+          className="btn-gradient-blue h-9 shrink-0 rounded-xl px-4 font-semibold text-white shadow-[0_2px_8px_rgba(50,95,236,0.25)]"
         >
           <Plus className="size-4" data-icon="inline-start" />
           {m.users_add()}
@@ -372,9 +406,9 @@ function UsersPage() {
       </div>
 
       {/* Filters */}
-      <div className="mb-4 flex flex-col gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-card sm:flex-row sm:items-center">
+      <div className="border-border bg-card shadow-card mb-4 flex flex-col gap-3 rounded-xl border px-4 py-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
           <Input
             placeholder={m.users_search_placeholder()}
             value={search}
@@ -467,13 +501,16 @@ function UsersPage() {
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden">
+      <div className="border-border bg-card shadow-card overflow-hidden rounded-xl border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((hg) => (
-              <TableRow key={hg.id} className="bg-muted/60 border-b border-border">
+              <TableRow key={hg.id} className="bg-muted/60 border-border border-b">
                 {hg.headers.map((header) => (
-                  <TableHead key={header.id} className="whitespace-nowrap text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <TableHead
+                    key={header.id}
+                    className="text-muted-foreground text-[13px] font-bold tracking-wider whitespace-nowrap uppercase"
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(header.column.columnDef.header, header.getContext())}
@@ -486,20 +523,34 @@ function UsersPage() {
             {isLoading ? (
               <>
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i} className="border-b border-border/50">
-                    <TableCell><div className="h-4 w-4 rounded bg-primary/8 animate-pulse" /></TableCell>
-                    <TableCell><div className="h-8 w-8 rounded-full bg-primary/8 animate-pulse" /></TableCell>
+                  <TableRow key={i} className="border-border/50 border-b">
+                    <TableCell>
+                      <div className="bg-primary/8 h-4 w-4 animate-pulse rounded" />
+                    </TableCell>
+                    <TableCell>
+                      <div className="bg-primary/8 h-8 w-8 animate-pulse rounded-full" />
+                    </TableCell>
                     <TableCell>
                       <div className="space-y-1.5">
-                        <div className="h-3.5 w-32 rounded bg-primary/8 animate-pulse" />
-                        <div className="h-3 w-24 rounded bg-primary/5 animate-pulse" />
+                        <div className="bg-primary/8 h-3.5 w-32 animate-pulse rounded" />
+                        <div className="bg-primary/5 h-3 w-24 animate-pulse rounded" />
                       </div>
                     </TableCell>
-                    <TableCell><div className="h-5 w-16 rounded-full bg-primary/8 animate-pulse" /></TableCell>
-                    <TableCell><div className="h-3.5 w-20 rounded bg-primary/5 animate-pulse" /></TableCell>
-                    <TableCell><div className="h-3.5 w-20 rounded bg-primary/5 animate-pulse" /></TableCell>
-                    <TableCell><div className="h-5 w-14 rounded-full bg-primary/8 animate-pulse" /></TableCell>
-                    <TableCell><div className="h-6 w-12 rounded bg-primary/5 animate-pulse" /></TableCell>
+                    <TableCell>
+                      <div className="bg-primary/8 h-5 w-16 animate-pulse rounded-full" />
+                    </TableCell>
+                    <TableCell>
+                      <div className="bg-primary/5 h-3.5 w-20 animate-pulse rounded" />
+                    </TableCell>
+                    <TableCell>
+                      <div className="bg-primary/5 h-3.5 w-20 animate-pulse rounded" />
+                    </TableCell>
+                    <TableCell>
+                      <div className="bg-primary/8 h-5 w-14 animate-pulse rounded-full" />
+                    </TableCell>
+                    <TableCell>
+                      <div className="bg-primary/5 h-6 w-12 animate-pulse rounded" />
+                    </TableCell>
                   </TableRow>
                 ))}
               </>
@@ -507,16 +558,19 @@ function UsersPage() {
               <TableRow>
                 <TableCell colSpan={columns.length} className="py-16">
                   <div className="flex flex-col items-center gap-3 text-center">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/8">
-                      <User className="h-6 w-6 text-primary/50" />
+                    <div className="bg-primary/8 flex h-14 w-14 items-center justify-center rounded-full">
+                      <User className="text-primary/50 h-6 w-6" />
                     </div>
-                    <p className="text-sm font-medium text-muted-foreground">{m.users_empty()}</p>
+                    <p className="text-muted-foreground text-sm font-medium">{m.users_empty()}</p>
                   </div>
                 </TableCell>
               </TableRow>
             ) : (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} className="border-b border-border/50 hover:bg-muted/40 transition-colors">
+                <TableRow
+                  key={row.id}
+                  className="border-border/50 hover:bg-muted/40 border-b transition-colors"
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -530,8 +584,8 @@ function UsersPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-border bg-muted/40 px-4 py-3">
-            <p className="text-[13px] font-medium text-muted-foreground">
+          <div className="border-border bg-muted/40 flex items-center justify-between border-t px-4 py-3">
+            <p className="text-muted-foreground text-[13px] font-medium">
               {m.common_page_of({ page: String(page), total: String(totalPages) })}
             </p>
             <div className="flex items-center gap-1">
@@ -596,6 +650,13 @@ function UsersPage() {
         open={archiveOpen}
         onOpenChange={setArchiveOpen}
         onConfirm={handleArchiveUser}
+        user={selectedUser}
+        isSubmitting={isSubmitting}
+      />
+      <ResetPasswordDialog
+        open={resetPwOpen}
+        onOpenChange={setResetPwOpen}
+        onConfirm={handleResetPassword}
         user={selectedUser}
         isSubmitting={isSubmitting}
       />
