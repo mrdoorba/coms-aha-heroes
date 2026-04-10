@@ -226,6 +226,7 @@ function SheetSyncPage() {
   const [isTriggeringResync, setIsTriggeringResync] = useState(false)
   const [syncError, setSyncError] = useState<string | null>(null)
   const [selectedJob, setSelectedJob] = useState<SyncJob | null>(null)
+  const [showResyncConfirm, setShowResyncConfirm] = useState(false)
 
   if (role !== 'admin') {
     return (
@@ -269,12 +270,7 @@ function SheetSyncPage() {
   }
 
   async function handleResync() {
-    if (
-      !confirm(
-        'This will DELETE all points, redemptions, and summaries, then re-import from the sheet. Continue?',
-      )
-    )
-      return
+    setShowResyncConfirm(false)
     setSyncError(null)
     setIsTriggeringResync(true)
     try {
@@ -397,7 +393,7 @@ function SheetSyncPage() {
                 )}
               </Button>
               <Button
-                onClick={handleResync}
+                onClick={() => setShowResyncConfirm(true)}
                 disabled={isTriggeringSync || isTriggeringResync || status.isRunning}
                 variant="destructive"
                 className="h-9 px-5"
@@ -592,6 +588,29 @@ function SheetSyncPage() {
           </>
         )}
       </div>
+
+      {/* Resync confirmation dialog */}
+      <Dialog open={showResyncConfirm} onOpenChange={setShowResyncConfirm}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-foreground text-sm font-semibold">
+              Full Resync
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-muted-foreground text-sm">
+            This will delete all points, redemptions, and summaries, then re-import everything from
+            the sheet. Are you sure?
+          </p>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" size="sm" onClick={() => setShowResyncConfirm(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" size="sm" onClick={handleResync}>
+              Yes, Resync
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Job detail dialog */}
       {selectedJob && <ErrorLogDialog job={selectedJob} onClose={() => setSelectedJob(null)} />}
