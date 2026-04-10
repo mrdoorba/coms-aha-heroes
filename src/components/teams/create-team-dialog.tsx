@@ -59,9 +59,7 @@ export function CreateTeamDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Create New Team</DialogTitle>
-          <DialogDescription>
-            Add a new team and optionally assign a leader.
-          </DialogDescription>
+          <DialogDescription>Add a new team and optionally assign a leader.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-4">
           <div className="grid gap-2">
@@ -82,7 +80,9 @@ export function CreateTeamDialog({
               required
             >
               <SelectTrigger id="create-team-branch">
-                <SelectValue placeholder="Select branch" />
+                <SelectValue placeholder="Select branch">
+                  {form.branchId ? branches.find((b) => b.id === form.branchId)?.name : undefined}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {branches.map((b) => (
@@ -100,7 +100,9 @@ export function CreateTeamDialog({
               onValueChange={(v) => handleChange('leaderId', v || null)}
             >
               <SelectTrigger id="create-team-leader">
-                <SelectValue placeholder="No leader assigned" />
+                <SelectValue placeholder="No leader assigned">
+                  {form.leaderId ? users.find((u) => u.id === form.leaderId)?.name : undefined}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {users.map((u) => (
@@ -112,11 +114,7 @@ export function CreateTeamDialog({
             </Select>
           </div>
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>

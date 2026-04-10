@@ -89,7 +89,9 @@ export function EditTeamDialog({
               onValueChange={(v) => handleChange('leaderId', v || null)}
             >
               <SelectTrigger id="edit-team-leader">
-                <SelectValue placeholder="No leader assigned" />
+                <SelectValue placeholder="No leader assigned">
+                  {form.leaderId ? users.find((u) => u.id === form.leaderId)?.name : undefined}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {users.map((u) => (
@@ -101,11 +103,7 @@ export function EditTeamDialog({
             </Select>
           </div>
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
