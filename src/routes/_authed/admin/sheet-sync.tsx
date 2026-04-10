@@ -260,6 +260,7 @@ function SheetSyncPage() {
     setIsTriggeringSync(true)
     try {
       await triggerSyncFn()
+      await new Promise((r) => setTimeout(r, 1500))
       setPage(1)
       await fetchData(1)
     } catch (err) {
@@ -275,6 +276,8 @@ function SheetSyncPage() {
     setIsTriggeringResync(true)
     try {
       await triggerResyncFn()
+      // Brief delay so the background job has time to create the DB record
+      await new Promise((r) => setTimeout(r, 1500))
       setPage(1)
       await fetchData(1)
     } catch (err) {
@@ -593,9 +596,7 @@ function SheetSyncPage() {
       <Dialog open={showResyncConfirm} onOpenChange={setShowResyncConfirm}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-foreground text-sm font-semibold">
-              Full Resync
-            </DialogTitle>
+            <DialogTitle className="text-foreground text-sm font-semibold">Full Resync</DialogTitle>
           </DialogHeader>
           <p className="text-muted-foreground text-sm">
             This will delete all points, redemptions, and summaries, then re-import everything from
