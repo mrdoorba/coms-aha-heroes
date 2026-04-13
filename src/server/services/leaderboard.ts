@@ -127,12 +127,6 @@ async function getLeaderboardFiltered(
   penaltiPointImpact: number,
 ): Promise<{ entries: LeaderboardEntry[]; meta: { total: number; page: number; limit: number } }> {
   return withRLS(ctx.actor, async (db) => {
-    console.log(
-      '[leaderboard:filtered] months=%d, teamId=%s, type=%s',
-      input.months,
-      input.teamId,
-      input.type,
-    )
     const sinceDate = sql`now() - make_interval(months => ${input.months}::int)`
 
     // NOTE: Do NOT use .as() aliases on expressions used in raw sql`` templates.
@@ -180,21 +174,21 @@ async function getLeaderboardFiltered(
     const offset = (input.page - 1) * input.limit
 
     // Count distinct users who have any points in the period
-    let countResult: { rows: Array<{ total: string }> }
+    let countRows: Array<{ total: string }>
     try {
-      countResult = await db.execute<{ total: string }>(sql`
+      countRows = (await db.execute<{ total: string }>(sql`
         SELECT COUNT(DISTINCT ${users.id}) AS total
         FROM ${users}
         INNER JOIN ${achievementPoints} ON ${achievementPoints.userId} = ${users.id}
         INNER JOIN ${pointCategories} ON ${pointCategories.id} = ${achievementPoints.categoryId}
         WHERE ${baseWhere}
-      `)
+      `)) as unknown as Array<{ total: string }>
     } catch (err) {
       console.error('[leaderboard:filtered] COUNT query failed:', err)
       throw err
     }
 
-    const total = Number(countResult.rows[0]?.total ?? 0)
+    const total = Number(countRows[0]?.total ?? 0)
 
     type FilteredRow = {
       user_id: string
@@ -206,9 +200,9 @@ async function getLeaderboardFiltered(
       poin_aha_balance: string
     }
 
-    let rows: { rows: FilteredRow[] }
+    let dataRows: FilteredRow[]
     try {
-      rows = await db.execute<FilteredRow>(sql`
+      dataRows = (await db.execute<FilteredRow>(sql`
         SELECT
           ${users.id} AS user_id,
           ${users.name} AS name,
@@ -225,13 +219,13 @@ async function getLeaderboardFiltered(
         ORDER BY ${orderExpr}
         LIMIT ${input.limit}
         OFFSET ${offset}
-      `)
+      `)) as unknown as FilteredRow[]
     } catch (err) {
       console.error('[leaderboard:filtered] SELECT query failed:', err)
       throw err
     }
 
-    const entries: LeaderboardEntry[] = rows.rows.map((row, index) => ({
+    const entries: LeaderboardEntry[] = dataRows.map((row, index) => ({
       rank: offset + index + 1,
       userId: row.user_id,
       name: row.name,
