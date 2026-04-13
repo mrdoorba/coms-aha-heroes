@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { Trophy, Star, Users, Calendar, AlertTriangle } from 'lucide-react'
+import { Trophy, Star, Users, AlertTriangle } from 'lucide-react'
 import * as m from '~/paraglide/messages'
 import {
   Select,
@@ -129,10 +129,10 @@ function LeaderboardPage() {
     fetchLeaderboard({ team })
   }
 
-  function handleMonthsChange(val: string | null) {
-    const m_ = !val || val === 'all' ? '' : val
-    setMonths(m_)
-    fetchLeaderboard({ months: m_ })
+  function handleMonthsChange(val: string) {
+    const next = months === val ? '' : val
+    setMonths(next)
+    fetchLeaderboard({ months: next })
   }
 
   const top3 = entries.filter((e) => e.rank <= 3)
@@ -203,23 +203,35 @@ function LeaderboardPage() {
           })}
         </div>
 
-        {/* Period filter */}
-        <Select value={months || 'all'} onValueChange={handleMonthsChange}>
-          <SelectTrigger className="border-border bg-card h-9 w-full rounded-xl text-sm">
-            <Calendar className="text-muted-foreground mr-1 h-3.5 w-3.5" />
-            <SelectValue placeholder={m.leaderboard_all_time()}>
-              {months ? m.leaderboard_last_months({ count: months }) : undefined}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{m.leaderboard_all_time()}</SelectItem>
-            <SelectItem value="1">{m.leaderboard_last_months({ count: '1' })}</SelectItem>
-            <SelectItem value="2">{m.leaderboard_last_months({ count: '2' })}</SelectItem>
-            <SelectItem value="3">{m.leaderboard_last_months({ count: '3' })}</SelectItem>
-            <SelectItem value="6">{m.leaderboard_last_months({ count: '6' })}</SelectItem>
-            <SelectItem value="12">{m.leaderboard_last_months({ count: '12' })}</SelectItem>
-          </SelectContent>
-        </Select>
+        {/* Period filter — scrollable button row */}
+        <div className="relative">
+          <div className="scrollbar-hide flex gap-1.5 overflow-x-auto rounded-2xl">
+            {['1', '2', '3', '6', '12'].map((v) => {
+              const isActive = months === v
+              const label =
+                v === '1' ? m.leaderboard_last_month() : m.leaderboard_last_months({ count: v })
+              return (
+                <button
+                  key={v}
+                  type="button"
+                  className={`border-border bg-card shrink-0 rounded-xl border px-4 py-2 text-sm font-semibold whitespace-nowrap transition-all duration-200 ${
+                    isActive
+                      ? 'border-primary/30 bg-primary/8 text-primary shadow-sm'
+                      : 'text-muted-foreground'
+                  }`}
+                  onClick={() => handleMonthsChange(v)}
+                >
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+          {!months && (
+            <p className="text-muted-foreground mt-1 text-center text-xs">
+              {m.leaderboard_all_time()}
+            </p>
+          )}
+        </div>
       </div>
 
       {isLoading ? (
