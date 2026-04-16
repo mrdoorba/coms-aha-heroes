@@ -69,23 +69,22 @@ const SVELTEKIT_BUILD_PATH = process.env.SVELTEKIT_BUILD_PATH
   ?? resolve(import.meta.dir, '../../web/build')
 
 if (process.env.NODE_ENV === 'production') {
-  // In production, import the built SvelteKit handler
+  // In production, import the built SvelteKit handler (svelte-adapter-bun)
   try {
-    const { handler } = await import(
-      resolve(SVELTEKIT_BUILD_PATH, 'handler.js')
-    )
+    const mod = await import(resolve(SVELTEKIT_BUILD_PATH, 'handler.js'))
+    const { httpserver } = mod.default(mod.build_options.assets)
 
     // Serve SvelteKit static assets
     app.get('/immutable/*', async ({ request }) => {
-      return handler(request)
+      return httpserver(request)
     })
 
     // SvelteKit SSR handler — catch-all for non-API requests
     app.all('/*', async ({ request }) => {
-      return handler(request)
+      return httpserver(request)
     })
   } catch (e) {
-    console.warn('[server] SvelteKit handler not found — running API-only mode')
+    console.warn('[server] SvelteKit handler not found — running API-only mode', e)
   }
 } else {
   // In dev, proxy to SvelteKit dev server
