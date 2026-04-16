@@ -28,17 +28,20 @@
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.20.0",
     "@tailwindcss/vite": "^4.2.2",
     "@types/node": "^22.5.4",
-    "tailwindcss": "^4.2.2",
-    "typescript": "^6.0.2",
     "drizzle-kit": "^0.31.0",
-    "tsx": "^4.19.0",
     "eslint": "^9.20.0",
-    "@eslint/js": "^9.20.0",
-    "typescript-eslint": "^8.25.0",
+    "eslint-plugin-svelte": "^3.17.0",
+    "globals": "^17.5.0",
     "prettier": "^3.5.0",
-    "prettier-plugin-tailwindcss": "^0.6.12"
+    "prettier-plugin-tailwindcss": "^0.6.12",
+    "svelte-eslint-parser": "^1.6.0",
+    "tailwindcss": "^4.2.2",
+    "tsx": "^4.19.0",
+    "typescript": "^6.0.2",
+    "typescript-eslint": "^8.25.0"
   },
   "trustedDependencies": [
     "esbuild"
