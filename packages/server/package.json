@@ -5,7 +5,9 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./auth": "./src/auth.ts"
+    "./auth": "./src/auth.ts",
+    "./services/*": "./src/services/*.ts",
+    "./repositories/*": "./src/repositories/*.ts"
   },
   "scripts": {
     "dev": "bun --hot src/index.ts",
