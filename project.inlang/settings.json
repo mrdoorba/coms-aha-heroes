@@ -7,7 +7,7 @@
     "th"
   ],
   "modules": [
-    "./plugin-message-format.js"
+    "./project.inlang/plugin-message-format.js"
   ],
   "plugin.inlang.messageFormat": {
     "pathPattern": "./messages/{languageTag}.json"
