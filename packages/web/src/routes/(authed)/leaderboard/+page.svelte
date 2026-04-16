@@ -5,6 +5,7 @@
   import * as Card from '$lib/components/ui/card'
   import { Badge } from '$lib/components/ui/badge'
   import * as Avatar from '$lib/components/ui/avatar'
+  import LeaderboardChart from '$lib/components/charts/LeaderboardChart.svelte'
 
   let { data } = $props()
 
@@ -96,6 +97,20 @@
       <p class="text-muted-foreground mt-1 text-center text-xs">Semua waktu</p>
     {/if}
   </div>
+
+  <!-- Bar chart overview -->
+  {#if entries.length > 0}
+    <Card.Root>
+      <Card.Header class="pb-2">
+        <Card.Title class="text-base">Top 10 Overview</Card.Title>
+      </Card.Header>
+      <Card.Content>
+        <LeaderboardChart
+          data={entries.slice(0, 10).map((e: any) => ({ name: e.name, totalPoints: e.score }))}
+        />
+      </Card.Content>
+    </Card.Root>
+  {/if}
 
   <!-- Podium — top 3 -->
   {#if top3.length > 0}
