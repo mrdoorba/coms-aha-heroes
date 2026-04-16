@@ -1,4 +1,4 @@
-import { paraglide } from '@inlang/paraglide-sveltekit/vite'
+import { paraglideVitePlugin } from '@inlang/paraglide-js'
 import { sveltekit } from '@sveltejs/kit/vite'
 import tailwindcss from '@tailwindcss/vite'
 import { SvelteKitPWA } from '@vite-pwa/sveltekit'
@@ -6,12 +6,13 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
-    paraglide({
+    sveltekit(),
+    paraglideVitePlugin({
       project: '../../project.inlang',
       outdir: './src/lib/paraglide',
+      strategy: ['cookie', 'preferredLanguage', 'baseLocale'],
     }),
     tailwindcss(),
-    sveltekit(),
     SvelteKitPWA({
       registerType: 'prompt',
       manifest: false,
