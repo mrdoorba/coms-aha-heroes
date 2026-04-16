@@ -2,6 +2,7 @@
   import * as Card from '$lib/components/ui/card'
   import { Badge } from '$lib/components/ui/badge'
   import { userState } from '$lib/state/userState.svelte'
+  import * as m from '$lib/paraglide/messages'
 
   const user = $derived(userState.current)
 
@@ -15,8 +16,8 @@
 
 <div class="space-y-6">
   <div>
-    <h1 class="text-2xl font-bold tracking-tight">Profil</h1>
-    <p class="text-muted-foreground">Informasi akun dan keanggotaan kamu.</p>
+    <h1 class="text-2xl font-bold tracking-tight">{m.nav_profile()}</h1>
+    <p class="text-muted-foreground">{m.app_tagline()}</p>
   </div>
 
   {#if user}
@@ -38,38 +39,38 @@
       <Card.Content>
         <dl class="divide-y">
           <div class="flex items-center justify-between py-3">
-            <dt class="text-sm text-muted-foreground">Peran</dt>
+            <dt class="text-sm text-muted-foreground">{m.users_col_role()}</dt>
             <dd>
               <Badge variant="secondary">{roleLabel[user.role] ?? user.role}</Badge>
             </dd>
           </div>
 
           <div class="flex items-center justify-between py-3">
-            <dt class="text-sm text-muted-foreground">Email</dt>
+            <dt class="text-sm text-muted-foreground">{m.login_email()}</dt>
             <dd class="text-sm font-medium">{user.email}</dd>
           </div>
 
           <div class="flex items-center justify-between py-3">
-            <dt class="text-sm text-muted-foreground">Cabang</dt>
+            <dt class="text-sm text-muted-foreground">{m.profile_branch()}</dt>
             <dd class="text-sm font-medium">{user.branchId}</dd>
           </div>
 
           <div class="flex items-center justify-between py-3">
-            <dt class="text-sm text-muted-foreground">Tim</dt>
+            <dt class="text-sm text-muted-foreground">{m.profile_team()}</dt>
             <dd class="text-sm font-medium">
               {#if user.teamId}
                 {user.teamId}
               {:else}
-                <span class="text-muted-foreground">Tidak ada tim</span>
+                <span class="text-muted-foreground">{m.teams_no_leader()}</span>
               {/if}
             </dd>
           </div>
 
           <div class="flex items-center justify-between py-3">
-            <dt class="text-sm text-muted-foreground">Submit poin</dt>
+            <dt class="text-sm text-muted-foreground">{m.points_submit()}</dt>
             <dd>
               <Badge variant={user.canSubmitPoints ? 'default' : 'secondary'}>
-                {user.canSubmitPoints ? 'Diizinkan' : 'Tidak diizinkan'}
+                {user.canSubmitPoints ? m.status_approved() : m.common_access_denied()}
               </Badge>
             </dd>
           </div>
@@ -79,7 +80,7 @@
   {:else}
     <Card.Root>
       <Card.Content class="py-10 text-center text-muted-foreground">
-        Memuat data profil...
+        {m.common_loading()}
       </Card.Content>
     </Card.Root>
   {/if}

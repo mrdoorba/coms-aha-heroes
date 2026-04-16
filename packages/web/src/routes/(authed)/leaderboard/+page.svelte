@@ -6,22 +6,23 @@
   import { Badge } from '$lib/components/ui/badge'
   import * as Avatar from '$lib/components/ui/avatar'
   import LeaderboardChart from '$lib/components/charts/LeaderboardChart.svelte'
+  import * as m from '$lib/paraglide/messages'
 
   let { data } = $props()
 
-  const TYPE_OPTIONS: { value: 'bintang' | 'poin_aha' | 'penalti'; label: string }[] = [
-    { value: 'bintang', label: 'Bintang' },
-    { value: 'poin_aha', label: 'Poin AHA' },
-    { value: 'penalti', label: 'Penalti' },
-  ]
+  const TYPE_OPTIONS = $derived([
+    { value: 'bintang' as const, label: m.points_bintang() },
+    { value: 'poin_aha' as const, label: m.points_poin_aha() },
+    { value: 'penalti' as const, label: m.leaderboard_penalty() },
+  ])
 
-  const PERIOD_OPTIONS: { value: string; label: string }[] = [
-    { value: '1', label: '1 Bulan' },
-    { value: '2', label: '2 Bulan' },
-    { value: '3', label: '3 Bulan' },
-    { value: '6', label: '6 Bulan' },
-    { value: '12', label: '12 Bulan' },
-  ]
+  const PERIOD_OPTIONS = $derived([
+    { value: '1', label: m.leaderboard_last_month() },
+    { value: '2', label: m.leaderboard_last_months({ count: 2 }) },
+    { value: '3', label: m.leaderboard_last_months({ count: 3 }) },
+    { value: '6', label: m.leaderboard_last_months({ count: 6 }) },
+    { value: '12', label: m.leaderboard_last_months({ count: 12 }) },
+  ])
 
   const entries = $derived(data.leaderboard.data ?? [])
   const top3 = $derived(entries.filter((e: any) => e.rank <= 3))
@@ -51,14 +52,14 @@
     goto(`?${params.toString()}`, { replaceState: true })
   }
 
-  const MEDAL: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' }
+  const MEDAL: Record<number, string> = { 1: '\u{1F947}', 2: '\u{1F948}', 3: '\u{1F949}' }
 </script>
 
 <div class="space-y-4">
   <!-- Header -->
   <div class="flex items-center gap-2">
-    <h1 class="text-2xl font-bold">Leaderboard</h1>
-    <Badge variant="secondary">{data.leaderboard.meta?.total ?? 0} peserta</Badge>
+    <h1 class="text-2xl font-bold">{m.nav_leaderboard()}</h1>
+    <Badge variant="secondary">{data.leaderboard.meta?.total ?? 0}</Badge>
   </div>
 
   <!-- Type filter -->
@@ -74,7 +75,7 @@
     {/each}
   </div>
 
-  <!-- Period filter — scrollable button row -->
+  <!-- Period filter -->
   <div class="relative">
     <div class="scrollbar-hide flex gap-1.5 overflow-x-auto pb-1">
       {#each PERIOD_OPTIONS as opt (opt.value)}
@@ -94,7 +95,7 @@
       {/each}
     </div>
     {#if !data.months}
-      <p class="text-muted-foreground mt-1 text-center text-xs">Semua waktu</p>
+      <p class="text-muted-foreground mt-1 text-center text-xs">{m.leaderboard_all_time()}</p>
     {/if}
   </div>
 
@@ -102,7 +103,7 @@
   {#if entries.length > 0}
     <Card.Root>
       <Card.Header class="pb-2">
-        <Card.Title class="text-base">Top 10 Overview</Card.Title>
+        <Card.Title class="text-base">Top 10</Card.Title>
       </Card.Header>
       <Card.Content>
         <LeaderboardChart
@@ -112,7 +113,7 @@
     </Card.Root>
   {/if}
 
-  <!-- Podium — top 3 -->
+  <!-- Podium -->
   {#if top3.length > 0}
     <Card.Root>
       <Card.Header class="pb-2">
@@ -152,7 +153,7 @@
   {#if entries.length === 0}
     <Card.Root>
       <Card.Content class="py-12 text-center text-muted-foreground">
-        Belum ada data untuk periode ini.
+        {m.common_no_data()}
       </Card.Content>
     </Card.Root>
   {:else}

@@ -11,7 +11,16 @@ export const load: PageLoad = async ({ fetch, params }) => {
     error(status === 404 ? 404 : 500, message)
   }
 
+  const point = unwrap(result, 'Failed to load point')
+
+  const [challengesResult, appealsResult] = await Promise.all([
+    api.api.v1.points({ id: params.id }).challenges.get({ fetch, query: {} }),
+    api.api.v1.points({ id: params.id }).appeals.get({ fetch, query: {} }),
+  ])
+
   return {
-    point: unwrap(result, 'Failed to load point'),
+    point,
+    challenges: challengesResult.data ?? [],
+    appeals: appealsResult.data ?? [],
   }
 }

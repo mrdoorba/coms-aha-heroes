@@ -2,6 +2,7 @@
   import * as Card from '$lib/components/ui/card'
   import { Badge } from '$lib/components/ui/badge'
   import { Button } from '$lib/components/ui/button'
+  import * as m from '$lib/paraglide/messages'
 
   let { data } = $props()
 
@@ -11,18 +12,17 @@
 
 <div class="space-y-6">
   <div>
-    <h1 class="text-2xl font-bold tracking-tight">Hadiah</h1>
-    <p class="text-muted-foreground">Tukarkan poin AHA kamu dengan hadiah menarik.</p>
+    <h1 class="text-2xl font-bold tracking-tight">{m.rewards_catalog_title()}</h1>
   </div>
 
   <div class="flex items-center gap-2">
-    <Badge variant="secondary">{meta?.total ?? rewards.length} hadiah tersedia</Badge>
+    <Badge variant="secondary">{meta?.total ?? rewards.length}</Badge>
   </div>
 
   {#if rewards.length === 0}
     <Card.Root>
       <Card.Content class="py-10 text-center text-muted-foreground">
-        Belum ada hadiah yang tersedia.
+        {m.rewards_empty()}
       </Card.Content>
     </Card.Root>
   {:else}
@@ -39,7 +39,7 @@
             </div>
           {:else}
             <div class="flex aspect-video w-full items-center justify-center rounded-t-lg bg-muted">
-              <span class="text-4xl">🎁</span>
+              <span class="text-4xl">{'\u{1F381}'}</span>
             </div>
           {/if}
 
@@ -47,7 +47,7 @@
             <div class="flex items-start justify-between gap-2">
               <Card.Title class="text-base">{reward.name}</Card.Title>
               {#if !reward.isActive}
-                <Badge variant="secondary">Tidak aktif</Badge>
+                <Badge variant="secondary">{m.status_inactive()}</Badge>
               {/if}
             </div>
             {#if reward.description}
@@ -58,12 +58,12 @@
           <Card.Content>
             <div class="flex items-center justify-between">
               <p class="text-lg font-bold tabular-nums">
-                {reward.pointCost.toLocaleString('id-ID')} poin
+                {reward.pointCost.toLocaleString('id-ID')} {m.points_poin_aha()}
               </p>
               {#if reward.isActive}
-                <Button href="/rewards/{reward.id}/redeem" size="sm">Redeem</Button>
+                <Button href="/rewards/{reward.id}/redeem" size="sm">{m.redeem_title()}</Button>
               {:else}
-                <Button size="sm" disabled>Tidak tersedia</Button>
+                <Button size="sm" disabled>{m.status_inactive()}</Button>
               {/if}
             </div>
           </Card.Content>

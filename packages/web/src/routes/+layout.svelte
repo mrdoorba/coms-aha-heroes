@@ -1,17 +1,17 @@
 <script lang="ts">
-  import { onMount } from 'svelte'
   import { userState } from '$lib/state/userState.svelte'
+  import { uiState } from '$lib/state/uiState.svelte'
   import { Toaster } from 'svelte-sonner'
   import '../app.css'
 
   let { data, children } = $props()
 
-  onMount(() => {
+  $effect(() => {
     userState.init(data.user)
   })
 
   $effect(() => {
-    userState.init(data.user)
+    uiState.initEffects()
   })
 </script>
 

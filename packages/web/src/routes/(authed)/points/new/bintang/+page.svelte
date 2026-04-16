@@ -7,6 +7,8 @@
   import { Input } from '$lib/components/ui/input'
   import { Label } from '$lib/components/ui/label'
   import { Textarea } from '$lib/components/ui/textarea'
+  import EmployeeSelector from '$lib/components/EmployeeSelector.svelte'
+  import * as m from '$lib/paraglide/messages'
 
   let userId = $state('')
   let points = $state(1)
@@ -26,15 +28,15 @@
       })
 
       if (result.error) {
-        const msg = (result.error as any)?.value?.error?.message ?? 'Failed to submit point'
+        const msg = (result.error as any)?.value?.error?.message ?? m.form_error_submission_failed()
         toast.error(msg)
         return
       }
 
-      toast.success('Bintang point submitted successfully')
+      toast.success(m.points_bintang())
       goto('/points')
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to submit point')
+      toast.error(err instanceof Error ? err.message : m.form_error_submission_failed())
     } finally {
       loading = false
     }
@@ -43,31 +45,21 @@
 
 <div class="mx-auto max-w-lg space-y-4">
   <div class="flex items-center gap-2">
-    <Button href="/points" variant="outline" size="sm">← Back</Button>
-    <h1 class="text-2xl font-bold">Submit Bintang</h1>
+    <Button href="/points" variant="outline" size="sm">&larr; {m.common_previous()}</Button>
+    <h1 class="text-2xl font-bold">{m.bintang_form_title()}</h1>
   </div>
 
   <Card.Root>
     <Card.Header>
-      <Card.Title>Poin Bintang sAHAbat</Card.Title>
-      <Card.Description>Submit a Bintang point for an employee.</Card.Description>
+      <Card.Title>{m.points_bintang()}</Card.Title>
+      <Card.Description>{m.point_type_bintang_desc()}</Card.Description>
     </Card.Header>
     <Card.Content>
       <form onsubmit={handleSubmit} class="space-y-4">
-        <div class="space-y-1.5">
-          <Label for="userId">Employee ID (UUID)</Label>
-          <Input
-            id="userId"
-            type="text"
-            placeholder="Employee user ID"
-            bind:value={userId}
-            required
-            disabled={loading}
-          />
-        </div>
+        <EmployeeSelector bind:value={userId} disabled={loading} />
 
         <div class="space-y-1.5">
-          <Label for="points">Points</Label>
+          <Label for="points">{m.nav_points()}</Label>
           <Input
             id="points"
             type="number"
@@ -77,20 +69,21 @@
             required
             disabled={true}
           />
-          <p class="text-xs text-muted-foreground">Bintang is always 1 point.</p>
         </div>
 
         <div class="space-y-1.5">
-          <Label for="reason">Description</Label>
+          <Label for="reason">{m.bintang_form_action()}</Label>
           <Textarea
             id="reason"
-            placeholder="Reason for this Bintang..."
+            placeholder={m.bintang_form_action_placeholder()}
             bind:value={reason}
             required
             disabled={loading}
             rows={4}
           />
         </div>
+
+        <p class="text-xs text-muted-foreground">{m.form_pending_approval()}</p>
 
         <Button type="submit" class="w-full" disabled={loading}>
           {#if loading}
@@ -108,9 +101,9 @@
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
               />
             </svg>
-            Submitting…
+            {m.common_submitting()}
           {:else}
-            Submit Bintang
+            {m.bintang_form_submit()}
           {/if}
         </Button>
       </form>

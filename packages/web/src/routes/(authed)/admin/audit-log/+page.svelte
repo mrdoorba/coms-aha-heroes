@@ -4,6 +4,7 @@
   import { Button } from '$lib/components/ui/button'
   import * as Table from '$lib/components/ui/table'
   import { Badge } from '$lib/components/ui/badge'
+  import * as m from '$lib/paraglide/messages'
 
   let { data } = $props()
 
@@ -36,18 +37,18 @@
 
 <div class="space-y-4">
   <div>
-    <h1 class="text-2xl font-bold">Audit Log</h1>
-    <p class="text-sm text-muted-foreground">{data.meta.total} total entries</p>
+    <h1 class="text-2xl font-bold">{m.audit_title()}</h1>
+    <p class="text-sm text-muted-foreground">{m.audit_total({ total: data.meta.total })}</p>
   </div>
 
   <div class="rounded-lg border">
     <Table.Root>
       <Table.Header>
         <Table.Row>
-          <Table.Head>Time</Table.Head>
-          <Table.Head>Actor</Table.Head>
-          <Table.Head>Action</Table.Head>
-          <Table.Head>Entity</Table.Head>
+          <Table.Head>{m.audit_col_timestamp()}</Table.Head>
+          <Table.Head>{m.audit_col_actor()}</Table.Head>
+          <Table.Head>{m.audit_col_action()}</Table.Head>
+          <Table.Head>{m.audit_entity_label()}</Table.Head>
         </Table.Row>
       </Table.Header>
       <Table.Body>
@@ -61,13 +62,13 @@
               <Badge variant={actionVariant(log.action)}>{log.action}</Badge>
             </Table.Cell>
             <Table.Cell class="text-sm text-muted-foreground">
-              {log.entityType}{log.entityId ? ` · ${log.entityId.slice(0, 8)}…` : ''}
+              {log.entityType}{log.entityId ? ` · ${log.entityId.slice(0, 8)}...` : ''}
             </Table.Cell>
           </Table.Row>
         {:else}
           <Table.Row>
             <Table.Cell colspan={4} class="py-8 text-center text-muted-foreground">
-              No audit log entries.
+              {m.audit_empty()}
             </Table.Cell>
           </Table.Row>
         {/each}
@@ -78,7 +79,7 @@
   {#if totalPages > 1}
     <div class="flex items-center justify-between">
       <p class="text-sm text-muted-foreground">
-        Page {currentPage} of {totalPages}
+        {m.common_page_of({ page: currentPage, total: totalPages })}
       </p>
       <div class="flex gap-2">
         <Button
@@ -87,7 +88,7 @@
           disabled={currentPage <= 1}
           onclick={() => goToPage(currentPage - 1)}
         >
-          Previous
+          {m.common_previous()}
         </Button>
         <Button
           variant="outline"
@@ -95,7 +96,7 @@
           disabled={currentPage >= totalPages}
           onclick={() => goToPage(currentPage + 1)}
         >
-          Next
+          {m.common_next()}
         </Button>
       </div>
     </div>

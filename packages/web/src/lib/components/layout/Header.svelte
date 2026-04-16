@@ -13,6 +13,7 @@
   import { userState } from '$lib/state/userState.svelte'
   import { signOut } from '$lib/auth/client'
   import { goto, invalidateAll } from '$app/navigation'
+  import * as m from '$lib/paraglide/messages'
 
   let { onMenuClick }: { onMenuClick: () => void } = $props()
 
@@ -59,13 +60,13 @@
       <DropdownMenuItem>
         <a href="/profile" class="flex items-center gap-2 w-full">
           <Icon icon={User} size={16} strokeWidth={1.5} />
-          Profile
+          {m.nav_profile()}
         </a>
       </DropdownMenuItem>
       <DropdownMenuSeparator />
       <DropdownMenuItem onclick={handleSignOut} class="text-destructive focus:text-destructive cursor-pointer">
         <Icon icon={LogOut} size={16} strokeWidth={1.5} class="mr-2" />
-        Sign out
+        {m.common_logout()}
       </DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>

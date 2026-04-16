@@ -18,21 +18,22 @@
   import { uiState } from '$lib/state/uiState.svelte'
   import { signOut } from '$lib/auth/client'
   import { goto, invalidateAll } from '$app/navigation'
+  import * as m from '$lib/paraglide/messages'
 
-  const navItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/leaderboard', label: 'Leaderboard', icon: Trophy },
-    { href: '/points', label: 'Points', icon: Star },
-    { href: '/teams', label: 'Teams', icon: Users },
-    { href: '/rewards', label: 'Rewards', icon: Gift },
-    { href: '/notifications', label: 'Notifications', icon: Bell },
-  ]
+  const navItems = $derived([
+    { href: '/dashboard', label: m.nav_dashboard(), icon: LayoutDashboard },
+    { href: '/leaderboard', label: m.nav_leaderboard(), icon: Trophy },
+    { href: '/points', label: m.nav_points(), icon: Star },
+    { href: '/teams', label: m.nav_teams(), icon: Users },
+    { href: '/rewards', label: m.nav_rewards(), icon: Gift },
+    { href: '/notifications', label: m.nav_notifications(), icon: Bell },
+  ])
 
-  const adminItems = [
-    { href: '/admin/users', label: 'Users', icon: Users },
-    { href: '/admin/settings', label: 'Settings', icon: Settings },
-    { href: '/admin/audit-log', label: 'Audit Log', icon: FileText },
-  ]
+  const adminItems = $derived([
+    { href: '/admin/users', label: m.nav_users(), icon: Users },
+    { href: '/admin/settings', label: m.nav_settings(), icon: Settings },
+    { href: '/admin/audit-log', label: m.nav_audit_log(), icon: FileText },
+  ])
 
   function isActive(href: string) {
     return $page.url.pathname === href || $page.url.pathname.startsWith(href + '/')
@@ -56,12 +57,12 @@
       <Icon icon={Shield} size={16} strokeWidth={2} />
     </div>
     {#if !uiState.sidebarCollapsed}
-      <span class="font-bold text-sm tracking-wide text-foreground">AHA HEROES</span>
+      <span class="font-bold text-sm tracking-wide text-foreground">{m.app_name()}</span>
     {/if}
     <button
       onclick={() => uiState.toggleSidebar()}
       class="ml-auto p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-      aria-label="Toggle sidebar"
+      aria-label={uiState.sidebarCollapsed ? m.sidebar_expand() : m.sidebar_collapse()}
     >
       <Icon
         icon={ChevronLeft}
@@ -93,7 +94,7 @@
       <div class="pt-4">
         {#if !uiState.sidebarCollapsed}
           <p class="px-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Admin
+            {m.nav_admin()}
           </p>
         {:else}
           <div class="border-t border-border my-2"></div>
@@ -122,11 +123,11 @@
     <button
       onclick={handleSignOut}
       class="flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-      title={uiState.sidebarCollapsed ? 'Sign out' : undefined}
+      title={uiState.sidebarCollapsed ? m.common_logout() : undefined}
     >
       <Icon icon={LogOut} size={18} strokeWidth={1.5} class="shrink-0" />
       {#if !uiState.sidebarCollapsed}
-        <span>Sign out</span>
+        <span>{m.common_logout()}</span>
       {/if}
     </button>
   </div>

@@ -1,6 +1,7 @@
 <script lang="ts">
   import * as Card from '$lib/components/ui/card'
   import { Badge } from '$lib/components/ui/badge'
+  import * as m from '$lib/paraglide/messages'
 
   let { data } = $props()
 
@@ -21,21 +22,20 @@
 
 <div class="space-y-6">
   <div>
-    <h1 class="text-2xl font-bold tracking-tight">Notifikasi</h1>
-    <p class="text-muted-foreground">Semua pemberitahuan untukmu.</p>
+    <h1 class="text-2xl font-bold tracking-tight">{m.nav_notifications()}</h1>
   </div>
 
   <div class="flex items-center gap-2">
-    <Badge variant="secondary">{meta?.total ?? notifications.length} notifikasi</Badge>
+    <Badge variant="secondary">{meta?.total ?? notifications.length} {m.nav_notifications().toLowerCase()}</Badge>
     {#if unreadCount > 0}
-      <Badge variant="default">{unreadCount} belum dibaca</Badge>
+      <Badge variant="default">{unreadCount}</Badge>
     {/if}
   </div>
 
   {#if notifications.length === 0}
     <Card.Root>
       <Card.Content class="py-10 text-center text-muted-foreground">
-        Tidak ada notifikasi.
+        {m.notifications_empty()}
       </Card.Content>
     </Card.Root>
   {:else}
@@ -52,7 +52,7 @@
                 <div class="flex items-center gap-2">
                   <p class="truncate text-sm font-medium">{notif.title}</p>
                   {#if !notif.isRead}
-                    <Badge variant="default" class="shrink-0 text-xs">Baru</Badge>
+                    <Badge variant="default" class="shrink-0 text-xs">{m.time_just_now()}</Badge>
                   {/if}
                 </div>
                 {#if notif.body}
