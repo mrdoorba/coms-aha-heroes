@@ -2,20 +2,29 @@
 FROM oven/bun:1 AS deps
 WORKDIR /app
 COPY package.json bun.lock ./
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/server/package.json ./packages/server/
+COPY packages/web/package.json ./packages/web/
 RUN bun install --frozen-lockfile
 
-# Stage 2: Build
+# Stage 2: Build (shared -> web -> server)
 FROM oven/bun:1 AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
+COPY --from=deps /app/packages/server/node_modules ./packages/server/node_modules
+COPY --from=deps /app/packages/web/node_modules ./packages/web/node_modules
 COPY . .
-RUN bun --bun run build
+RUN bun run --filter=shared build
+RUN bun run --filter=web build
+RUN bun run --filter=server build
 
-# Stage 3: Production runner (minimal image)
+# Stage 3: Production (minimal)
 FROM oven/bun:1-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
-COPY --from=builder /app/.output ./.output
-COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/packages/server/dist ./dist
+COPY --from=builder /app/packages/web/build ./web-build
+COPY --from=builder /app/package.json ./
 EXPOSE 8080
-CMD ["bun", "run", ".output/server/index.mjs"]
+CMD ["bun", "run", "dist/index.js"]
