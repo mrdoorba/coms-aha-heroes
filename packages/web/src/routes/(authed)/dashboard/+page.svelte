@@ -2,10 +2,23 @@
   import * as Card from '$lib/components/ui/card'
   import { Skeleton } from '$lib/components/ui/skeleton'
   import { userState } from '$lib/state/userState.svelte'
+  import DashboardStats from '$lib/components/charts/DashboardStats.svelte'
 
   let { data } = $props()
 
   const { summary, activity } = $derived(data)
+
+  // Derive a daily-points sparkline from recent activity
+  const sparklineData = $derived.by(() => {
+    const grouped: Record<string, number> = {}
+    for (const item of activity) {
+      const day = item.createdAt.slice(0, 10)
+      grouped[day] = (grouped[day] ?? 0) + (item.points > 0 ? item.points : 0)
+    }
+    return Object.entries(grouped)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, value]) => ({ date, value }))
+  })
 
   const summaryCards = $derived([
     {
@@ -76,6 +89,20 @@
       {/each}
     </div>
   </section>
+
+  <!-- Points activity sparkline -->
+  {#if sparklineData.length >= 2}
+    <section>
+      <h2 class="mb-3 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+        Points Activity
+      </h2>
+      <Card.Root>
+        <Card.Content class="pt-4">
+          <DashboardStats data={sparklineData} />
+        </Card.Content>
+      </Card.Root>
+    </section>
+  {/if}
 
   <!-- Recent activity -->
   <section>
