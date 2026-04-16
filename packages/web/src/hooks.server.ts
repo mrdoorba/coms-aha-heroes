@@ -1,11 +1,14 @@
 import type { Handle } from '@sveltejs/kit'
-import { auth } from '@coms/server/auth'
-import { db } from '@coms/shared/db'
-import { users, userEmails } from '@coms/shared/db/schema'
-import { eq } from 'drizzle-orm'
 import type { AuthUser } from '@coms/shared/types'
 
 export const handle: Handle = async ({ event, resolve }) => {
+  const [{ auth }, { db }, { users, userEmails }, { eq }] = await Promise.all([
+    import('@coms/server/auth'),
+    import('@coms/shared/db'),
+    import('@coms/shared/db/schema'),
+    import('drizzle-orm'),
+  ])
+
   const session = await auth.api.getSession({
     headers: event.request.headers,
   })

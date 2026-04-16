@@ -15,9 +15,9 @@ COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_module
 COPY --from=deps /app/packages/server/node_modules ./packages/server/node_modules
 COPY --from=deps /app/packages/web/node_modules ./packages/web/node_modules
 COPY . .
-RUN bun run --filter=shared build
-RUN bun run --filter=web build
-RUN bun run --filter=server build
+RUN bun run --filter=@coms/shared build
+RUN bun run --filter=@coms/web build
+RUN bun run --filter=@coms/server build
 
 # Stage 3: Production (minimal)
 FROM oven/bun:1-slim AS runner

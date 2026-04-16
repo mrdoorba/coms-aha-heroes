@@ -1,7 +1,6 @@
 import { superValidate, message } from 'sveltekit-superforms'
 import { typebox } from 'sveltekit-superforms/adapters'
 import { Type as t } from 'typebox'
-import { auth } from '@coms/server/auth'
 import type { Actions, PageServerLoad } from './$types'
 
 const forgotPasswordSchema = t.Object({
@@ -24,6 +23,7 @@ export const actions: Actions = {
     // Always return success to prevent email enumeration.
     // Fire-and-forget the actual reset request.
     try {
+      const { auth } = await import('@coms/server/auth')
       await auth.api.requestPasswordReset({
         body: {
           email: form.data.email,
