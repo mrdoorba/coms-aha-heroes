@@ -1,6 +1,7 @@
 <script lang="ts">
   import * as Card from '$lib/components/ui/card'
   import { Badge } from '$lib/components/ui/badge'
+  import * as m from '$lib/paraglide/messages'
 
   let { data } = $props()
 
@@ -23,33 +24,24 @@
       default:         return 'outline'
     }
   }
-
-  function statusLabel(status: string): string {
-    switch (status) {
-      case 'approved': return 'Disetujui'
-      case 'rejected': return 'Ditolak'
-      case 'pending':  return 'Menunggu'
-      default:         return status
-    }
-  }
 </script>
 
 <div class="space-y-6">
   <div>
-    <h1 class="text-2xl font-bold tracking-tight">Riwayat Redeem</h1>
-    <p class="text-muted-foreground">Semua permintaan penukaran hadiah kamu.</p>
+    <h1 class="text-2xl font-bold tracking-tight">{m.redemptions_title()}</h1>
+    <p class="text-muted-foreground">{m.redemptions_my_requests()}</p>
   </div>
 
   <div class="flex items-center gap-2">
-    <Badge variant="secondary">{meta?.total ?? redemptions.length} transaksi</Badge>
+    <Badge variant="secondary">{meta?.total ?? redemptions.length}</Badge>
   </div>
 
   {#if redemptions.length === 0}
     <Card.Root>
       <Card.Content class="py-10 text-center text-muted-foreground">
-        Belum ada riwayat redemption.
+        {m.redemptions_empty()}
         <a href="/rewards" class="mt-2 block text-sm text-primary hover:underline">
-          Lihat hadiah yang tersedia →
+          {m.rewards_catalog_title()} &rarr;
         </a>
       </Card.Content>
     </Card.Root>
@@ -60,10 +52,10 @@
           <table class="w-full text-sm">
             <thead>
               <tr class="border-b bg-muted/50">
-                <th class="px-4 py-3 text-left font-medium text-muted-foreground">Hadiah</th>
-                <th class="px-4 py-3 text-right font-medium text-muted-foreground">Poin</th>
-                <th class="px-4 py-3 text-center font-medium text-muted-foreground">Status</th>
-                <th class="px-4 py-3 text-right font-medium text-muted-foreground">Tanggal</th>
+                <th class="px-4 py-3 text-left font-medium text-muted-foreground">{m.nav_rewards()}</th>
+                <th class="px-4 py-3 text-right font-medium text-muted-foreground">{m.nav_points()}</th>
+                <th class="px-4 py-3 text-center font-medium text-muted-foreground">{m.users_col_status()}</th>
+                <th class="px-4 py-3 text-right font-medium text-muted-foreground">{m.employee_detail_col_date()}</th>
               </tr>
             </thead>
             <tbody>
@@ -75,7 +67,7 @@
                   </td>
                   <td class="px-4 py-3 text-center">
                     <Badge variant={statusVariant(r.status)} class="capitalize">
-                      {statusLabel(r.status)}
+                      {r.status}
                     </Badge>
                   </td>
                   <td class="px-4 py-3 text-right text-muted-foreground">

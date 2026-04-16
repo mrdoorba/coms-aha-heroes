@@ -6,13 +6,19 @@
   import * as Card from '$lib/components/ui/card'
   import { Input } from '$lib/components/ui/input'
   import { Label } from '$lib/components/ui/label'
+  import * as m from '$lib/paraglide/messages'
 
   let email = $state('')
   let password = $state('')
   let error = $state<string | null>(null)
   let loading = $state(false)
 
-  const redirectTo = $derived($page.url.searchParams.get('redirect') ?? '/dashboard')
+  const redirectTo = $derived(safeRedirect($page.url.searchParams.get('redirect')))
+
+  function safeRedirect(url: string | null): string {
+    if (!url || !url.startsWith('/') || url.startsWith('//')) return '/dashboard'
+    return url
+  }
 
   async function handleEmailLogin(e: SubmitEvent) {
     e.preventDefault()
@@ -58,14 +64,14 @@
   <div class="w-full max-w-md">
     <!-- Branding -->
     <div class="mb-8 text-center">
-      <h1 class="text-3xl font-bold tracking-tight text-foreground">AHA HEROES</h1>
-      <p class="mt-1 text-sm text-muted-foreground">Sign in to your account</p>
+      <h1 class="text-3xl font-bold tracking-tight text-foreground">{m.app_name()}</h1>
+      <p class="mt-1 text-sm text-muted-foreground">{m.login_subtitle()}</p>
     </div>
 
     <Card.Root class="shadow-lg">
       <Card.Header class="pb-4">
-        <Card.Title class="text-xl">Welcome back</Card.Title>
-        <Card.Description>Enter your credentials to continue</Card.Description>
+        <Card.Title class="text-xl">{m.login_title()}</Card.Title>
+        <Card.Description>{m.login_subtitle()}</Card.Description>
       </Card.Header>
 
       <Card.Content class="space-y-4">
@@ -101,7 +107,7 @@
               fill="#EA4335"
             />
           </svg>
-          Continue with Google
+          {m.login_google()}
         </Button>
 
         <!-- Divider -->
@@ -110,14 +116,14 @@
             <span class="w-full border-t"></span>
           </div>
           <div class="relative flex justify-center text-xs uppercase">
-            <span class="bg-card px-2 text-muted-foreground">or</span>
+            <span class="bg-card px-2 text-muted-foreground">{m.login_or()}</span>
           </div>
         </div>
 
         <!-- Email/password form -->
         <form onsubmit={handleEmailLogin} class="space-y-4">
           <div class="space-y-1.5">
-            <Label for="email">Email</Label>
+            <Label for="email">{m.login_email()}</Label>
             <Input
               id="email"
               type="email"
@@ -131,12 +137,12 @@
 
           <div class="space-y-1.5">
             <div class="flex items-center justify-between">
-              <Label for="password">Password</Label>
+              <Label for="password">{m.login_password()}</Label>
               <a
                 href="/forgot-password"
                 class="text-xs text-muted-foreground underline-offset-4 hover:underline"
               >
-                Forgot password?
+                {m.login_forgot_password()}
               </a>
             </div>
             <Input
@@ -166,9 +172,9 @@
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                 />
               </svg>
-              Signing in…
+              {m.login_signing_in()}
             {:else}
-              Sign in
+              {m.login_button()}
             {/if}
           </Button>
         </form>

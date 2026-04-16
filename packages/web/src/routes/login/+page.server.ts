@@ -3,7 +3,8 @@ import type { PageServerLoad } from './$types'
 
 export const load: PageServerLoad = async ({ locals, url }) => {
   if (locals.user) {
-    const redirectTo = url.searchParams.get('redirect') ?? '/dashboard'
+    const raw = url.searchParams.get('redirect')
+    const redirectTo = raw && raw.startsWith('/') && !raw.startsWith('//') ? raw : '/dashboard'
     redirect(302, redirectTo)
   }
 }

@@ -2,14 +2,15 @@
   import { page } from '$app/stores'
   import { LayoutDashboard, Trophy, Star, Gift, Bell } from 'lucide-svelte'
   import Icon from '$lib/components/Icon.svelte'
+  import * as m from '$lib/paraglide/messages'
 
-  const navItems = [
-    { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
-    { href: '/leaderboard', label: 'Board', icon: Trophy },
-    { href: '/points', label: 'Points', icon: Star },
-    { href: '/rewards', label: 'Rewards', icon: Gift },
-    { href: '/notifications', label: 'Alerts', icon: Bell },
-  ]
+  const navItems = $derived([
+    { href: '/dashboard', label: m.nav_dashboard(), icon: LayoutDashboard },
+    { href: '/leaderboard', label: m.nav_leaderboard(), icon: Trophy },
+    { href: '/points', label: m.nav_points(), icon: Star },
+    { href: '/rewards', label: m.nav_rewards(), icon: Gift },
+    { href: '/notifications', label: m.nav_notifications(), icon: Bell },
+  ])
 
   function isActive(href: string) {
     return $page.url.pathname === href || $page.url.pathname.startsWith(href + '/')

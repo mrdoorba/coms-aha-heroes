@@ -3,6 +3,7 @@
   import { page } from '$app/stores'
   import * as Card from '$lib/components/ui/card'
   import { Button } from '$lib/components/ui/button'
+  import * as m from '$lib/paraglide/messages'
 
   let { data } = $props()
 
@@ -28,12 +29,12 @@
   const summaryCards = $derived(
     report
       ? [
-          { label: 'Total Bintang', value: report.totalBintang },
-          { label: 'Total Penalti', value: report.totalPenalti },
-          { label: 'Total Poin AHA', value: report.totalPoinAha },
-          { label: 'Total Users', value: report.totalUsers },
-          { label: 'Active Users', value: report.activeUsers },
-          { label: 'Pending Submissions', value: report.pendingSubmissions },
+          { label: m.points_bintang(), value: report.totalBintang },
+          { label: m.points_penalti(), value: report.totalPenalti },
+          { label: m.points_poin_aha(), value: report.totalPoinAha },
+          { label: m.nav_users(), value: report.totalUsers },
+          { label: m.status_active(), value: report.activeUsers },
+          { label: m.status_pending(), value: report.pendingSubmissions },
         ]
       : [],
   )
@@ -41,19 +42,19 @@
 
 <div class="space-y-6">
   <div>
-    <h1 class="text-2xl font-bold">Reports</h1>
-    <p class="text-sm text-muted-foreground">Dashboard statistics and analytics</p>
+    <h1 class="text-2xl font-bold">{m.reports_title()}</h1>
+    <p class="text-sm text-muted-foreground">{m.reports_subtitle()}</p>
   </div>
 
   <!-- Filters -->
   <Card.Root>
     <Card.Header>
-      <Card.Title>Filters</Card.Title>
+      <Card.Title>{m.filter_advanced()}</Card.Title>
     </Card.Header>
     <Card.Content>
       <div class="flex flex-wrap items-end gap-3">
         <div>
-          <label for="start-date" class="text-sm text-muted-foreground">Start Date</label>
+          <label for="start-date" class="text-sm text-muted-foreground">{m.reports_start_date()}</label>
           <input
             id="start-date"
             type="date"
@@ -62,7 +63,7 @@
           />
         </div>
         <div>
-          <label for="end-date" class="text-sm text-muted-foreground">End Date</label>
+          <label for="end-date" class="text-sm text-muted-foreground">{m.reports_end_date()}</label>
           <input
             id="end-date"
             type="date"
@@ -71,8 +72,8 @@
           />
         </div>
         <div class="flex gap-2">
-          <Button size="sm" onclick={applyFilters}>Apply</Button>
-          <Button size="sm" variant="outline" onclick={clearFilters}>Clear</Button>
+          <Button size="sm" onclick={applyFilters}>{m.audit_apply_filters()}</Button>
+          <Button size="sm" variant="outline" onclick={clearFilters}>{m.filter_clear()}</Button>
         </div>
       </div>
     </Card.Content>
@@ -97,8 +98,8 @@
     {#if report.topPerformers && report.topPerformers.length > 0}
       <Card.Root>
         <Card.Header>
-          <Card.Title>Top Performers</Card.Title>
-          <Card.Description>By bintang count</Card.Description>
+          <Card.Title>{m.reports_top_teams()}</Card.Title>
+          <Card.Description>{m.points_bintang()}</Card.Description>
         </Card.Header>
         <Card.Content>
           <ol class="divide-y">
@@ -108,7 +109,7 @@
                   <span class="w-5 text-center font-bold text-muted-foreground">{i + 1}</span>
                   <span class="font-medium">{performer.name}</span>
                 </div>
-                <span class="text-sm font-semibold">{performer.bintangCount} bintang</span>
+                <span class="text-sm font-semibold">{performer.bintangCount} {m.points_bintang().toLowerCase()}</span>
               </li>
             {/each}
           </ol>
@@ -120,14 +121,14 @@
     {#if report.byBranch && report.byBranch.length > 0}
       <Card.Root>
         <Card.Header>
-          <Card.Title>By Branch</Card.Title>
+          <Card.Title>{m.profile_branch()}</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="divide-y">
             {#each report.byBranch as branch (branch.branchId)}
               <div class="flex items-center justify-between py-2 first:pt-0 last:pb-0">
                 <span class="font-medium">{branch.branchName}</span>
-                <span class="text-sm font-semibold">{branch.bintangCount} bintang</span>
+                <span class="text-sm font-semibold">{branch.bintangCount} {m.points_bintang().toLowerCase()}</span>
               </div>
             {/each}
           </div>
@@ -137,7 +138,7 @@
   {:else}
     <Card.Root>
       <Card.Content class="py-10 text-center text-muted-foreground">
-        No report data available.
+        {m.common_no_data()}
       </Card.Content>
     </Card.Root>
   {/if}

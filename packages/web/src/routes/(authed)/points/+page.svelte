@@ -4,6 +4,7 @@
   import { userState } from '$lib/state/userState.svelte'
   import { Badge } from '$lib/components/ui/badge'
   import { Button } from '$lib/components/ui/button'
+  import * as m from '$lib/paraglide/messages'
 
   let { data } = $props()
 
@@ -16,10 +17,10 @@
     rejected: 'destructive',
   }
 
-  const CATEGORY_LABELS: Record<string, string> = {
-    BINTANG: 'Bintang',
-    PENALTI: 'Penalti',
-    POIN_AHA: 'Poin AHA',
+  const CATEGORY_LABELS: Record<string, () => string> = {
+    BINTANG: () => m.points_bintang(),
+    PENALTI: () => m.points_penalti(),
+    POIN_AHA: () => m.points_poin_aha(),
   }
 
   function statusVariant(status: string) {
@@ -41,32 +42,32 @@
 
 <div class="space-y-4">
   <div class="flex flex-wrap items-center justify-between gap-3">
-    <h1 class="text-2xl font-bold">Points</h1>
+    <h1 class="text-2xl font-bold">{m.nav_points()}</h1>
     {#if userState.current?.canSubmitPoints}
       <div class="flex flex-wrap gap-2">
-        <Button href="/points/new/bintang" size="sm">+ Bintang</Button>
-        <Button href="/points/new/penalti" size="sm" variant="outline">+ Penalti</Button>
-        <Button href="/points/new/poin-aha" size="sm" variant="secondary">+ Poin AHA</Button>
+        <Button href="/points/new/bintang" size="sm">+ {m.points_bintang()}</Button>
+        <Button href="/points/new/penalti" size="sm" variant="outline">+ {m.points_penalti()}</Button>
+        <Button href="/points/new/poin-aha" size="sm" variant="secondary">+ {m.points_poin_aha()}</Button>
       </div>
     {/if}
   </div>
 
   <!-- Status filter -->
   <div class="flex items-center gap-2">
-    <label for="status-filter" class="text-sm text-muted-foreground">Status:</label>
+    <label for="status-filter" class="text-sm text-muted-foreground">{m.users_col_status()}:</label>
     <select
       id="status-filter"
       class="rounded-md border bg-background px-2 py-1 text-sm"
       value={data.status}
       onchange={handleStatusFilter}
     >
-      <option value="">All</option>
-      <option value="pending">Pending</option>
-      <option value="active">Active</option>
-      <option value="challenged">Challenged</option>
-      <option value="frozen">Frozen</option>
-      <option value="revoked">Revoked</option>
-      <option value="rejected">Rejected</option>
+      <option value="">{m.points_tab_all()}</option>
+      <option value="pending">{m.status_pending()}</option>
+      <option value="active">{m.status_active()}</option>
+      <option value="challenged">{m.status_challenged()}</option>
+      <option value="frozen">{m.status_frozen()}</option>
+      <option value="revoked">{m.status_revoked()}</option>
+      <option value="rejected">{m.status_rejected()}</option>
     </select>
   </div>
 
@@ -83,7 +84,7 @@
               <div class="min-w-0 flex-1">
                 <p class="truncate font-medium">{point.user?.name ?? '—'}</p>
                 <p class="text-sm text-muted-foreground">
-                  {CATEGORY_LABELS[point.category?.code ?? ''] ?? point.category?.name ?? '—'}
+                  {CATEGORY_LABELS[point.category?.code ?? '']?.() ?? point.category?.name ?? '—'}
                 </p>
               </div>
               <div class="flex items-center gap-3">
@@ -96,7 +97,7 @@
       </ul>
     </div>
   {:else}
-    <p class="py-8 text-center text-muted-foreground">No points found.</p>
+    <p class="py-8 text-center text-muted-foreground">{m.points_empty()}</p>
   {/if}
 
   <!-- Pagination -->
@@ -108,11 +109,11 @@
           size="sm"
           href="/points?page={data.meta.page - 1}{data.status ? `&status=${data.status}` : ''}"
         >
-          Previous
+          {m.common_previous()}
         </Button>
       {/if}
       <span class="flex items-center px-2 text-sm text-muted-foreground">
-        Page {data.meta.page} of {Math.ceil(data.meta.total / data.meta.limit)}
+        {m.common_page_of({ page: data.meta.page, total: Math.ceil(data.meta.total / data.meta.limit) })}
       </span>
       {#if data.meta.page < Math.ceil(data.meta.total / data.meta.limit)}
         <Button
@@ -120,7 +121,7 @@
           size="sm"
           href="/points?page={data.meta.page + 1}{data.status ? `&status=${data.status}` : ''}"
         >
-          Next
+          {m.common_next()}
         </Button>
       {/if}
     </div>

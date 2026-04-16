@@ -3,6 +3,7 @@ import { browser } from '$app/environment'
 class UIState {
   sidebarCollapsed = $state(false)
   theme = $state<'light' | 'dark' | 'system'>('system')
+  #initialized = false
 
   constructor() {
     if (browser) {
@@ -17,6 +18,12 @@ class UIState {
         }
       }
     }
+  }
+
+  /** Call from root layout $effect to register localStorage sync */
+  initEffects() {
+    if (this.#initialized) return
+    this.#initialized = true
 
     $effect(() => {
       if (browser) {

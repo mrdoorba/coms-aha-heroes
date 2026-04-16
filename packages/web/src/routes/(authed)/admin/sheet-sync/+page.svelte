@@ -3,6 +3,7 @@
   import { Button } from '$lib/components/ui/button'
   import { Badge } from '$lib/components/ui/badge'
   import * as Table from '$lib/components/ui/table'
+  import * as m from '$lib/paraglide/messages'
 
   let { data } = $props()
 
@@ -35,12 +36,12 @@
       const res = await fetch('/api/v1/sheet-sync/trigger', { method: 'POST' })
       if (!res.ok) {
         const json = await res.json().catch(() => ({}))
-        triggerError = json?.error?.message ?? 'Failed to trigger sync'
+        triggerError = json?.error?.message ?? m.common_something_wrong()
       } else {
         triggerSuccess = true
       }
     } catch {
-      triggerError = 'Network error'
+      triggerError = m.common_something_wrong()
     } finally {
       triggerLoading = false
     }
@@ -49,22 +50,22 @@
 
 <div class="space-y-4">
   <div>
-    <h1 class="text-2xl font-bold">Sheet Sync</h1>
-    <p class="text-sm text-muted-foreground">Google Sheets import status and controls</p>
+    <h1 class="text-2xl font-bold">{m.nav_sheet_sync()}</h1>
+    <p class="text-sm text-muted-foreground">{m.audit_subtitle()}</p>
   </div>
 
   <!-- Status card -->
   <Card.Root>
     <Card.Header>
-      <Card.Title>Sync Status</Card.Title>
+      <Card.Title>{m.users_col_status()}</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4">
       {#if data.status}
         <div class="flex flex-wrap items-center gap-4">
           <div>
-            <p class="text-xs text-muted-foreground">Current Status</p>
+            <p class="text-xs text-muted-foreground">{m.users_col_status()}</p>
             <Badge class="mt-1" variant={data.status.isRunning ? 'secondary' : 'outline'}>
-              {data.status.isRunning ? 'Running' : 'Idle'}
+              {data.status.isRunning ? m.status_active() : m.status_inactive()}
             </Badge>
           </div>
           <div>
@@ -79,18 +80,18 @@
               </Badge>
             </div>
             <div>
-              <p class="text-xs text-muted-foreground">Last Run</p>
+              <p class="text-xs text-muted-foreground">{m.audit_col_timestamp()}</p>
               <p class="mt-1 text-sm font-medium">{formatDate(data.status.lastJob.startedAt)}</p>
             </div>
           {/if}
         </div>
         {#if data.status.lastJob?.error}
           <div class="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-            <strong>Last error:</strong> {data.status.lastJob.error}
+            <strong>Error:</strong> {data.status.lastJob.error}
           </div>
         {/if}
       {:else}
-        <p class="text-sm text-muted-foreground">Status unavailable.</p>
+        <p class="text-sm text-muted-foreground">{m.common_no_data()}</p>
       {/if}
 
       <div class="flex items-center gap-3 border-t pt-4">
@@ -99,10 +100,10 @@
           disabled={triggerLoading || data.status?.isRunning}
           size="sm"
         >
-          {triggerLoading ? 'Triggering…' : 'Trigger Sync'}
+          {triggerLoading ? m.common_submitting() : m.nav_sheet_sync()}
         </Button>
         {#if triggerSuccess}
-          <p class="text-sm text-green-600">Sync job started.</p>
+          <p class="text-sm text-green-600">{m.settings_saved()}</p>
         {/if}
         {#if triggerError}
           <p class="text-sm text-destructive">{triggerError}</p>
@@ -114,16 +115,16 @@
   <!-- Job history -->
   <Card.Root>
     <Card.Header>
-      <Card.Title>Job History</Card.Title>
-      <Card.Description>{data.meta.total} total jobs</Card.Description>
+      <Card.Title>{m.audit_title()}</Card.Title>
+      <Card.Description>{m.audit_total({ total: data.meta.total })}</Card.Description>
     </Card.Header>
     <Card.Content class="p-0">
       <Table.Root>
         <Table.Header>
           <Table.Row>
-            <Table.Head>Started</Table.Head>
-            <Table.Head>Finished</Table.Head>
-            <Table.Head>Status</Table.Head>
+            <Table.Head>{m.reports_start_date()}</Table.Head>
+            <Table.Head>{m.reports_end_date()}</Table.Head>
+            <Table.Head>{m.users_col_status()}</Table.Head>
             <Table.Head>Rows</Table.Head>
           </Table.Row>
         </Table.Header>
@@ -144,7 +145,7 @@
           {:else}
             <Table.Row>
               <Table.Cell colspan={4} class="py-8 text-center text-muted-foreground">
-                No sync jobs found.
+                {m.common_no_data()}
               </Table.Cell>
             </Table.Row>
           {/each}

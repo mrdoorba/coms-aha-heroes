@@ -1,6 +1,7 @@
 <script lang="ts">
   import * as Card from '$lib/components/ui/card'
   import { Badge } from '$lib/components/ui/badge'
+  import * as m from '$lib/paraglide/messages'
 
   let { data } = $props()
 
@@ -10,18 +11,17 @@
 
 <div class="space-y-6">
   <div>
-    <h1 class="text-2xl font-bold tracking-tight">Tim</h1>
-    <p class="text-muted-foreground">Daftar semua tim aktif di sistem.</p>
+    <h1 class="text-2xl font-bold tracking-tight">{m.nav_teams()}</h1>
   </div>
 
   <div class="flex items-center gap-2">
-    <Badge variant="secondary">{meta?.total ?? teams.length} tim</Badge>
+    <Badge variant="secondary">{m.teams_total({ count: meta?.total ?? teams.length })}</Badge>
   </div>
 
   {#if teams.length === 0}
     <Card.Root>
       <Card.Content class="py-10 text-center text-muted-foreground">
-        Belum ada tim yang terdaftar.
+        {m.teams_empty()}
       </Card.Content>
     </Card.Root>
   {:else}
@@ -30,15 +30,17 @@
         <Card.Root>
           <Card.Header class="pb-2">
             <Card.Title class="text-base">{team.name}</Card.Title>
-            <Card.Description>Cabang: {team.branchCode ?? team.branchId}</Card.Description>
+            <Card.Description>{m.profile_branch()}: {team.branchCode ?? team.branchId}</Card.Description>
           </Card.Header>
           <Card.Content>
             <div class="space-y-1 text-sm text-muted-foreground">
               {#if team.memberCount !== undefined}
-                <p>{team.memberCount} anggota</p>
+                <p>{m.teams_members({ count: team.memberCount })}</p>
               {/if}
               {#if team.leaderName}
-                <p>Ketua: <span class="font-medium text-foreground">{team.leaderName}</span></p>
+                <p><span class="font-medium text-foreground">{team.leaderName}</span></p>
+              {:else}
+                <p>{m.teams_no_leader()}</p>
               {/if}
             </div>
           </Card.Content>

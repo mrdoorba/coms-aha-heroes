@@ -3,6 +3,7 @@
   import { Skeleton } from '$lib/components/ui/skeleton'
   import { userState } from '$lib/state/userState.svelte'
   import DashboardStats from '$lib/components/charts/DashboardStats.svelte'
+  import * as m from '$lib/paraglide/messages'
 
   let { data } = $props()
 
@@ -22,24 +23,24 @@
 
   const summaryCards = $derived([
     {
-      label: 'Bintang',
+      label: m.dashboard_bintang_count(),
       value: summary.bintangCount,
-      description: 'Total bintang earned',
+      description: m.points_bintang(),
     },
     {
-      label: 'Poin AHA Balance',
+      label: m.dashboard_poin_aha_balance(),
       value: summary.poinAhaBalance,
-      description: 'Available points to redeem',
+      description: m.points_poin_aha(),
     },
     {
-      label: 'Penalti',
+      label: m.dashboard_penalti_points(),
       value: summary.penaltiCount,
-      description: 'Total penalty points',
+      description: m.points_penalti(),
     },
     {
-      label: 'Pending Approvals',
+      label: m.dashboard_pending_actions(),
       value: summary.pendingCount,
-      description: 'Submissions awaiting review',
+      description: m.status_pending(),
     },
   ])
 
@@ -65,16 +66,13 @@
   <!-- Welcome header -->
   <div>
     <h1 class="text-2xl font-bold tracking-tight">
-      Welcome back, {userState.current?.name ?? 'Hero'}!
+      {m.dashboard_welcome({ name: userState.current?.name ?? 'Hero' })}
     </h1>
-    <p class="text-muted-foreground">Here's what's happening in your branch.</p>
+    <p class="text-muted-foreground">{m.app_tagline()}</p>
   </div>
 
   <!-- Summary cards -->
   <section>
-    <h2 class="mb-3 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-      Your Summary
-    </h2>
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {#each summaryCards as card (card.label)}
         <Card.Root>
@@ -94,7 +92,7 @@
   {#if sparklineData.length >= 2}
     <section>
       <h2 class="mb-3 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-        Points Activity
+        {m.nav_points()}
       </h2>
       <Card.Root>
         <Card.Content class="pt-4">
@@ -107,13 +105,13 @@
   <!-- Recent activity -->
   <section>
     <h2 class="mb-3 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-      Recent Activity
+      {m.dashboard_recent_activity()}
     </h2>
 
     {#if activity.length === 0}
       <Card.Root>
         <Card.Content class="py-10 text-center text-muted-foreground">
-          No recent activity in your branch yet.
+          {m.activity_empty()}
         </Card.Content>
       </Card.Root>
     {:else}
@@ -132,7 +130,7 @@
                 <div class="min-w-0 flex-1">
                   <p class="truncate text-sm font-medium">{item.userName}</p>
                   <p class="truncate text-xs text-muted-foreground">
-                    {item.categoryName} · submitted by {item.submitterName}
+                    {item.categoryName} · {m.point_detail_submitted_by()} {item.submitterName}
                   </p>
                   {#if item.reason}
                     <p class="mt-0.5 line-clamp-1 text-xs text-muted-foreground italic">

@@ -1,84 +1,65 @@
 <script lang="ts">
-  import { authClient } from '$lib/auth/client'
+  import { superForm } from 'sveltekit-superforms'
   import { Button } from '$lib/components/ui/button'
   import * as Card from '$lib/components/ui/card'
   import { Input } from '$lib/components/ui/input'
   import { Label } from '$lib/components/ui/label'
+  import * as m from '$lib/paraglide/messages'
 
-  let email = $state('')
-  let submitted = $state(false)
-  let loading = $state(false)
-  let error = $state<string | null>(null)
+  let { data } = $props()
 
-  async function handleSubmit(e: SubmitEvent) {
-    e.preventDefault()
-    error = null
-    loading = true
-
-    try {
-      await authClient.forgetPassword({
-        email,
-        redirectTo: '/change-password',
-      })
-      submitted = true
-    } catch (err: unknown) {
-      // Always show the generic message to avoid email enumeration
-      submitted = true
-    } finally {
-      loading = false
-    }
-  }
+  const { form, errors, enhance, delayed, message } = superForm(data.form)
 </script>
 
 <div class="flex min-h-screen items-center justify-center bg-background p-4">
   <div class="w-full max-w-md">
     <!-- Branding -->
     <div class="mb-8 text-center">
-      <h1 class="text-3xl font-bold tracking-tight text-foreground">AHA HEROES</h1>
-      <p class="mt-1 text-sm text-muted-foreground">Password reset</p>
+      <h1 class="text-3xl font-bold tracking-tight text-foreground">{m.app_name()}</h1>
+      <p class="mt-1 text-sm text-muted-foreground">{m.forgot_password_subtitle()}</p>
     </div>
 
     <Card.Root class="shadow-lg">
       <Card.Header class="pb-4">
-        <Card.Title class="text-xl">Forgot your password?</Card.Title>
+        <Card.Title class="text-xl">{m.login_forgot_password()}</Card.Title>
         <Card.Description>
-          Enter your email address and we'll send a reset link if the account exists.
+          {m.forgot_password_subtitle()}
         </Card.Description>
       </Card.Header>
 
       <Card.Content>
-        {#if submitted}
+        {#if $message === 'sent'}
           <div class="space-y-4">
             <div class="rounded-md border border-green-500/50 bg-green-500/10 px-4 py-3 text-sm text-green-700 dark:text-green-400">
-              If that email exists, a reset link has been sent. Check your inbox.
+              {m.forgot_password_sent_title()}
             </div>
+            <p class="text-sm text-muted-foreground">{m.forgot_password_sent_body()}</p>
             <Button variant="outline" class="w-full" href="/login">
-              Back to login
+              {m.forgot_password_back_to_login()}
             </Button>
           </div>
         {:else}
-          <form onsubmit={handleSubmit} class="space-y-4">
-            {#if error}
-              <div class="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                {error}
-              </div>
-            {/if}
-
+          <form method="POST" use:enhance class="space-y-4">
             <div class="space-y-1.5">
-              <Label for="email">Email address</Label>
+              <Label for="email">{m.login_email()}</Label>
               <Input
                 id="email"
+                name="email"
                 type="email"
                 placeholder="you@example.com"
-                bind:value={email}
+                bind:value={$form.email}
                 required
                 autocomplete="email"
-                disabled={loading}
+                disabled={$delayed}
+                aria-invalid={$errors.email ? 'true' : undefined}
               />
+              {#if $errors.email}
+                <p class="text-xs text-destructive">{$errors.email}</p>
+              {/if}
             </div>
 
-            <Button type="submit" class="w-full" disabled={loading}>
-              {#if loading}
+            <Button type="submit" class="w-full" disabled={$delayed}>
+              {#if $delayed}
                 <svg
                   class="mr-2 h-4 w-4 animate-spin"
                   xmlns="http://www.w3.org/2000/svg"
@@ -93,9 +74,9 @@
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                   />
                 </svg>
-                Sending…
+                {m.forgot_password_sending()}
               {:else}
-                Send reset link
+                {m.forgot_password_send_button()}
               {/if}
             </Button>
 
@@ -104,7 +85,7 @@
                 href="/login"
                 class="text-sm text-muted-foreground underline-offset-4 hover:underline"
               >
-                Back to login
+                {m.forgot_password_back_to_login()}
               </a>
             </div>
           </form>

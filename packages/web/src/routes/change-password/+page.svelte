@@ -1,131 +1,107 @@
 <script lang="ts">
-  import { goto } from '$app/navigation'
-  import { authClient } from '$lib/auth/client'
+  import { superForm } from 'sveltekit-superforms'
   import { Button } from '$lib/components/ui/button'
   import * as Card from '$lib/components/ui/card'
   import { Input } from '$lib/components/ui/input'
   import { Label } from '$lib/components/ui/label'
+  import * as m from '$lib/paraglide/messages'
 
-  let currentPassword = $state('')
-  let newPassword = $state('')
-  let confirmPassword = $state('')
-  let error = $state<string | null>(null)
-  let loading = $state(false)
+  let { data } = $props()
+
+  const { form, errors, enhance, delayed, message } = superForm(data.form)
 
   const passwordMismatch = $derived(
-    confirmPassword.length > 0 && newPassword !== confirmPassword,
+    $form.confirmPassword.length > 0 && $form.newPassword !== $form.confirmPassword,
   )
-
-  async function handleSubmit(e: SubmitEvent) {
-    e.preventDefault()
-    error = null
-
-    if (newPassword !== confirmPassword) {
-      error = 'New passwords do not match.'
-      return
-    }
-
-    if (newPassword.length < 8) {
-      error = 'New password must be at least 8 characters.'
-      return
-    }
-
-    loading = true
-
-    try {
-      const result = await authClient.changePassword({
-        currentPassword,
-        newPassword,
-        revokeOtherSessions: false,
-      })
-
-      if (result?.error) {
-        error = result.error.message ?? 'Failed to change password.'
-      } else {
-        goto('/dashboard')
-      }
-    } catch (err: unknown) {
-      error = err instanceof Error ? err.message : 'Failed to change password. Please try again.'
-    } finally {
-      loading = false
-    }
-  }
 </script>
 
 <div class="flex min-h-screen items-center justify-center bg-background p-4">
   <div class="w-full max-w-md">
     <!-- Branding -->
     <div class="mb-8 text-center">
-      <h1 class="text-3xl font-bold tracking-tight text-foreground">AHA HEROES</h1>
-      <p class="mt-1 text-sm text-muted-foreground">Change your password</p>
+      <h1 class="text-3xl font-bold tracking-tight text-foreground">{m.app_name()}</h1>
+      <p class="mt-1 text-sm text-muted-foreground">{m.change_password_title()}</p>
     </div>
 
     <Card.Root class="shadow-lg">
       <Card.Header class="pb-4">
-        <Card.Title class="text-xl">Set a new password</Card.Title>
+        <Card.Title class="text-xl">{m.change_password_title()}</Card.Title>
         <Card.Description>
-          Enter your current password and choose a new one.
+          {m.change_password_subtitle()}
         </Card.Description>
       </Card.Header>
 
       <Card.Content>
-        <form onsubmit={handleSubmit} class="space-y-4">
-          {#if error}
+        <form method="POST" use:enhance class="space-y-4">
+          {#if $message}
             <div class="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-              {error}
+              {$message}
             </div>
           {/if}
 
           <div class="space-y-1.5">
-            <Label for="current-password">Current password</Label>
+            <Label for="current-password">{m.change_password_current()}</Label>
             <Input
               id="current-password"
+              name="currentPassword"
               type="password"
               placeholder="••••••••"
-              bind:value={currentPassword}
+              bind:value={$form.currentPassword}
               required
               autocomplete="current-password"
-              disabled={loading}
+              disabled={$delayed}
+              aria-invalid={$errors.currentPassword ? 'true' : undefined}
             />
+            {#if $errors.currentPassword}
+              <p class="text-xs text-destructive">{$errors.currentPassword}</p>
+            {/if}
           </div>
 
           <div class="space-y-1.5">
-            <Label for="new-password">New password</Label>
+            <Label for="new-password">{m.change_password_new()}</Label>
             <Input
               id="new-password"
+              name="newPassword"
               type="password"
               placeholder="••••••••"
-              bind:value={newPassword}
+              bind:value={$form.newPassword}
               required
               autocomplete="new-password"
-              disabled={loading}
+              disabled={$delayed}
+              aria-invalid={$errors.newPassword ? 'true' : undefined}
             />
-            <p class="text-xs text-muted-foreground">Minimum 8 characters</p>
+            {#if $errors.newPassword}
+              <p class="text-xs text-destructive">{$errors.newPassword}</p>
+            {/if}
           </div>
 
           <div class="space-y-1.5">
-            <Label for="confirm-password">Confirm new password</Label>
+            <Label for="confirm-password">{m.change_password_confirm()}</Label>
             <Input
               id="confirm-password"
+              name="confirmPassword"
               type="password"
               placeholder="••••••••"
-              bind:value={confirmPassword}
+              bind:value={$form.confirmPassword}
               required
               autocomplete="new-password"
-              disabled={loading}
+              disabled={$delayed}
               class={passwordMismatch ? 'border-destructive focus-visible:ring-destructive' : ''}
+              aria-invalid={$errors.confirmPassword ? 'true' : undefined}
             />
-            {#if passwordMismatch}
-              <p class="text-xs text-destructive">Passwords do not match</p>
+            {#if $errors.confirmPassword}
+              <p class="text-xs text-destructive">{$errors.confirmPassword}</p>
+            {:else if passwordMismatch}
+              <p class="text-xs text-destructive">{m.change_password_mismatch()}</p>
             {/if}
           </div>
 
           <Button
             type="submit"
             class="w-full"
-            disabled={loading || passwordMismatch}
+            disabled={$delayed || passwordMismatch}
           >
-            {#if loading}
+            {#if $delayed}
               <svg
                 class="mr-2 h-4 w-4 animate-spin"
                 xmlns="http://www.w3.org/2000/svg"
@@ -140,9 +116,9 @@
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                 />
               </svg>
-              Updating…
+              {m.change_password_changing()}
             {:else}
-              Update password
+              {m.change_password_button()}
             {/if}
           </Button>
         </form>
