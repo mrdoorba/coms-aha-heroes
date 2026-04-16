@@ -23,10 +23,11 @@ RUN NODE_ENV=production bun run --filter=@coms/server build
 FROM oven/bun:1-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
-ENV SVELTEKIT_BUILD_PATH=/app/web-build
+ENV SVELTEKIT_BUILD_PATH=/app/packages/web/build
 COPY --from=builder /app/packages/server/dist ./dist
-COPY --from=builder /app/packages/web/build ./web-build
+COPY --from=builder /app/packages/web/build ./packages/web/build
 COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages/web/node_modules ./packages/web/node_modules
 COPY --from=builder /app/package.json ./
 EXPOSE 8080
 CMD ["bun", "run", "dist/index.js"]
