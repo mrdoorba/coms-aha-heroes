@@ -1,3 +1,4 @@
+import { resolve } from 'path'
 import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
 import { health } from './routes/health'
@@ -63,7 +64,47 @@ const app = new Elysia()
       ),
   )
 
-// SvelteKit handler mount placeholder (added in Task 8)
+// --- SvelteKit handler ---
+const SVELTEKIT_BUILD_PATH = process.env.SVELTEKIT_BUILD_PATH
+  ?? resolve(import.meta.dir, '../../web/build')
+
+if (process.env.NODE_ENV === 'production') {
+  // In production, import the built SvelteKit handler
+  try {
+    const { handler } = await import(
+      resolve(SVELTEKIT_BUILD_PATH, 'handler.js')
+    )
+
+    // Serve SvelteKit static assets
+    app.get('/immutable/*', async ({ request }) => {
+      return handler(request)
+    })
+
+    // SvelteKit SSR handler — catch-all for non-API requests
+    app.all('/*', async ({ request }) => {
+      return handler(request)
+    })
+  } catch (e) {
+    console.warn('[server] SvelteKit handler not found — running API-only mode')
+  }
+} else {
+  // In dev, proxy to SvelteKit dev server
+  app.all('/*', async ({ request }) => {
+    try {
+      const url = new URL(request.url)
+      url.port = '5173'
+      const proxyReq = new Request(url.toString(), {
+        method: request.method,
+        headers: request.headers,
+        body: request.body,
+        duplex: 'half',
+      } as any)
+      return fetch(proxyReq)
+    } catch {
+      return new Response('SvelteKit dev server not running', { status: 502 })
+    }
+  })
+}
 
 export type App = typeof app
 
