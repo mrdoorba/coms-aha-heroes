@@ -10,6 +10,6 @@
     "./project.inlang/plugin-message-format.js"
   ],
   "plugin.inlang.messageFormat": {
-    "pathPattern": "./messages/{languageTag}.json"
+    "pathPattern": "../messages/{languageTag}.json"
   }
 }
