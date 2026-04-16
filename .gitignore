@@ -59,3 +59,11 @@ infra/*.tfstate.backup
 *.log
 npm-debug.log*
 .gstack/
+.gitnexus
+
+
+docs/
+!docs/superpowers/specs/
+# Added by code-review-graph
+.code-review-graph/
+.mcp.json
