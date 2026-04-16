@@ -1,7 +1,19 @@
+import { sequence } from '@sveltejs/kit/hooks'
 import type { Handle } from '@sveltejs/kit'
 import type { AuthUser } from '@coms/shared/types'
+import { paraglideMiddleware } from '$lib/paraglide/server'
+import { getTextDirection } from '$lib/paraglide/runtime'
 
-export const handle: Handle = async ({ event, resolve }) => {
+const i18n: Handle = ({ event, resolve }) =>
+  paraglideMiddleware(event.request, ({ request: localizedRequest, locale }) => {
+    event.request = localizedRequest
+    return resolve(event, {
+      transformPageChunk: ({ html }) =>
+        html.replace('%lang%', locale).replace('%dir%', getTextDirection(locale)),
+    })
+  })
+
+const auth: Handle = async ({ event, resolve }) => {
   const [{ auth }, { db }, { users, userEmails }, { eq }] = await Promise.all([
     import('@coms/server/auth'),
     import('@coms/shared/db'),
@@ -71,3 +83,5 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   return resolve(event)
 }
+
+export const handle = sequence(i18n, auth)
