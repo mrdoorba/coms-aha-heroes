@@ -1,0 +1,192 @@
+import { createServerFn } from '@tanstack/react-start'
+import { getRequest } from '@tanstack/react-start/server'
+import { createServerApi, unwrap } from '../api-client'
+import { auth } from '../auth'
+import { db } from '@coms/shared/db'
+import { users, branches, teams, user as authUser, account as authAccount } from '@coms/shared/db/schema'
+import { eq, and, ilike, count, asc } from 'drizzle-orm'
+import { hashPassword } from 'better-auth/crypto'
+import type { UserRole } from '@coms/shared/constants'
+
+const DEFAULT_PASSWORD = 'changeme123'
+
+type ListUsersParams = {
+  page?: number
+  limit?: number
+  role?: string
+  teamId?: string
+  search?: string
+  isActive?: boolean
+  department?: string
+  position?: string
+  branchId?: string
+}
+
+// Pattern B — Direct DB access (no API call)
+export const listUsersFn = createServerFn({ method: 'GET' })
+  .inputValidator((data: ListUsersParams) => data)
+  .handler(async ({ data }) => {
+    const request = getRequest()
+    const session = await auth.api.getSession({ headers: request.headers })
+    if (!session) throw new Error('Not authenticated')
+
+    const page = data.page ?? 1
+    const limit = data.limit ?? 20
+    const offset = (page - 1) * limit
+    const conditions = []
+
+    if (data.role) conditions.push(eq(users.role, data.role as UserRole))
+    if (data.teamId) conditions.push(eq(users.teamId, data.teamId))
+    if (data.isActive !== undefined) conditions.push(eq(users.isActive, data.isActive))
+    if (data.search) conditions.push(ilike(users.name, `%${data.search}%`))
+    if (data.department) conditions.push(ilike(users.department, `%${data.department}%`))
+    if (data.position) conditions.push(ilike(users.position, `%${data.position}%`))
+    if (data.branchId) conditions.push(eq(users.branchId, data.branchId))
+
+    const where = conditions.length > 0 ? and(...conditions) : undefined
+
+    const [rows, [{ total }]] = await Promise.all([
+      db
+        .select({
+          id: users.id,
+          email: users.email,
+          name: users.name,
+          role: users.role,
+          department: users.department,
+          position: users.position,
+          teamId: users.teamId,
+          branchId: users.branchId,
+          isActive: users.isActive,
+          createdAt: users.createdAt,
+        })
+        .from(users)
+        .where(where)
+        .orderBy(asc(users.name))
+        .limit(limit)
+        .offset(offset),
+      db.select({ total: count() }).from(users).where(where),
+    ])
+
+    return { users: rows, meta: { total, page, limit } }
+  })
+
+// Pattern B — Direct DB access (no API call)
+export const getLookupDataFn = createServerFn({ method: 'GET' }).handler(async () => {
+  const request = getRequest()
+  const session = await auth.api.getSession({ headers: request.headers })
+  if (!session) throw new Error('Not authenticated')
+
+  const [branchRows, teamRows] = await Promise.all([
+    db.select({ id: branches.id, name: branches.name }).from(branches).orderBy(asc(branches.name)),
+    db.select({ id: teams.id, name: teams.name }).from(teams).orderBy(asc(teams.name)),
+  ])
+
+  return { branches: branchRows, teams: teamRows }
+})
+
+export const createUserFn = createServerFn({ method: 'POST' })
+  .inputValidator(
+    (data: {
+      email: string
+      name: string
+      role: string
+      branchId: string
+      teamId?: string | null
+      department?: string
+      position?: string
+      phone?: string
+    }) => data,
+  )
+  .handler(async ({ data }) => {
+    const request = getRequest()
+    const api = createServerApi(request)
+
+    const result = await api.api.v1.users.post(data as any)
+    const res = unwrap(result, 'Failed to create user')
+    return res.data
+  })
+
+export const updateUserFn = createServerFn({ method: 'POST' })
+  .inputValidator(
+    (data: {
+      id: string
+      name?: string
+      role?: string
+      teamId?: string | null
+      department?: string
+      position?: string
+    }) => data,
+  )
+  .handler(async ({ data }) => {
+    const { id, ...body } = data
+    const request = getRequest()
+    const api = createServerApi(request)
+
+    const result = await api.api.v1.users({ id }).patch(body as any)
+    const res = unwrap(result, 'Failed to update user')
+    return res.data
+  })
+
+export const archiveUserFn = createServerFn({ method: 'POST' })
+  .inputValidator((data: { id: string }) => data)
+  .handler(async ({ data }) => {
+    const request = getRequest()
+    const api = createServerApi(request)
+
+    const result = await api.api.v1.users({ id: data.id }).archive.patch({} as any)
+    const res = unwrap(result, 'Failed to archive user')
+    return res.data
+  })
+
+export const bulkToggleUsersFn = createServerFn({ method: 'POST' })
+  .inputValidator((data: { ids: string[]; action: 'archive' | 'activate' }) => data)
+  .handler(async ({ data }) => {
+    const request = getRequest()
+    const api = createServerApi(request)
+
+    const result = await api.api.v1.users.bulk.post(data as any)
+    const res = unwrap(result, 'Failed to bulk update users')
+    return res.data
+  })
+
+export const resetPasswordFn = createServerFn({ method: 'POST' })
+  .inputValidator((data: { userId: string }) => data)
+  .handler(async ({ data }) => {
+    const request = getRequest()
+    const session = await auth.api.getSession({ headers: request.headers })
+    if (!session) throw new Error('Not authenticated')
+
+    // Look up the app user's email, then find the Better Auth user ID
+    const [appUser] = await db
+      .select({ id: users.id, email: users.email })
+      .from(users)
+      .where(eq(users.id, data.userId))
+      .limit(1)
+
+    if (!appUser) throw new Error('User not found')
+
+    // Find the Better Auth credential account and update password directly
+    // (bypasses admin plugin role check which requires BA role="admin")
+    const [baUser] = await db
+      .select({ id: authUser.id })
+      .from(authUser)
+      .where(eq(authUser.email, appUser.email))
+      .limit(1)
+
+    if (!baUser) throw new Error('Auth account not found for this user')
+
+    const hashedPassword = await hashPassword(DEFAULT_PASSWORD)
+
+    const updated = await db
+      .update(authAccount)
+      .set({ password: hashedPassword })
+      .where(and(eq(authAccount.userId, baUser.id), eq(authAccount.providerId, 'credential')))
+      .returning({ id: authAccount.id })
+
+    if (updated.length === 0) throw new Error('No credential account found for this user')
+
+    // Set mustChangePassword flag
+    await db.update(users).set({ mustChangePassword: true }).where(eq(users.id, data.userId))
+
+    return { success: true }
+  })
