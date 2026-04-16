@@ -2,7 +2,6 @@ import { superValidate, message } from 'sveltekit-superforms'
 import { typebox } from 'sveltekit-superforms/adapters'
 import { Type as t } from 'typebox'
 import { fail, redirect } from '@sveltejs/kit'
-import { auth } from '@coms/server/auth'
 import type { Actions, PageServerLoad } from './$types'
 
 const changePasswordSchema = t.Object({
@@ -41,6 +40,7 @@ export const actions: Actions = {
     }
 
     try {
+      const { auth } = await import('@coms/server/auth')
       const result = await auth.api.changePassword({
         headers: request.headers,
         body: {
