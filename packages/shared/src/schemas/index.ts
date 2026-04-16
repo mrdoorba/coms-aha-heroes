@@ -2,6 +2,105 @@
 // !! AUTO-GENERATED — do not edit by hand !!
 // Run `bun run generate:schemas` in packages/shared to regenerate.
 
+// --- Hand-written domain schemas (ported from src/shared/schemas) ---
+export { uuidSchema, paginationSchema, type PaginationInput } from './common'
+export { loginSchema, changePasswordSchema, type LoginInput, type ChangePasswordInput } from './auth'
+export {
+  createUserSchema,
+  updateUserSchema,
+  listUsersSchema,
+  type CreateUserInput,
+  type UpdateUserInput,
+  type ListUsersInput,
+} from './users'
+export {
+  createTeamSchema,
+  updateTeamSchema,
+  listTeamsSchema,
+  type CreateTeamInput,
+  type UpdateTeamInput,
+  type ListTeamsInput,
+} from './teams'
+export {
+  submitPointSchema,
+  listPointsSchema,
+  approveRejectSchema,
+  type SubmitPointInput,
+  type ListPointsInput,
+  type ApproveRejectInput,
+} from './points'
+export {
+  fileChallengeSchema,
+  resolveChallengeSchema,
+  listChallengesSchema,
+  type FileChallengeInput,
+  type ResolveChallengeInput,
+  type ListChallengesInput,
+} from './challenges'
+export {
+  fileAppealSchema,
+  resolveAppealSchema,
+  listAppealsSchema,
+  type FileAppealInput,
+  type ResolveAppealInput,
+  type ListAppealsInput,
+} from './appeals'
+export {
+  createCommentSchema,
+  updateCommentSchema,
+  listCommentsSchema,
+  type CreateCommentInput,
+  type UpdateCommentInput,
+  type ListCommentsInput,
+} from './comments'
+export {
+  bulkUserActionSchema,
+  bulkPointActionSchema,
+  bulkRedemptionActionSchema,
+  type BulkUserActionInput,
+  type BulkPointActionInput,
+  type BulkRedemptionActionInput,
+  type BulkResult,
+  type BulkResultItem,
+} from './bulk'
+export {
+  listAuditLogsSchema,
+  type ListAuditLogsInput,
+} from './audit'
+export {
+  requestRedemptionSchema,
+  listRedemptionsSchema,
+  resolveRedemptionSchema,
+  type RequestRedemptionInput,
+  type ListRedemptionsInput,
+  type ResolveRedemptionInput,
+} from './redemptions'
+export {
+  reportsQuerySchema,
+  type ReportsQueryInput,
+} from './reports'
+export {
+  listRewardsSchema,
+  createRewardSchema,
+  updateRewardSchema,
+  type ListRewardsInput,
+  type CreateRewardInput,
+  type UpdateRewardInput,
+} from './rewards'
+export {
+  listSettingsSchema,
+  updateSettingSchema,
+  type ListSettingsInput,
+  type UpdateSettingInput,
+} from './settings'
+export {
+  syncJobSchema,
+  syncStatusSchema,
+  type SyncJob,
+  type SyncStatus,
+} from './sheet-sync'
+// --- End hand-written schemas ---
+
 import { createInsertSchema, createSelectSchema } from 'drizzle-typebox'
 import type { Static } from '@sinclair/typebox'
 import { Type, type TObject } from '@sinclair/typebox'
