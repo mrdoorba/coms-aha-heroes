@@ -63,7 +63,12 @@ npm-debug.log*
 
 
 docs/
-!docs/superpowers/specs/
+
+# SvelteKit
+packages/web/.svelte-kit/
+packages/web/build/
+
 # Added by code-review-graph
 .code-review-graph/
 .mcp.json
+docs/superpowers/
