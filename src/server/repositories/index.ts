@@ -1,7 +1,0 @@
-export { getDb, type DbClient } from './base'
-export * as usersRepo from './users'
-export * as teamsRepo from './teams'
-export * as pointsRepo from './points'
-export * as challengesRepo from './challenges'
-export * as appealsRepo from './appeals'
-export * as commentsRepo from './comments'
