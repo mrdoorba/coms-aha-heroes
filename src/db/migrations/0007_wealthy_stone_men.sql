@@ -1,1 +1,0 @@
-ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "can_submit_points" boolean DEFAULT false NOT NULL;
