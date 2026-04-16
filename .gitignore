@@ -72,3 +72,5 @@ packages/web/build/
 .code-review-graph/
 .mcp.json
 docs/superpowers/
+.omx
+.omx/
