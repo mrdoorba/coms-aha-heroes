@@ -1,10 +1,10 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
-  import * as Card from '$lib/components/ui/card'
   import { Button } from '$lib/components/ui/button'
   import { Badge } from '$lib/components/ui/badge'
   import { api } from '$lib/api/client'
   import * as m from '$lib/paraglide/messages'
+  import { Gift, Coins, ArrowLeft, CheckCircle } from 'lucide-svelte'
 
   let { data } = $props()
 
@@ -18,21 +18,18 @@
   async function handleRedeem() {
     submitting = true
     error = null
-
     try {
       const result = await api.api.v1.redemptions.post({
         rewardId: reward.id,
         notes: notes.trim() || undefined,
       })
-
       if (result.error) {
         const msg = (result.error as any)?.value?.error?.message ?? m.redeem_failed()
         error = msg
         return
       }
-
       success = true
-      setTimeout(() => goto('/redemptions'), 1500)
+      setTimeout(() => goto('/redemptions'), 1800)
     } catch (e) {
       error = e instanceof Error ? e.message : m.common_something_wrong()
     } finally {
@@ -41,63 +38,97 @@
   }
 </script>
 
-<div class="mx-auto max-w-lg space-y-6">
-  <div>
-    <a href="/rewards" class="text-sm text-muted-foreground hover:underline">&larr; {m.rewards_catalog_title()}</a>
-    <h1 class="mt-2 text-2xl font-bold tracking-tight">{m.redeem_title()}</h1>
+<div class="mx-auto max-w-lg space-y-5 p-4 pb-24 pt-5 md:pb-8">
+  <!-- Back nav -->
+  <div class="flex items-center gap-2">
+    <a
+      href="/rewards"
+      class="flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-primary/8 hover:text-primary"
+      aria-label={m.common_previous()}
+    >
+      <ArrowLeft class="h-5 w-5" />
+    </a>
+    <h1 class="text-xl font-extrabold text-foreground">{m.redeem_title()}</h1>
   </div>
 
-  <Card.Root>
+  <!-- Reward card -->
+  <div class="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
     {#if reward.imageUrl}
-      <div class="aspect-video w-full overflow-hidden rounded-t-lg bg-muted">
+      <div class="aspect-video w-full overflow-hidden bg-muted">
         <img src={reward.imageUrl} alt={reward.name} class="h-full w-full object-cover" />
+      </div>
+    {:else}
+      <div class="flex aspect-video w-full items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10">
+        <Gift class="h-16 w-16 text-primary/30" />
       </div>
     {/if}
 
-    <Card.Header>
-      <Card.Title>{reward.name}</Card.Title>
+    <div class="p-5">
+      <h2 class="text-lg font-extrabold text-foreground">{reward.name}</h2>
       {#if reward.description}
-        <Card.Description>{reward.description}</Card.Description>
+        <p class="mt-1 text-sm text-muted-foreground">{reward.description}</p>
       {/if}
-    </Card.Header>
 
-    <Card.Content class="space-y-4">
-      <div class="flex items-center justify-between rounded-lg border p-3">
-        <span class="text-sm text-muted-foreground">{m.points_poin_aha()}</span>
-        <span class="text-lg font-bold tabular-nums">
-          {reward.pointCost.toLocaleString('id-ID')} {m.points_poin_aha()}
-        </span>
-      </div>
-
-      {#if !reward.isActive}
-        <Badge variant="destructive" class="w-full justify-center">{m.status_inactive()}</Badge>
-      {:else if success}
-        <div class="rounded-lg bg-green-50 p-3 text-center text-sm font-medium text-green-700">
-          {m.settings_saved()}
+      <!-- Cost badge -->
+      <div class="mt-3 flex items-center gap-2">
+        <div class="flex items-center gap-1.5 rounded-xl bg-[#325FEC]/10 px-3 py-1.5">
+          <Coins class="h-4 w-4 text-[#325FEC]" />
+          <span class="text-sm font-extrabold text-[#325FEC]">
+            {reward.pointCost.toLocaleString('id-ID')} {m.points_poin_aha()}
+          </span>
         </div>
-      {:else}
-        <div class="space-y-2">
-          <label for="notes" class="text-sm font-medium">{m.redeem_notes_label()}</label>
+      </div>
+    </div>
+  </div>
+
+  {#if !reward.isActive}
+    <div class="rounded-2xl border border-border bg-card p-5 shadow-card">
+      <Badge variant="destructive" class="w-full justify-center py-2 text-sm">
+        {m.status_inactive()}
+      </Badge>
+    </div>
+  {:else if success}
+    <div
+      class="flex flex-col items-center gap-3 rounded-2xl border border-emerald-200/60 bg-emerald-50 p-8 text-center shadow-card dark:border-emerald-800/40 dark:bg-emerald-900/20"
+    >
+      <CheckCircle class="h-12 w-12 text-emerald-500" />
+      <p class="font-bold text-emerald-700 dark:text-emerald-400">{m.settings_saved()}</p>
+      <p class="text-sm text-muted-foreground">{m.common_loading()}</p>
+    </div>
+  {:else}
+    <!-- Form -->
+    <div class="rounded-2xl border border-border bg-card p-5 shadow-card">
+      <div class="space-y-4">
+        <div class="space-y-1.5">
+          <label for="notes" class="text-sm font-semibold text-foreground">
+            {m.redeem_notes_label()}
+          </label>
           <textarea
             id="notes"
             bind:value={notes}
             placeholder={m.redeem_notes_placeholder()}
             rows="3"
-            class="w-full rounded-md border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            class="w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
           ></textarea>
         </div>
 
         {#if error}
-          <p class="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</p>
+          <div class="rounded-xl bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
         {/if}
 
         <div class="flex gap-3">
-          <Button variant="outline" href="/rewards" class="flex-1">{m.common_cancel()}</Button>
-          <Button onclick={handleRedeem} disabled={submitting} class="flex-1">
+          <Button variant="outline" href="/rewards" class="flex-1 rounded-xl">
+            {m.common_cancel()}
+          </Button>
+          <Button
+            onclick={handleRedeem}
+            disabled={submitting}
+            class="flex-1 rounded-xl bg-gradient-to-br from-[#325FEC] to-[#759EEE] font-bold text-white shadow-[0_2px_8px_rgba(50,95,236,0.25)]"
+          >
             {submitting ? m.common_submitting() : m.redeem_submit()}
           </Button>
         </div>
-      {/if}
-    </Card.Content>
-  </Card.Root>
+      </div>
+    </div>
+  {/if}
 </div>
