@@ -146,7 +146,7 @@
       </h2>
     </div>
     <ul class="space-y-2">
-      {#each BRANCHES as branch}
+      {#each BRANCHES as branch (branch.name)}
         <li
           class="flex items-center justify-between rounded-xl border border-border bg-muted px-4 py-3"
         >
@@ -166,7 +166,7 @@
       </h2>
     </div>
     <ul class="space-y-2">
-      {#each POINT_CATEGORIES as cat}
+      {#each POINT_CATEGORIES as cat (cat.name)}
         <li
           class="flex items-center justify-between rounded-xl border border-border bg-muted px-4 py-3"
         >

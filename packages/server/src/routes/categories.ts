@@ -45,7 +45,7 @@ export const categoriesRoute = new Elysia({ prefix: '/categories' })
   // PATCH /categories/:id — toggle active (admin only)
   .patch('/:id', async ({ params, body, set, ...c }) => {
     const { authUser: actor } = c as unknown as Ctx
-    requireRole('admin')(c as any)
+    requireRole('admin')(c as unknown as { authUser: AuthUser })
 
     const updated = await withRLS(actor, async (db) => {
       const existing = await categoriesRepo.getCategoryById(params.id, db)

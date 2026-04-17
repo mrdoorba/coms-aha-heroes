@@ -1,7 +1,5 @@
 import { Type as t, type Static } from '@sinclair/typebox'
 
-const ENTITY_TYPES = ['achievement', 'challenge', 'appeal'] as const
-
 export const createCommentSchema = t.Object({
   entityType: t.Union([t.Literal('achievement'), t.Literal('challenge'), t.Literal('appeal')]),
   entityId: t.String({ format: 'uuid' }),

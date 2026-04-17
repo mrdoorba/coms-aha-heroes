@@ -47,7 +47,7 @@ export const teamsRoute = new Elysia({ prefix: '/teams' })
 
   // POST /teams — create new team (admin/hr only)
   .post('/', async ({ body, headers, set, ...c }) => {
-    requireRole('admin', 'hr')(c as any)
+    requireRole('admin', 'hr')(c as unknown as { authUser: AuthUser })
     const { authUser: actor } = c as unknown as Ctx
     const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 
@@ -58,7 +58,7 @@ export const teamsRoute = new Elysia({ prefix: '/teams' })
 
   // PATCH /teams/:id — update team (admin/hr only)
   .patch('/:id', async ({ params, body, headers, set, ...c }) => {
-    requireRole('admin', 'hr')(c as any)
+    requireRole('admin', 'hr')(c as unknown as { authUser: AuthUser })
     const { authUser: actor } = c as unknown as Ctx
     const ipAddress = headers['x-forwarded-for'] ?? headers['x-real-ip']
 

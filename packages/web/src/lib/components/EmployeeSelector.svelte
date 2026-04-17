@@ -9,8 +9,12 @@
     name: string
     email: string
     role: string
-    teamName: string | null
+    teamName?: string | null
     isActive: boolean
+  }
+
+  type UserListPayload = {
+    data?: User[]
   }
 
   interface Props {
@@ -39,17 +43,13 @@
       })
 
       if (result.error) {
-        const status = (result.error as any)?.status
-        if (status === 403 || status === 401) {
-          // User doesn't have admin/hr role -- fall back to manual ID input
-          fallback = true
-          return
-        }
+        // User may not have admin/hr role -- fall back to manual ID input
+        fallback = true
         users = []
         return
       }
 
-      users = (result.data as any)?.data ?? []
+      users = ((result.data as unknown as UserListPayload | null)?.data ?? []) as User[]
     } catch {
       users = []
     } finally {

@@ -99,7 +99,7 @@ if (process.env.NODE_ENV === 'production') {
         headers: request.headers,
         body: request.body,
         duplex: 'half',
-      } as any)
+      } as RequestInit & { duplex: 'half' })
       return fetch(proxyReq)
     } catch {
       return new Response('SvelteKit dev server not running', { status: 502 })

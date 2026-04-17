@@ -1,4 +1,4 @@
-import { eq, and, count, sql, desc, gte } from 'drizzle-orm'
+import { eq, and, count, sql, desc } from 'drizzle-orm'
 import { pointSummaries, users, achievementPoints, pointCategories } from '@coms/shared/db/schema'
 import { withRLS } from '../repositories/base'
 import { getPointImpactSettings } from './settings-cache'

@@ -22,7 +22,7 @@ export async function fileChallenge(
     const result = await pointsRepo.getPointWithDetails(achievementId, db)
     if (!result) throw new AchievementNotFoundError(achievementId)
 
-    const { point, category, user: penalizedUser } = result
+    const { category, user: penalizedUser } = result
 
     // Only Penalti can be challenged
     if (category.code !== 'PENALTI') throw new NotPenaltiError()

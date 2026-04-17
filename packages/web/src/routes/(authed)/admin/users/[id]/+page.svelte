@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { Button } from '$lib/components/ui/button'
   import { Badge } from '$lib/components/ui/badge'
   import * as m from '$lib/paraglide/messages'
-  import { ArrowLeft, User, Star, Award, AlertTriangle } from 'lucide-svelte'
+  import { ArrowLeft, User, Star } from 'lucide-svelte'
 
   let { data } = $props()
 

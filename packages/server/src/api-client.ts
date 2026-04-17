@@ -1,6 +1,14 @@
 import { treaty } from '@elysiajs/eden'
 import type { App } from './index'
 
+type TreatyError = {
+  readonly value?: {
+    readonly error?: {
+      readonly message?: string
+    }
+  }
+}
+
 /** Server-side Eden Treaty client factory — forwards cookies from the incoming request */
 export function createServerApi(request: Request) {
   // On Cloud Run, TLS terminates at the load balancer so the internal URL is http://.
@@ -18,7 +26,7 @@ export function createServerApi(request: Request) {
 
 /** Extract data from an Eden Treaty response, throwing on error */
 export function unwrap(
-  result: { data: any; error: any },
+  result: { data: unknown; error: TreatyError | null },
   fallback: string,
 ) {
   if (result.error) {

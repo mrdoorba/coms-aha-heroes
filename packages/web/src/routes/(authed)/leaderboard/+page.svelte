@@ -28,14 +28,6 @@
   const top3 = $derived(entries.filter((e: any) => e.rank <= 3))
   const rest = $derived(entries.filter((e: any) => e.rank > 3))
 
-  const scoreLabel = $derived(
-    data.type === 'bintang'
-      ? m.points_bintang()
-      : data.type === 'penalti'
-        ? m.leaderboard_penalty()
-        : m.points_poin_aha(),
-  )
-
   function setFilter(key: 'months' | 'type', value: string) {
     const params = new URLSearchParams($page.url.searchParams)
     if (key === 'months') {
@@ -116,7 +108,7 @@
   {:else}
     <!-- Podium — top 3 -->
     {#if top3.length > 0}
-      <Podium entries={top3} {scoreLabel} />
+      <Podium entries={top3} />
     {/if}
 
     <!-- Ranked list — rank 4+ -->

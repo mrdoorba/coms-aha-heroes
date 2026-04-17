@@ -1,4 +1,4 @@
-import { eq, and, count, desc } from 'drizzle-orm'
+import { eq, count, desc } from 'drizzle-orm'
 import { challenges, users } from '@coms/shared/db/schema'
 import type { DbClient } from './base'
 import { getDb } from './base'

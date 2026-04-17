@@ -8,6 +8,7 @@
   import { Textarea } from '$lib/components/ui/textarea'
   import { AlertCircle } from 'lucide-svelte'
   import * as m from '$lib/paraglide/messages'
+  import { getErrorMessage } from '$lib/api/client'
 
   interface Props {
     pointId: string
@@ -28,8 +29,7 @@
     try {
       const result = await api.api.v1.points({ id: pointId }).appeals.post({ reason: reason.trim() })
       if (result.error) {
-        const msg = (result.error as any)?.value?.error?.message ?? m.appeal_failed()
-        toast.error(msg)
+        toast.error(getErrorMessage(result.error, m.appeal_failed()))
         return
       }
       toast.success(m.appeal_success())

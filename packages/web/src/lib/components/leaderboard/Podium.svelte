@@ -10,7 +10,6 @@
 
   type Props = {
     entries: Array<PodiumEntry>
-    scoreLabel?: string
   }
 
   const RANK_STYLES: Record<
@@ -50,7 +49,7 @@
     },
   }
 
-  let { entries, scoreLabel = '' }: Props = $props()
+  let { entries }: Props = $props()
 
   const rank1 = $derived(entries.find((e) => e.rank === 1))
   const rank2 = $derived(entries.find((e) => e.rank === 2))

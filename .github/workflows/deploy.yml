@@ -139,6 +139,29 @@ jobs:
             --startup-probe="httpGet.path=/api/healthz,periodSeconds=5,failureThreshold=12,timeoutSeconds=3,initialDelaySeconds=0" \
             --quiet
 
+      - name: Smoke test staging revision
+        run: |
+          gcloud run services proxy "${{ env.SERVICE }}" \
+            --region "${{ env.REGION }}" \
+            --tag staging \
+            --port 8080 &
+          PROXY_PID=$!
+
+          cleanup() {
+            kill "$PROXY_PID" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
+          for _ in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:8080/api/healthz | tee /tmp/staging-healthz.json | grep -q '"status":"ok"'; then
+              break
+            fi
+            sleep 3
+          done
+
+          curl -fsS -o /tmp/staging-login.html http://127.0.0.1:8080/login
+          grep -q "AHA HEROES" /tmp/staging-login.html
+
   # ─────────────────────────────────────────────────────────────────────────────
   # 3. Manual gate — requires a reviewer to approve via the "production"
   #    GitHub Environment before production is touched.

@@ -1,6 +1,4 @@
 <script lang="ts">
-  import type { Component } from 'svelte'
-
   type Variant = 'gold' | 'blue' | 'red' | 'pending'
 
   const VARIANT_STYLES: Record<Variant, {

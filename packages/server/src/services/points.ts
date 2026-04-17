@@ -1,4 +1,4 @@
-import { eq, and } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { pointCategories, users, teams } from '@coms/shared/db/schema'
 import * as pointsRepo from '../repositories/points'
 import { writeAuditLog } from './audit'
