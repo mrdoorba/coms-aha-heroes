@@ -74,7 +74,7 @@
   async function handleApprove(id: string) {
     isSubmitting = true
     try {
-      await api.api.v1.redemptions[id].approve.post({})
+      await api.api.v1.redemptions({ id }).approve.patch()
       await loadTab(activeTab)
     } finally {
       isSubmitting = false
@@ -91,7 +91,8 @@
     if (!selectedId) return
     isSubmitting = true
     try {
-      await api.api.v1.redemptions[selectedId].reject.post({
+      await api.api.v1.redemptions({ id: selectedId }).reject.patch({
+        status: 'rejected',
         rejectionReason: rejectionReason.trim() || undefined,
       })
       rejectOpen = false
