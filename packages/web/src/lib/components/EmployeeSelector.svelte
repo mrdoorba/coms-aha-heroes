@@ -35,7 +35,7 @@
     loading = true
     try {
       const result = await api.api.v1.users.get({
-        query: { search: query, limit: 20, isActive: 'true' },
+        query: { search: query, limit: 20, page: 1, isActive: true },
       })
 
       if (result.error) {

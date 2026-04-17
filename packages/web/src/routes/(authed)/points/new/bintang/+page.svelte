@@ -14,7 +14,7 @@
   const user = $derived(userState.current)
   const isSelfOnly = $derived(!(user?.canSubmitPoints ?? false))
 
-  let userId = $state('')
+  let userId = $state<string>('')
   let reason = $state('')
   let relatedStaff = $state('')
   let screenshotFile = $state<File | undefined>()
@@ -75,7 +75,7 @@
         reason: reason.trim(),
         relatedStaff: relatedStaff.trim() || undefined,
         screenshotUrl,
-      })
+      } as any)
       if (result.error) {
         error = (result.error as any)?.value?.error?.message ?? m.form_error_submission_failed()
         return

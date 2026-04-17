@@ -27,7 +27,7 @@
       x="name"
       y="totalPoints"
       orientation="horizontal"
-      axis={{ x: true, y: true }}
+      axis={true}
       grid={false}
       rule={false}
       tooltip={{ mode: 'band' }}

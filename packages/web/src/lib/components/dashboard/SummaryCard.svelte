@@ -59,7 +59,8 @@
   }: {
     title: string
     value: number
-    IconComponent?: Component<{ class?: string }>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    IconComponent?: any
     variant?: Variant
     href?: string
   } = $props()

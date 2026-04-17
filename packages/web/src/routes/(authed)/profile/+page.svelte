@@ -4,7 +4,7 @@
   import { userState } from '$lib/state/userState.svelte'
   import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte'
   import * as m from '$lib/paraglide/messages'
-  import { api } from '$lib/api/client'
+  import { signOut } from '$lib/auth/client'
   import {
     User,
     Star,
@@ -48,7 +48,7 @@
   async function handleLogout() {
     loggingOut = true
     try {
-      await api.api.v1.auth.logout.post()
+      await signOut()
     } catch {
       // ignore
     } finally {

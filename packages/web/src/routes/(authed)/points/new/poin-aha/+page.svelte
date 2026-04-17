@@ -14,7 +14,7 @@
   const user = $derived(userState.current)
   const isSelfOnly = $derived(!(user?.canSubmitPoints ?? false))
 
-  let userId = $state('')
+  let userId = $state<string>('')
   let level = $state(1)
   let reason = $state('')
   let relatedStaff = $state('')
@@ -77,12 +77,12 @@
       const screenshotUrl = screenshotFile ? await uploadScreenshot(screenshotFile) : undefined
       const result = await api.api.v1.points.post({
         userId,
-        categoryCode: 'POIN_AHA',
+        categoryCode: 'POIN_AHA' as any,
         points: level,
         reason: reason.trim(),
         relatedStaff: relatedStaff.trim() || undefined,
         screenshotUrl,
-      })
+      } as any)
       if (result.error) {
         error = (result.error as any)?.value?.error?.message ?? m.form_error_submission_failed()
         return
