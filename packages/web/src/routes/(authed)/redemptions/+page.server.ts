@@ -8,6 +8,14 @@ export const load: PageServerLoad = async ({ locals }) => {
     { actor },
   )
   return {
-    redemptions: { data: result.redemptions, meta: result.meta },
+    redemptions: {
+      data: result.redemptions.map((r) => ({
+        ...r,
+        createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt,
+        rewardImageUrl: (r as any).rewardImageUrl ?? null,
+        approverName: (r as any).approverName ?? null,
+      })),
+      meta: result.meta,
+    },
   }
 }

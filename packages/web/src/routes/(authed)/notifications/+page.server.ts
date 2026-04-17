@@ -8,6 +8,9 @@ export const load: PageServerLoad = async ({ locals }) => {
     notificationsRepo.listNotifications({ userId: actor.id, page: 1, limit: 50 }, db),
   )
   return {
-    notifications: { data: rows, meta: { total, page: 1, limit: 50 } },
+    notifications: {
+      data: rows.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() })),
+      meta: { total, page: 1, limit: 50 },
+    },
   }
 }

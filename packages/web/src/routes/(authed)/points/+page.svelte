@@ -117,7 +117,7 @@
       {#each data.points as point (point.id)}
         <PointCard
           id={point.id}
-          categoryCode={point.category?.code ?? 'BINTANG'}
+          categoryCode={(point.category?.code ?? 'BINTANG') as 'BINTANG' | 'POIN_AHA' | 'PENALTI'}
           userName={point.user?.name ?? '—'}
           reason={point.reason ?? ''}
           points={point.points}
