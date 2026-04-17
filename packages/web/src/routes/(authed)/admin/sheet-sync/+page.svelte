@@ -4,153 +4,359 @@
   import { Badge } from '$lib/components/ui/badge'
   import * as Table from '$lib/components/ui/table'
   import * as m from '$lib/paraglide/messages'
+  import {
+    RefreshCw,
+    Shield,
+    ChevronLeft,
+    ChevronRight,
+    CheckCircle2,
+    XCircle,
+    Clock,
+    Loader2,
+  } from 'lucide-svelte'
 
   let { data } = $props()
 
-  let triggerLoading = $state(false)
-  let triggerError = $state<string | null>(null)
-  let triggerSuccess = $state(false)
-
-  function statusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
-    if (status === 'completed') return 'default'
-    if (status === 'running') return 'secondary'
-    if (status === 'failed') return 'destructive'
-    return 'outline'
+  type SyncJob = {
+    id: string
+    status: string
+    startedAt: string
+    finishedAt: string | null
+    error: string | null
+    rowsProcessed: number | null
   }
 
-  function formatDate(iso: string): string {
-    return new Date(iso).toLocaleString('id-ID', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
+  type SyncStatus = {
+    isRunning: boolean
+    lastJob: { id: string; status: string; startedAt: string; finishedAt: string | null; error: string | null } | null
+    schedule: string
   }
 
-  async function triggerSync() {
-    triggerLoading = true
-    triggerError = null
-    triggerSuccess = false
-    try {
-      const res = await fetch('/api/v1/sheet-sync/trigger', { method: 'POST' })
-      if (!res.ok) {
-        const json = await res.json().catch(() => ({}))
-        triggerError = json?.error?.message ?? m.common_something_wrong()
-      } else {
-        triggerSuccess = true
-      }
-    } catch {
-      triggerError = m.common_something_wrong()
-    } finally {
-      triggerLoading = false
+  let status = $state<SyncStatus | null>(data.status as SyncStatus | null)
+  let jobs = $state<SyncJob[]>(data.jobs as SyncJob[])
+  let meta = $state(data.meta ?? { total: 0, page: 1, limit: 20, totalPages: 1 })
+  let page = $state(1)
+  let isLoading = $state(false)
+  let isTriggeringSync = $state(false)
+  let syncError = $state<string | null>(null)
+  let syncSuccess = $state(false)
+  let showResyncConfirm = $state(false)
+  let isTriggeringResync = $state(false)
+
+  function getStatusBadgeClass(s: string): string {
+    if (s === 'completed') return 'gap-1 border-green-200 bg-green-50 text-[11px] text-green-700 dark:bg-green-900/30 dark:text-green-400'
+    if (s === 'failed') return 'gap-1 border-red-200 bg-red-50 text-[11px] text-red-700 dark:bg-red-900/30 dark:text-red-400'
+    if (s === 'in_progress') return 'gap-1 border-yellow-200 bg-yellow-50 text-[11px] text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+    return 'gap-1 border-gray-200 bg-gray-100 text-[11px] text-gray-600 dark:bg-gray-800/50 dark:text-gray-400'
+  }
+
+  function formatTimestamp(iso: string | null) {
+    if (!iso) return { date: '—', time: '' }
+    const d = new Date(iso)
+    return {
+      date: d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
+      time: d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
     }
   }
+
+  async function fetchData(newPage: number) {
+    isLoading = true
+    try {
+      const [statusRes, jobsRes] = await Promise.all([
+        fetch('/api/v1/sheet-sync/status', { credentials: 'include' }),
+        fetch(`/api/v1/sheet-sync/jobs?limit=20&page=${newPage}`, { credentials: 'include' }),
+      ])
+      const statusJson = await statusRes.json()
+      const jobsJson = await jobsRes.json()
+      status = statusJson.data as SyncStatus
+      jobs = (jobsJson.data ?? []) as SyncJob[]
+      meta = jobsJson.meta ?? { total: 0, page: newPage, limit: 20, totalPages: 1 }
+      page = newPage
+    } finally {
+      isLoading = false
+    }
+  }
+
+  async function handleTriggerSync() {
+    syncError = null
+    syncSuccess = false
+    isTriggeringSync = true
+    try {
+      const res = await fetch('/api/v1/sheet-sync/trigger', {
+        method: 'POST',
+        credentials: 'include',
+      })
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}))
+        syncError = json?.error?.message ?? m.common_something_wrong()
+      } else {
+        syncSuccess = true
+        await new Promise((r) => setTimeout(r, 1500))
+        await fetchData(1)
+      }
+    } catch {
+      syncError = m.common_something_wrong()
+    } finally {
+      isTriggeringSync = false
+    }
+  }
+
+  async function handleResync() {
+    showResyncConfirm = false
+    syncError = null
+    isTriggeringResync = true
+    try {
+      const res = await fetch('/api/v1/sheet-sync/resync', {
+        method: 'POST',
+        credentials: 'include',
+      })
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}))
+        syncError = json?.error?.message ?? m.common_something_wrong()
+      } else {
+        await new Promise((r) => setTimeout(r, 1500))
+        await fetchData(1)
+      }
+    } catch {
+      syncError = m.common_something_wrong()
+    } finally {
+      isTriggeringResync = false
+    }
+  }
+
+  const lastTs = $derived(
+    formatTimestamp(status?.lastJob?.finishedAt ?? status?.lastJob?.startedAt ?? null),
+  )
 </script>
 
-<div class="space-y-4">
-  <div>
-    <h1 class="text-2xl font-bold">{m.nav_sheet_sync()}</h1>
-    <p class="text-sm text-muted-foreground">{m.audit_subtitle()}</p>
+<div class="mx-auto max-w-4xl space-y-6 p-4 pb-12">
+  <!-- Header -->
+  <div class="flex items-center gap-3">
+    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+      <RefreshCw class="h-5 w-5 text-foreground" />
+    </div>
+    <div>
+      <h1 class="text-xl font-bold text-foreground">{m.nav_sheet_sync()}</h1>
+      <p class="text-xs text-muted-foreground">{m.audit_subtitle()}</p>
+    </div>
   </div>
 
   <!-- Status card -->
-  <Card.Root>
-    <Card.Header>
-      <Card.Title>{m.users_col_status()}</Card.Title>
-    </Card.Header>
-    <Card.Content class="space-y-4">
-      {#if data.status}
-        <div class="flex flex-wrap items-center gap-4">
-          <div>
-            <p class="text-xs text-muted-foreground">{m.users_col_status()}</p>
-            <Badge class="mt-1" variant={data.status.isRunning ? 'secondary' : 'outline'}>
-              {data.status.isRunning ? m.status_active() : m.status_inactive()}
+  <div class="space-y-4 rounded-xl border border-border bg-card p-5 shadow-card">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div class="space-y-3">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            {m.users_col_status()}
+          </span>
+          {#if status?.isRunning}
+            <Badge variant="outline" class="gap-1 border-yellow-200 bg-yellow-50 text-[11px] text-yellow-700">
+              <Loader2 class="h-3 w-3 animate-spin" />
+              running
             </Badge>
-          </div>
-          <div>
-            <p class="text-xs text-muted-foreground">Schedule</p>
-            <p class="mt-1 text-sm font-medium">{data.status.schedule}</p>
-          </div>
-          {#if data.status.lastJob}
-            <div>
-              <p class="text-xs text-muted-foreground">Last Job</p>
-              <Badge class="mt-1" variant={statusVariant(data.status.lastJob.status)}>
-                {data.status.lastJob.status}
-              </Badge>
-            </div>
-            <div>
-              <p class="text-xs text-muted-foreground">{m.audit_col_timestamp()}</p>
-              <p class="mt-1 text-sm font-medium">{formatDate(data.status.lastJob.startedAt)}</p>
-            </div>
+          {:else}
+            <Badge variant="outline" class="border-gray-200 bg-gray-100 text-[11px] text-gray-600">
+              idle
+            </Badge>
           {/if}
         </div>
-        {#if data.status.lastJob?.error}
-          <div class="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-            <strong>Error:</strong> {data.status.lastJob.error}
-          </div>
-        {/if}
-      {:else}
-        <p class="text-sm text-muted-foreground">{m.common_no_data()}</p>
-      {/if}
 
-      <div class="flex items-center gap-3 border-t pt-4">
-        <Button
-          onclick={triggerSync}
-          disabled={triggerLoading || data.status?.isRunning}
-          size="sm"
-        >
-          {triggerLoading ? m.common_submitting() : m.nav_sheet_sync()}
-        </Button>
-        {#if triggerSuccess}
-          <p class="text-sm text-green-600">{m.settings_saved()}</p>
+        <div class="grid grid-cols-2 gap-x-8 gap-y-1 text-xs">
+          <div>
+            <p class="text-muted-foreground">Last sync</p>
+            <p class="font-medium text-foreground">
+              {status?.lastJob ? `${lastTs.date} ${lastTs.time}` : '—'}
+            </p>
+          </div>
+          <div>
+            <p class="text-muted-foreground">Last status</p>
+            {#if status?.lastJob}
+              <Badge variant="outline" class={getStatusBadgeClass(status.lastJob.status)}>
+                {status.lastJob.status}
+              </Badge>
+            {:else}
+              <span class="text-muted-foreground">—</span>
+            {/if}
+          </div>
+          <div>
+            <p class="text-muted-foreground">Scheduler</p>
+            <p class="font-medium text-foreground">{status?.schedule ?? '—'}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col items-end gap-2">
+        <div class="flex gap-2">
+          <Button
+            onclick={handleTriggerSync}
+            disabled={isTriggeringSync || isTriggeringResync || !!status?.isRunning}
+            class="h-9 px-5 bg-primary hover:bg-primary/80 text-primary-foreground"
+          >
+            {#if isTriggeringSync}
+              <Loader2 class="mr-1.5 h-4 w-4 animate-spin" />
+              Syncing…
+            {:else}
+              <RefreshCw class="mr-1.5 h-4 w-4" />
+              Sync Now
+            {/if}
+          </Button>
+          <Button
+            variant="destructive"
+            onclick={() => (showResyncConfirm = true)}
+            disabled={isTriggeringSync || isTriggeringResync || !!status?.isRunning}
+            class="h-9 px-5"
+          >
+            {#if isTriggeringResync}
+              <Loader2 class="mr-1.5 h-4 w-4 animate-spin" />
+              Resyncing…
+            {:else}
+              <RefreshCw class="mr-1.5 h-4 w-4" />
+              Full Resync
+            {/if}
+          </Button>
+        </div>
+        {#if syncError}
+          <p class="max-w-xs text-right text-xs text-red-600">{syncError}</p>
         {/if}
-        {#if triggerError}
-          <p class="text-sm text-destructive">{triggerError}</p>
+        {#if syncSuccess}
+          <p class="text-xs text-emerald-600">{m.settings_saved()}</p>
         {/if}
       </div>
-    </Card.Content>
-  </Card.Root>
+    </div>
+  </div>
 
   <!-- Job history -->
-  <Card.Root>
-    <Card.Header>
-      <Card.Title>{m.audit_title()}</Card.Title>
-      <Card.Description>{m.audit_total({ total: data.meta.total })}</Card.Description>
-    </Card.Header>
-    <Card.Content class="p-0">
-      <Table.Root>
-        <Table.Header>
-          <Table.Row>
-            <Table.Head>{m.reports_start_date()}</Table.Head>
-            <Table.Head>{m.reports_end_date()}</Table.Head>
-            <Table.Head>{m.users_col_status()}</Table.Head>
-            <Table.Head>Rows</Table.Head>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {#each data.jobs as job (job.id)}
-            <Table.Row>
-              <Table.Cell class="whitespace-nowrap text-xs">{formatDate(job.startedAt)}</Table.Cell>
-              <Table.Cell class="whitespace-nowrap text-xs text-muted-foreground">
-                {job.finishedAt ? formatDate(job.finishedAt) : '—'}
-              </Table.Cell>
-              <Table.Cell>
-                <Badge variant={statusVariant(job.status)}>{job.status}</Badge>
-              </Table.Cell>
-              <Table.Cell class="text-sm">
-                {job.rowsProcessed ?? '—'}
-              </Table.Cell>
+  <div class="space-y-3">
+    <div class="flex items-center justify-between">
+      <h2 class="text-sm font-semibold text-foreground">Sync History</h2>
+      <Button
+        variant="outline"
+        size="sm"
+        onclick={() => fetchData(page)}
+        disabled={isLoading}
+        class="h-8 gap-1.5 px-3 text-xs"
+      >
+        <RefreshCw class="h-3.5 w-3.5 {isLoading ? 'animate-spin' : ''}" />
+        Refresh
+      </Button>
+    </div>
+
+    {#if isLoading}
+      <div class="space-y-2">
+        {#each [0, 1, 2, 3, 4] as _i}
+          <div class="h-14 animate-pulse rounded-xl border border-border bg-muted/50"></div>
+        {/each}
+      </div>
+    {:else if jobs.length === 0}
+      <div class="flex flex-col items-center justify-center rounded-xl border border-border py-16 text-center">
+        <RefreshCw class="mb-3 h-10 w-10 text-muted-foreground/30" />
+        <p class="text-sm text-muted-foreground">No sync jobs yet.</p>
+      </div>
+    {:else}
+      <!-- Desktop table -->
+      <div class="hidden overflow-hidden rounded-xl border border-border shadow-card md:block">
+        <Table.Root>
+          <Table.Header>
+            <Table.Row class="bg-muted/60">
+              <Table.Head class="w-36 text-xs font-semibold text-muted-foreground">Started at</Table.Head>
+              <Table.Head class="text-xs font-semibold text-muted-foreground">Finished at</Table.Head>
+              <Table.Head class="text-xs font-semibold text-muted-foreground">{m.users_col_status()}</Table.Head>
+              <Table.Head class="text-xs font-semibold text-muted-foreground">Rows</Table.Head>
             </Table.Row>
-          {:else}
-            <Table.Row>
-              <Table.Cell colspan={4} class="py-8 text-center text-muted-foreground">
-                {m.common_no_data()}
-              </Table.Cell>
-            </Table.Row>
-          {/each}
-        </Table.Body>
-      </Table.Root>
-    </Card.Content>
-  </Card.Root>
+          </Table.Header>
+          <Table.Body>
+            {#each jobs as job (job.id)}
+              {@const startTs = formatTimestamp(job.startedAt)}
+              {@const endTs = formatTimestamp(job.finishedAt)}
+              <Table.Row class="transition-colors hover:bg-muted/30">
+                <Table.Cell class="text-xs">
+                  <span class="block font-medium text-foreground">{startTs.date}</span>
+                  <span class="block text-muted-foreground">{startTs.time}</span>
+                </Table.Cell>
+                <Table.Cell class="text-xs text-muted-foreground">
+                  {job.finishedAt ? `${endTs.date} ${endTs.time}` : '—'}
+                </Table.Cell>
+                <Table.Cell>
+                  <Badge variant="outline" class={getStatusBadgeClass(job.status)}>
+                    {job.status}
+                  </Badge>
+                </Table.Cell>
+                <Table.Cell class="text-sm text-foreground">{job.rowsProcessed ?? '—'}</Table.Cell>
+              </Table.Row>
+            {/each}
+          </Table.Body>
+        </Table.Root>
+      </div>
+
+      <!-- Mobile cards -->
+      <div class="space-y-3 md:hidden">
+        {#each jobs as job (job.id)}
+          {@const startTs = formatTimestamp(job.startedAt)}
+          <div class="space-y-3 rounded-xl border border-border bg-card p-4 shadow-card">
+            <div class="flex items-start justify-between gap-2">
+              <Badge variant="outline" class={getStatusBadgeClass(job.status)}>{job.status}</Badge>
+              <span class="text-right text-[10px] text-muted-foreground">
+                {startTs.date} {startTs.time}
+              </span>
+            </div>
+            <p class="text-xs text-foreground">Rows: {job.rowsProcessed ?? '—'}</p>
+          </div>
+        {/each}
+      </div>
+
+      <!-- Pagination -->
+      {#if meta.totalPages > 1}
+        <div class="flex items-center justify-between pt-2">
+          <p class="text-xs text-muted-foreground">
+            Page {page} of {meta.totalPages} · {meta.total} jobs
+          </p>
+          <div class="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page <= 1 || isLoading}
+              onclick={() => fetchData(page - 1)}
+              class="h-8 px-3"
+            >
+              <ChevronLeft class="mr-1 h-3.5 w-3.5" />
+              {m.common_previous()}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page >= meta.totalPages || isLoading}
+              onclick={() => fetchData(page + 1)}
+              class="h-8 px-3"
+            >
+              {m.common_next()}
+              <ChevronRight class="ml-1 h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+      {/if}
+    {/if}
+  </div>
 </div>
+
+<!-- Resync confirmation dialog -->
+{#if showResyncConfirm}
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+    role="dialog"
+    aria-modal="true"
+  >
+    <div class="w-full max-w-sm rounded-2xl border border-border bg-card p-5 shadow-xl">
+      <h2 class="mb-2 text-sm font-semibold text-foreground">Full Resync</h2>
+      <p class="mb-4 text-sm text-muted-foreground">
+        This will delete all points, redemptions, and summaries, then re-import everything from the
+        sheet. Are you sure?
+      </p>
+      <div class="flex justify-end gap-2">
+        <Button variant="outline" size="sm" onclick={() => (showResyncConfirm = false)}>
+          {m.common_cancel()}
+        </Button>
+        <Button variant="destructive" size="sm" onclick={handleResync}>Yes, Resync</Button>
+      </div>
+    </div>
+  </div>
+{/if}
