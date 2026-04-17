@@ -1,0 +1,110 @@
+<script lang="ts">
+  import * as m from '$lib/paraglide/messages'
+
+  export type ActivityItem = {
+    id: string
+    categoryCode: string
+    categoryName: string
+    points: number
+    status: string
+    reason: string
+    userName: string
+    userAvatarUrl: string | null
+    submitterName: string
+    createdAt: string
+  }
+
+  let { items }: { items: ActivityItem[] } = $props()
+
+  function getInitials(name: string): string {
+    return name
+      .split(' ')
+      .slice(0, 2)
+      .map((w) => w[0])
+      .join('')
+      .toUpperCase()
+  }
+
+  function getCategoryStyle(code: string): { bg: string; text: string; dot: string } {
+    const upper = code.toUpperCase()
+    if (upper.includes('BINTANG')) return { bg: 'bg-[#F4C144]/12', text: 'text-[#a07700]', dot: 'bg-[#F4C144]' }
+    if (upper.includes('PENALTI')) return { bg: 'bg-[#C73E3E]/10', text: 'text-[#C73E3E]', dot: 'bg-[#C73E3E]' }
+    return { bg: 'bg-primary/10', text: 'text-primary', dot: 'bg-primary' }
+  }
+
+  function getStatusStyle(status: string): { bg: string; text: string } {
+    if (status === 'approved' || status === 'active') return { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400' }
+    if (status === 'rejected' || status === 'revoked') return { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-600 dark:text-red-400' }
+    if (status === 'challenged') return { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-400' }
+    return { bg: 'bg-[#F4C144]/15', text: 'text-[#a07700]' }
+  }
+
+  function getPointStyle(code: string): string {
+    const upper = code.toUpperCase()
+    if (upper.includes('PENALTI')) return 'text-destructive bg-destructive/8'
+    if (upper.includes('BINTANG')) return 'text-[#a07700] bg-[#F4C144]/12'
+    return 'text-primary bg-primary/8'
+  }
+
+  function formatRelativeTime(iso: string): string {
+    const diff = Date.now() - new Date(iso).getTime()
+    const minutes = Math.floor(diff / 60000)
+    if (minutes < 1) return 'just now'
+    if (minutes < 60) return `${minutes}m ago`
+    const hours = Math.floor(minutes / 60)
+    if (hours < 24) return `${hours}h ago`
+    const days = Math.floor(hours / 24)
+    return `${days}d ago`
+  }
+</script>
+
+{#if items.length === 0}
+  <div class="flex flex-col items-center justify-center py-10 text-center">
+    <p class="text-sm text-muted-foreground">{m.activity_empty()}</p>
+  </div>
+{:else}
+  <ul class="space-y-2">
+    {#each items as item, i (item.id)}
+      {@const catStyle = getCategoryStyle(item.categoryCode)}
+      {@const statusStyle = getStatusStyle(item.status)}
+      {@const ptStyle = getPointStyle(item.categoryCode)}
+      {@const prefix = item.categoryCode.toUpperCase().includes('PENALTI') ? '-' : '+'}
+      <li class="stagger-item" style="animation-delay: {i * 50}ms">
+        <a
+          href="/points/{item.id}"
+          class="tap-active flex items-center gap-3 rounded-xl bg-card border border-border p-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)] group"
+        >
+          <!-- Avatar -->
+          <div class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-primary">
+            {#if item.userAvatarUrl}
+              <img src={item.userAvatarUrl} alt={item.userName} class="h-full w-full object-cover" />
+            {:else}
+              <span class="text-xs font-bold">{getInitials(item.userName)}</span>
+            {/if}
+          </div>
+
+          <!-- Content -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="text-sm font-semibold text-foreground">{item.userName}</span>
+              <span class="rounded-md px-1.5 py-0.5 text-[10px] font-bold {catStyle.bg} {catStyle.text}">
+                {item.categoryName}
+              </span>
+            </div>
+            <div class="mt-0.5 flex items-center gap-2">
+              <span class="rounded-full px-1.5 py-0.5 text-[10px] font-semibold capitalize {statusStyle.bg} {statusStyle.text}">
+                {item.status}
+              </span>
+              <span class="text-[11px] text-muted-foreground/70">{formatRelativeTime(item.createdAt)}</span>
+            </div>
+          </div>
+
+          <!-- Points -->
+          <span class="shrink-0 rounded-lg px-2 py-1 text-sm font-extrabold {ptStyle}">
+            {prefix}{item.points}
+          </span>
+        </a>
+      </li>
+    {/each}
+  </ul>
+{/if}
