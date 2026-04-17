@@ -8,6 +8,7 @@
   import PointTypeSelector from '$lib/components/points/PointTypeSelector.svelte'
   import { SlidersHorizontal, Plus, Filter } from 'lucide-svelte'
   import * as m from '$lib/paraglide/messages'
+  import { buildSearchParams } from '$lib/utils'
 
   let { data } = $props()
 
@@ -32,26 +33,26 @@
   let showTypeSelector = $state(false)
 
   function handleTabChange(tab: string) {
-    const params = new URLSearchParams($page.url.searchParams)
-    if (tab === 'ALL') {
-      params.delete('category')
-    } else {
-      params.set('category', tab)
-    }
-    params.set('page', '1')
-    goto(`/points?${params.toString()}`)
+    const query = buildSearchParams(
+      {
+        category: tab === 'ALL' ? null : tab,
+        page: '1',
+      },
+      $page.url.searchParams,
+    )
+    goto(`/points?${query}`)
   }
 
   function handleStatusChange(e: Event) {
     const val = (e.target as HTMLSelectElement).value
-    const params = new URLSearchParams($page.url.searchParams)
-    if (val) {
-      params.set('status', val)
-    } else {
-      params.delete('status')
-    }
-    params.set('page', '1')
-    goto(`/points?${params.toString()}`)
+    const query = buildSearchParams(
+      {
+        status: val || null,
+        page: '1',
+      },
+      $page.url.searchParams,
+    )
+    goto(`/points?${query}`)
   }
 
   const totalPages = $derived(data.meta ? Math.ceil(data.meta.total / data.meta.limit) : 1)

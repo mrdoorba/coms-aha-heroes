@@ -3,6 +3,7 @@
   import { Badge } from '$lib/components/ui/badge'
   import * as Table from '$lib/components/ui/table'
   import * as m from '$lib/paraglide/messages'
+  import { buildSearchParams } from '$lib/utils'
   import { Shield, Search, ChevronLeft, ChevronRight } from 'lucide-svelte'
 
   let { data } = $props()
@@ -66,13 +67,16 @@
     isLoading = true
     const pg = opts?.page ?? currentPage
     try {
-      const q = new URLSearchParams({ page: String(pg), limit: String(meta.limit ?? 50) })
-      if (actionGroup) q.set('action', actionGroup)
-      if (entityType) q.set('entityType', entityType)
-      if (startDate) q.set('startDate', startDate)
-      if (endDate) q.set('endDate', endDate)
-      if (actor) q.set('actorId', actor)
-      const res = await fetch(`/api/v1/audit-logs?${q.toString()}`, { credentials: 'include' })
+      const query = buildSearchParams({
+        page: String(pg),
+        limit: String(meta.limit ?? 50),
+        action: actionGroup,
+        entityType,
+        startDate,
+        endDate,
+        actorId: actor,
+      })
+      const res = await fetch(`/api/v1/audit-logs?${query}`, { credentials: 'include' })
       const json = await res.json()
       logs = (json.data ?? []) as AuditLog[]
       meta = json.meta ?? { total: 0, page: pg, limit: 50 }
@@ -167,7 +171,7 @@
   <!-- Content -->
   {#if isLoading}
     <div class="space-y-2">
-      {#each [0, 1, 2, 3, 4, 5] as _i}
+      {#each [0, 1, 2, 3, 4, 5] as _i (_i)}
         <div class="h-14 animate-pulse rounded-xl border border-border bg-muted/50"></div>
       {/each}
     </div>

@@ -12,8 +12,8 @@ export const load: PageServerLoad = async ({ locals }) => {
       data: result.redemptions.map((r) => ({
         ...r,
         createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt,
-        rewardImageUrl: (r as any).rewardImageUrl ?? null,
-        approverName: (r as any).approverName ?? null,
+        rewardImageUrl: (r as typeof r & { rewardImageUrl?: string | null }).rewardImageUrl ?? null,
+        approverName: (r as typeof r & { approverName?: string | null }).approverName ?? null,
       })),
       meta: result.meta,
     },

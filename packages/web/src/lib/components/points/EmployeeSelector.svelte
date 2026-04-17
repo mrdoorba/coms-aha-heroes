@@ -10,6 +10,10 @@
     avatarUrl?: string | null
   }
 
+  type EmployeeListPayload = {
+    data?: Employee[]
+  }
+
   interface Props {
     value?: string
     onChange: (id: string) => void
@@ -36,7 +40,7 @@
         query: { search: query, limit: 20, page: 1, isActive: true },
       })
       if (result.error) { users = []; return }
-      users = ((result.data as any)?.data ?? []) as Employee[]
+      users = ((result.data as EmployeeListPayload | null)?.data ?? []) as Employee[]
     } catch {
       users = []
     } finally {
