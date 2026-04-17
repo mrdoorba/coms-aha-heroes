@@ -13,6 +13,10 @@
   $effect(() => {
     userState.init(data.user)
   })
+
+  $effect(() => {
+    uiState.initEffects()
+  })
 </script>
 
 <div class="app-bg min-h-screen {uiState.sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}">
