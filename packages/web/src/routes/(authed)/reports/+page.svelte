@@ -1,6 +1,5 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
-  import { page } from '$app/stores'
   import * as Card from '$lib/components/ui/card'
   import { Button } from '$lib/components/ui/button'
   import * as m from '$lib/paraglide/messages'
@@ -8,10 +7,9 @@
   let { data } = $props()
 
   const report = $derived(data.report)
-  const filters = $derived(data.filters)
 
-  let startDate = $state(data.filters.startDate ?? '')
-  let endDate = $state(data.filters.endDate ?? '')
+  let startDate = $derived(data.filters.startDate ?? '')
+  let endDate = $derived(data.filters.endDate ?? '')
 
   function applyFilters() {
     const params = new URLSearchParams()

@@ -20,7 +20,7 @@
 
   let { entityId, entityType, comments = [] }: Props = $props()
 
-  let localComments = $state<Comment[]>(comments)
+  let localComments = $derived(comments)
   let body = $state('')
   let isSubmitting = $state(false)
 

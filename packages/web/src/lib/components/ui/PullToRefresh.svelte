@@ -62,6 +62,7 @@
   ontouchstart={onTouchStart}
   ontouchmove={onTouchMove}
   ontouchend={onTouchEnd}
+  role="presentation"
 >
   {#if showIndicator}
     <div

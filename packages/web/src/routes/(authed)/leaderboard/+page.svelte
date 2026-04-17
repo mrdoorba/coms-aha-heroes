@@ -74,7 +74,7 @@
             : 'color: var(--muted-foreground);'}
           onclick={() => setFilter('type', tab.value)}
         >
-          <svelte:component this={tab.icon} class="h-4 w-4" />
+          <tab.icon class="h-4 w-4" />
           {tab.label}
         </button>
       {/each}

@@ -80,7 +80,7 @@
 
   <!-- Navigation -->
   <nav class="flex-1 overflow-y-auto px-2 py-3 space-y-0.5">
-    {#each mainNavItems as item}
+    {#each mainNavItems as item (item.href)}
       {@const active = isActive(item.href)}
       <a
         href={item.href}
@@ -89,7 +89,7 @@
           {active ? 'sidebar-link-active' : ''}"
         title={uiState.sidebarCollapsed ? item.label() : undefined}
       >
-        <svelte:component this={item.icon} class="h-[18px] w-[18px] shrink-0" />
+        <item.icon class="h-[18px] w-[18px] shrink-0" />
         {#if !uiState.sidebarCollapsed}
           <span class="leading-none">{item.label()}</span>
         {/if}
@@ -104,7 +104,7 @@
           <div class="border-t border-border"></div>
         {/if}
       </div>
-      {#each adminNavItems as item}
+      {#each adminNavItems as item (item.href)}
         {@const active = isActive(item.href)}
         <a
           href={item.href}
@@ -113,7 +113,7 @@
             {active ? 'sidebar-link-active' : ''}"
           title={uiState.sidebarCollapsed ? item.label() : undefined}
         >
-          <svelte:component this={item.icon} class="h-[18px] w-[18px] shrink-0" />
+          <item.icon class="h-[18px] w-[18px] shrink-0" />
           {#if !uiState.sidebarCollapsed}
             <span class="leading-none">{item.label()}</span>
           {/if}

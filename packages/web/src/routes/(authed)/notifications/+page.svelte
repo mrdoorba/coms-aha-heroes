@@ -26,9 +26,9 @@
     createdAt: string
   }
 
-  let notifications = $state<NotificationRow[]>((data.notifications.data ?? []) as NotificationRow[])
-  let meta = $state(data.notifications.meta ?? { total: 0, page: 1, limit: 50 })
-  let page = $state(1)
+  let notifications = $derived((data.notifications.data ?? []) as NotificationRow[])
+  let meta = $derived(data.notifications.meta ?? { total: 0, page: 1, limit: 50 })
+  let page = $derived(data.notifications.meta?.page ?? 1)
   let isLoading = $state(false)
 
   const totalPages = $derived(Math.ceil((meta.total ?? 0) / (meta.limit ?? 50)))

@@ -24,7 +24,7 @@
 
   type Tab = 'mine' | 'pending'
   let activeTab = $state<Tab>('mine')
-  let redemptions = $state<RedemptionRow[]>((data.redemptions.data ?? []) as RedemptionRow[])
+  let redemptions = $derived((data.redemptions.data ?? []) as RedemptionRow[])
   let isLoading = $state(false)
   let isSubmitting = $state(false)
   let rejectOpen = $state(false)
