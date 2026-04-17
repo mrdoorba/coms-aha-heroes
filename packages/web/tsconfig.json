@@ -9,6 +9,6 @@
     "allowJs": true,
     "checkJs": false
   },
-  "include": ["src/**/*.ts", "src/**/*.svelte"],
+  "include": ["src/**/*.js", "src/**/*.ts", "src/**/*.svelte"],
   "exclude": ["node_modules"]
 }
