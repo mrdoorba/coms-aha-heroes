@@ -2,32 +2,47 @@
   import { goto } from '$app/navigation'
   import { page } from '$app/stores'
   import { userState } from '$lib/state/userState.svelte'
-  import { Badge } from '$lib/components/ui/badge'
   import { Button } from '$lib/components/ui/button'
+  import * as Dialog from '$lib/components/ui/dialog'
+  import PointCard from '$lib/components/points/PointCard.svelte'
+  import PointTypeSelector from '$lib/components/points/PointTypeSelector.svelte'
+  import { SlidersHorizontal, Plus, Filter } from 'lucide-svelte'
   import * as m from '$lib/paraglide/messages'
 
   let { data } = $props()
 
-  const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-    active: 'default',
-    pending: 'secondary',
-    challenged: 'outline',
-    frozen: 'outline',
-    revoked: 'destructive',
-    rejected: 'destructive',
+  const TAB_STYLES: Record<string, { active: string }> = {
+    ALL: { active: 'text-foreground border-primary/20 bg-primary/6' },
+    BINTANG: { active: 'text-[#a07700] border-[#F4C144]/30 bg-[#F4C144]/10' },
+    PENALTI: { active: 'text-[#C73E3E] border-[#C73E3E]/25 bg-[#C73E3E]/8' },
+    POIN_AHA: { active: 'text-primary border-primary/20 bg-primary/8' },
   }
 
-  const CATEGORY_LABELS: Record<string, () => string> = {
-    BINTANG: () => m.points_bintang(),
-    PENALTI: () => m.points_penalti(),
-    POIN_AHA: () => m.points_poin_aha(),
+  const tabs: Array<{ label: () => string; value: string }> = [
+    { label: () => m.points_tab_all(), value: 'ALL' },
+    { label: () => m.points_tab_bintang(), value: 'BINTANG' },
+    { label: () => m.points_tab_penalti(), value: 'PENALTI' },
+    { label: () => m.points_tab_poin_aha(), value: 'POIN_AHA' },
+  ]
+
+  const activeCategory = $derived(($page.url.searchParams.get('category') ?? 'ALL').toUpperCase())
+  const activeStatus = $derived($page.url.searchParams.get('status') ?? '')
+  const userRole = $derived(userState.current?.role ?? 'employee')
+
+  let showTypeSelector = $state(false)
+
+  function handleTabChange(tab: string) {
+    const params = new URLSearchParams($page.url.searchParams)
+    if (tab === 'ALL') {
+      params.delete('category')
+    } else {
+      params.set('category', tab)
+    }
+    params.set('page', '1')
+    goto(`/points?${params.toString()}`)
   }
 
-  function statusVariant(status: string) {
-    return STATUS_VARIANT[status] ?? 'secondary'
-  }
-
-  function handleStatusFilter(e: Event) {
+  function handleStatusChange(e: Event) {
     const val = (e.target as HTMLSelectElement).value
     const params = new URLSearchParams($page.url.searchParams)
     if (val) {
@@ -38,92 +53,127 @@
     params.set('page', '1')
     goto(`/points?${params.toString()}`)
   }
+
+  const totalPages = $derived(data.meta ? Math.ceil(data.meta.total / data.meta.limit) : 1)
+  const currentPage = $derived(data.meta?.page ?? 1)
 </script>
 
-<div class="space-y-4">
-  <div class="flex flex-wrap items-center justify-between gap-3">
-    <h1 class="text-2xl font-bold">{m.nav_points()}</h1>
-    {#if userState.current?.canSubmitPoints}
-      <div class="flex flex-wrap gap-2">
-        <Button href="/points/new/bintang" size="sm">+ {m.points_bintang()}</Button>
-        <Button href="/points/new/penalti" size="sm" variant="outline">+ {m.points_penalti()}</Button>
-        <Button href="/points/new/poin-aha" size="sm" variant="secondary">+ {m.points_poin_aha()}</Button>
-      </div>
+<div class="space-y-4 max-w-3xl mx-auto px-4 py-5 pb-28 md:pb-8">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <h1 class="text-xl font-extrabold text-foreground">{m.nav_points()}</h1>
+    {#if data.meta?.total != null}
+      <span class="rounded-xl bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+        {data.meta.total} {m.nav_points().toLowerCase()}
+      </span>
     {/if}
   </div>
 
-  <!-- Status filter -->
-  <div class="flex items-center gap-2">
-    <label for="status-filter" class="text-sm text-muted-foreground">{m.users_col_status()}:</label>
-    <select
-      id="status-filter"
-      class="rounded-md border bg-background px-2 py-1 text-sm"
-      value={data.status}
-      onchange={handleStatusFilter}
-    >
-      <option value="">{m.points_tab_all()}</option>
-      <option value="pending">{m.status_pending()}</option>
-      <option value="active">{m.status_active()}</option>
-      <option value="challenged">{m.status_challenged()}</option>
-      <option value="frozen">{m.status_frozen()}</option>
-      <option value="revoked">{m.status_revoked()}</option>
-      <option value="rejected">{m.status_rejected()}</option>
-    </select>
+  <!-- Category tabs -->
+  <div class="flex gap-1.5 rounded-2xl bg-card border border-border p-1.5 shadow-card">
+    {#each tabs as tab (tab.value)}
+      {@const isActive = activeCategory === tab.value}
+      {@const styles = TAB_STYLES[tab.value]}
+      <button
+        type="button"
+        class="flex-1 rounded-xl px-2 py-2 text-xs font-bold transition-all duration-200 min-h-[36px] border {isActive ? styles.active : 'border-transparent text-muted-foreground hover:text-foreground'}"
+        onclick={() => handleTabChange(tab.value)}
+      >
+        {tab.label()}
+      </button>
+    {/each}
   </div>
 
-  <!-- Points list -->
-  {#if data.points && data.points.length > 0}
-    <div class="overflow-hidden rounded-lg border">
-      <ul class="divide-y">
-        {#each data.points as point (point.id)}
-          <li>
-            <a
-              href="/points/{point.id}"
-              class="flex items-center justify-between gap-4 px-4 py-3 transition-colors hover:bg-muted/50"
-            >
-              <div class="min-w-0 flex-1">
-                <p class="truncate font-medium">{point.user?.name ?? '—'}</p>
-                <p class="text-sm text-muted-foreground">
-                  {CATEGORY_LABELS[point.category?.code ?? '']?.() ?? point.category?.name ?? '—'}
-                </p>
-              </div>
-              <div class="flex items-center gap-3">
-                <span class="font-semibold">{point.points}</span>
-                <Badge variant={statusVariant(point.status)}>{point.status}</Badge>
-              </div>
-            </a>
-          </li>
-        {/each}
-      </ul>
+  <!-- Filter row -->
+  <div class="flex items-center gap-2">
+    <div class="flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-1.5 shadow-sm">
+      <Filter class="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+      <select
+        class="w-36 h-7 border-0 shadow-none bg-transparent text-sm focus:outline-none"
+        value={activeStatus}
+        onchange={handleStatusChange}
+      >
+        <option value="">{m.points_all_status()}</option>
+        <option value="pending">{m.status_pending()}</option>
+        <option value="active">{m.status_active()}</option>
+        <option value="challenged">{m.status_challenged()}</option>
+        <option value="frozen">{m.status_frozen()}</option>
+        <option value="revoked">{m.status_revoked()}</option>
+        <option value="rejected">{m.status_rejected()}</option>
+      </select>
     </div>
-  {:else}
-    <p class="py-8 text-center text-muted-foreground">{m.points_empty()}</p>
-  {/if}
+  </div>
+
+  <!-- Point cards -->
+  <div class="space-y-2">
+    {#if !data.points || data.points.length === 0}
+      <div class="flex flex-col items-center justify-center py-14 text-center">
+        <div class="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/8">
+          <SlidersHorizontal class="h-8 w-8 text-primary/40" />
+        </div>
+        <p class="font-medium text-muted-foreground">{m.points_empty()}</p>
+      </div>
+    {:else}
+      {#each data.points as point (point.id)}
+        <PointCard
+          id={point.id}
+          categoryCode={point.category?.code ?? 'BINTANG'}
+          userName={point.user?.name ?? '—'}
+          reason={point.reason ?? ''}
+          points={point.points}
+          status={point.status}
+          createdAt={point.createdAt}
+        />
+      {/each}
+    {/if}
+  </div>
 
   <!-- Pagination -->
-  {#if data.meta && data.meta.total > data.meta.limit}
-    <div class="flex justify-center gap-2">
-      {#if data.meta.page > 1}
-        <Button
-          variant="outline"
-          size="sm"
-          href="/points?page={data.meta.page - 1}{data.status ? `&status=${data.status}` : ''}"
-        >
-          {m.common_previous()}
-        </Button>
-      {/if}
-      <span class="flex items-center px-2 text-sm text-muted-foreground">
-        {m.common_page_of({ page: data.meta.page, total: Math.ceil(data.meta.total / data.meta.limit) })}
+  {#if totalPages > 1}
+    <div class="flex items-center justify-center gap-2 pt-2">
+      <Button
+        variant="outline"
+        size="sm"
+        class="rounded-xl border-border hover:bg-primary/6 hover:text-primary min-h-[36px]"
+        disabled={currentPage <= 1}
+        href="/points?page={currentPage - 1}{activeStatus ? `&status=${activeStatus}` : ''}{activeCategory !== 'ALL' ? `&category=${activeCategory}` : ''}"
+      >
+        {m.common_previous()}
+      </Button>
+      <span class="rounded-xl bg-card border border-border px-3 py-1.5 text-sm font-semibold text-muted-foreground">
+        {m.common_page_of({ page: String(currentPage), total: String(totalPages) })}
       </span>
-      {#if data.meta.page < Math.ceil(data.meta.total / data.meta.limit)}
-        <Button
-          variant="outline"
-          size="sm"
-          href="/points?page={data.meta.page + 1}{data.status ? `&status=${data.status}` : ''}"
-        >
-          {m.common_next()}
-        </Button>
-      {/if}
+      <Button
+        variant="outline"
+        size="sm"
+        class="rounded-xl border-border hover:bg-primary/6 hover:text-primary min-h-[36px]"
+        disabled={currentPage >= totalPages}
+        href="/points?page={currentPage + 1}{activeStatus ? `&status=${activeStatus}` : ''}{activeCategory !== 'ALL' ? `&category=${activeCategory}` : ''}"
+      >
+        {m.common_next()}
+      </Button>
     </div>
   {/if}
 </div>
+
+<!-- FAB -->
+{#if userState.current?.canSubmitPoints}
+  <button
+    type="button"
+    class="fixed bottom-20 right-4 flex h-14 w-14 items-center justify-center rounded-full btn-gradient-blue text-white shadow-[0_4px_20px_rgba(50,95,236,0.40)] hover:shadow-[0_6px_24px_rgba(50,95,236,0.50)] transition-all active:scale-95 md:bottom-8 md:right-8 z-40"
+    onclick={() => (showTypeSelector = true)}
+    aria-label={m.points_submit()}
+  >
+    <Plus class="h-6 w-6" />
+  </button>
+{/if}
+
+<!-- Type selector dialog -->
+<Dialog.Root bind:open={showTypeSelector}>
+  <Dialog.Content class="sm:max-w-md rounded-2xl">
+    <Dialog.Header>
+      <Dialog.Title class="text-foreground font-extrabold">{m.points_submit()}</Dialog.Title>
+    </Dialog.Header>
+    <PointTypeSelector userRole={userRole} class="mt-2" />
+  </Dialog.Content>
+</Dialog.Root>
