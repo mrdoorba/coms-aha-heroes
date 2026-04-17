@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { goto } from '$app/navigation'
-  import { page } from '$app/stores'
   import { Button } from '$lib/components/ui/button'
   import { Badge } from '$lib/components/ui/badge'
   import * as Table from '$lib/components/ui/table'
@@ -19,8 +17,8 @@
     actorName: string | null
   }
 
-  let logs = $state<AuditLog[]>((data.logs ?? []) as AuditLog[])
-  let meta = $state(data.meta ?? { total: 0, page: 1, limit: 50 })
+  let logs = $derived((data.logs ?? []) as AuditLog[])
+  let meta = $derived(data.meta ?? { total: 0, page: 1, limit: 50 })
   let isLoading = $state(false)
 
   // Filter state
@@ -29,7 +27,7 @@
   let startDate = $state('')
   let endDate = $state('')
   let actor = $state('')
-  let currentPage = $state(data.meta?.page ?? 1)
+  let currentPage = $derived(data.meta?.page ?? 1)
   const totalPages = $derived(Math.ceil(meta.total / (meta.limit ?? 50)))
 
   const ACTION_GROUPS = [
@@ -62,15 +60,6 @@
       date: d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
       time: d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
     }
-  }
-
-  // Details expand state
-  let expandedIds = $state<Set<string>>(new Set())
-  function toggleDetails(id: string) {
-    const next = new Set(expandedIds)
-    if (next.has(id)) next.delete(id)
-    else next.add(id)
-    expandedIds = next
   }
 
   async function fetchLogs(opts?: { page?: number }) {
@@ -121,7 +110,7 @@
   <div class="space-y-4 rounded-xl border border-border bg-card p-4 shadow-card">
     <!-- Action group pills -->
     <div class="flex flex-wrap gap-2">
-      {#each ACTION_GROUPS as group}
+      {#each ACTION_GROUPS as group (group.value)}
         <button
           type="button"
           onclick={() => handleActionGroup(group.value)}

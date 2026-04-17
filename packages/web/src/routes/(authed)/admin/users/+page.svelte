@@ -16,12 +16,12 @@
     isActive: boolean
   }
 
-  let users = $state<UserRow[]>(data.users as UserRow[])
-  let meta = $state(data.meta ?? { total: 0, page: 1, limit: 100 })
+  let users = $derived((data.users as UserRow[]) ?? [])
+  let meta = $derived(data.meta ?? { total: 0, page: 1, limit: 100 })
   let search = $state('')
   let roleFilter = $state('')
   let activeFilter = $state('')
-  let page = $state(1)
+  let page = $derived(data.meta?.page ?? 1)
   let isLoading = $state(false)
 
   const totalPages = $derived(Math.ceil(meta.total / (meta.limit ?? 100)))

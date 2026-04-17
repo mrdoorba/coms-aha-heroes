@@ -15,9 +15,16 @@
 
   const isHrOrAdmin = $derived(userState.isHR)
 
-  let startDate = $state(data.defaultStart ?? '')
-  let endDate = $state(data.defaultEnd ?? '')
-  let reports = $state<ReportsData>(data.reports as ReportsData)
+  let startDate = $derived(data.defaultStart ?? '')
+  let endDate = $derived(data.defaultEnd ?? '')
+  let reports = $derived<ReportsData>(
+    (data.reports as ReportsData) ?? {
+      totalSubmissions: 0,
+      byCategory: [],
+      byTeam: [],
+      overTime: [],
+    },
+  )
   let isLoading = $state(false)
 
   const CATEGORY_COLORS: Record<string, { bar: string; text: string }> = {
@@ -83,8 +90,9 @@
     <Card.Root class="border-border shadow-card">
       <Card.Content class="flex flex-wrap items-end gap-3 p-4">
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-muted-foreground">{m.reports_start_date()}</label>
+          <label for="admin-reports-start-date" class="text-xs font-medium text-muted-foreground">{m.reports_start_date()}</label>
           <input
+            id="admin-reports-start-date"
             type="date"
             bind:value={startDate}
             max={endDate}
@@ -93,8 +101,9 @@
           />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-muted-foreground">{m.reports_end_date()}</label>
+          <label for="admin-reports-end-date" class="text-xs font-medium text-muted-foreground">{m.reports_end_date()}</label>
           <input
+            id="admin-reports-end-date"
             type="date"
             bind:value={endDate}
             min={startDate}
@@ -149,7 +158,7 @@
         {#if byCategory.length === 0}
           <p class="py-4 text-center text-sm text-muted-foreground">{m.common_no_data()}</p>
         {:else}
-          {#each byCategory as cat}
+          {#each byCategory as cat (cat.name)}
             {@const color = categoryColor(cat.name)}
             <div class="flex items-center gap-3">
               <span class="w-32 shrink-0 truncate text-sm text-muted-foreground">{cat.name}</span>
@@ -177,7 +186,7 @@
         {#if byTeam.length === 0}
           <p class="py-4 text-center text-sm text-muted-foreground">{m.common_no_data()}</p>
         {:else}
-          {#each byTeam as team}
+          {#each byTeam as team (team.name)}
             <div class="flex items-center gap-3">
               <span class="w-28 shrink-0 truncate text-sm text-muted-foreground">{team.name}</span>
               <div class="relative h-5 flex-1 overflow-hidden rounded-full bg-primary/15">

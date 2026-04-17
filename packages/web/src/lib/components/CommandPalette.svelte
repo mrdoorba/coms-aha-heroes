@@ -60,8 +60,8 @@
 
   let query = $state('')
   let activeIndex = $state(0)
-  let inputEl: HTMLInputElement | null = null
-  let listEl: HTMLDivElement | null = null
+  let inputEl = $state<HTMLInputElement | null>(null)
+  let listEl = $state<HTMLDivElement | null>(null)
 
   // Focus-return shim (Principle 2 compatibility): store active element before
   // palette opens so we can restore focus when it closes — matches React cmdk behaviour.
@@ -139,11 +139,13 @@
 
 {#if open}
   <!-- Backdrop -->
-  <div
+  <button
+    type="button"
     class="fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm"
     onclick={close}
     aria-hidden="true"
-  ></div>
+    tabindex="-1"
+  ></button>
 
   <!-- Desktop modal / Mobile full-screen -->
   <div
@@ -222,7 +224,7 @@
               >
                 <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg
                   {isActive ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground'}">
-                  <svelte:component this={item.icon} class="h-3.5 w-3.5" />
+                  <item.icon class="h-3.5 w-3.5" />
                 </span>
                 <span class="font-medium">{item.label()}</span>
               </button>
@@ -252,7 +254,7 @@
               >
                 <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg
                   {isActive ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground'}">
-                  <svelte:component this={item.icon} class="h-3.5 w-3.5" />
+                  <item.icon class="h-3.5 w-3.5" />
                 </span>
                 <span class="font-medium">{item.label()}</span>
               </button>

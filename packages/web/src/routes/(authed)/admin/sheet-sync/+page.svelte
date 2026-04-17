@@ -32,10 +32,10 @@
     schedule: string
   }
 
-  let status = $state<SyncStatus | null>(data.status as SyncStatus | null)
-  let jobs = $state<SyncJob[]>(data.jobs as SyncJob[])
-  let meta = $state(data.meta ?? { total: 0, page: 1, limit: 20, totalPages: 1 })
-  let page = $state(1)
+  let status = $derived<SyncStatus | null>((data.status as SyncStatus | null) ?? null)
+  let jobs = $derived<SyncJob[]>((data.jobs as SyncJob[]) ?? [])
+  let meta = $derived(data.meta ?? { total: 0, page: 1, limit: 20, totalPages: 1 })
+  let page = $derived(data.meta?.page ?? 1)
   let isLoading = $state(false)
   let isTriggeringSync = $state(false)
   let syncError = $state<string | null>(null)

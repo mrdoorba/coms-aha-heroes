@@ -26,8 +26,8 @@
 
   const isHrOrAdmin = $derived(userState.isHR)
 
-  let teams = $state<TeamRow[]>((data.teams.data ?? []) as TeamRow[])
-  let meta = $state(data.teams.meta ?? { total: 0 })
+  let teams = $derived((data.teams.data ?? []) as TeamRow[])
+  let meta = $derived(data.teams.meta ?? { total: 0 })
   let search = $state('')
   let isLoading = $state(false)
   let expandedTeamId = $state<string | null>(null)

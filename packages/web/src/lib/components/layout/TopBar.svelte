@@ -18,7 +18,6 @@
     RefreshCw,
     Settings,
   } from 'lucide-svelte'
-  import { userState } from '$lib/state/userState.svelte'
   import * as m from '$lib/paraglide/messages'
   import type { AuthUser } from '@coms/shared/types'
 
@@ -154,11 +153,12 @@
 <!-- Slide-over admin menu — admin/HR only, mobile only -->
 {#if isAdminOrHr && menuOpen}
   <!-- Backdrop -->
-  <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-  <div
+  <button
+    type="button"
     class="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm md:hidden"
     onclick={closeMenu}
-  ></div>
+    aria-label="Close menu"
+  ></button>
 
   <!-- Panel -->
   <div class="fixed inset-y-0 left-0 z-[70] w-72 bg-card shadow-2xl md:hidden animate-slide-in-left flex flex-col">
@@ -184,7 +184,7 @@
 
     <!-- Panel nav -->
     <nav class="flex-1 overflow-y-auto px-2 py-3 space-y-0.5">
-      {#each adminNavItems as item}
+      {#each adminNavItems as item (item.href)}
         {@const active = isActive(item.href)}
         <a
           href={item.href}
@@ -192,7 +192,7 @@
           class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-150 hover:bg-primary/8 hover:text-foreground
             {active ? 'sidebar-link-active' : ''}"
         >
-          <svelte:component this={item.icon} class="h-[18px] w-[18px] shrink-0" />
+          <item.icon class="h-[18px] w-[18px] shrink-0" />
           <span class="leading-none">{item.label()}</span>
         </a>
       {/each}
