@@ -44,6 +44,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@sinclair/typebox": "^0.34.0",
+        "better-auth": "^1.5.6",
         "drizzle-orm": "^0.45.0",
         "drizzle-typebox": "^0.2.0",
         "postgres": "^3.4.5",

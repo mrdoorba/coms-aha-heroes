@@ -7,12 +7,7 @@
     "moduleResolution": "bundler",
     "skipLibCheck": true,
     "allowJs": true,
-    "checkJs": false,
-    "paths": {
-      "$lib": ["./src/lib"],
-      "$lib/*": ["./src/lib/*"],
-      "@coms/shared/*": ["../shared/src/*"]
-    }
+    "checkJs": false
   },
   "include": ["src/**/*.ts", "src/**/*.svelte"],
   "exclude": ["node_modules"]

@@ -2,6 +2,7 @@
   "name": "coms-aha-heroes",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "workspaces": ["packages/*"],
   "scripts": {
     "dev": "bun run --filter=server dev",
