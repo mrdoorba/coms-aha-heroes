@@ -16,11 +16,17 @@ class UIState {
         } catch {
           // ignore corrupt state
         }
+      } else {
+        // No localStorage yet — seed theme from cookie so first JS paint matches SSR
+        const match = document.cookie.match(/(?:^|;\s*)theme=([^;]+)/)
+        if (match) {
+          this.theme = (match[1] as 'light' | 'dark' | 'system') ?? 'system'
+        }
       }
     }
   }
 
-  /** Call from root layout $effect to register localStorage sync */
+  /** Call from root layout $effect to register localStorage + cookie + DOM sync */
   initEffects() {
     if (this.#initialized) return
     this.#initialized = true
@@ -34,8 +40,30 @@ class UIState {
             theme: this.theme,
           }),
         )
+        // Keep cookie in sync with localStorage so SSR always has current value
+        document.cookie = `theme=${this.theme}; Path=/; Max-Age=31536000; SameSite=Lax`
+        this.applyDomClass()
       }
     })
+  }
+
+  setTheme(next: 'light' | 'dark' | 'system') {
+    this.theme = next
+    if (typeof document !== 'undefined') {
+      document.cookie = `theme=${next}; Path=/; Max-Age=31536000; SameSite=Lax`
+    }
+    this.applyDomClass()
+  }
+
+  applyDomClass() {
+    if (typeof document === 'undefined') return
+    const resolved =
+      this.theme === 'system'
+        ? window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light'
+        : this.theme
+    document.documentElement.classList.toggle('dark', resolved === 'dark')
   }
 
   toggleSidebar() {
