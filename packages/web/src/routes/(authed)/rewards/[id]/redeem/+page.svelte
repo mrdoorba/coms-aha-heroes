@@ -3,6 +3,7 @@
   import { Button } from '$lib/components/ui/button'
   import { Badge } from '$lib/components/ui/badge'
   import { api } from '$lib/api/client'
+  import { getErrorMessage } from '$lib/api/client'
   import * as m from '$lib/paraglide/messages'
   import { Gift, Coins, ArrowLeft, CheckCircle } from 'lucide-svelte'
 
@@ -24,8 +25,7 @@
         notes: notes.trim() || undefined,
       })
       if (result.error) {
-        const msg = (result.error as any)?.value?.error?.message ?? m.redeem_failed()
-        error = msg
+        error = getErrorMessage(result.error, m.redeem_failed())
         return
       }
       success = true

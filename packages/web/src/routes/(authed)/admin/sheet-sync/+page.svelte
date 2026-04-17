@@ -1,17 +1,12 @@
 <script lang="ts">
-  import * as Card from '$lib/components/ui/card'
   import { Button } from '$lib/components/ui/button'
   import { Badge } from '$lib/components/ui/badge'
   import * as Table from '$lib/components/ui/table'
   import * as m from '$lib/paraglide/messages'
   import {
     RefreshCw,
-    Shield,
     ChevronLeft,
     ChevronRight,
-    CheckCircle2,
-    XCircle,
-    Clock,
     Loader2,
   } from 'lucide-svelte'
 

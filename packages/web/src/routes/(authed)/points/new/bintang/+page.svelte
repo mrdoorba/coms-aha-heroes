@@ -2,15 +2,13 @@
   import { goto } from '$app/navigation'
   import { toast } from 'svelte-sonner'
   import { api } from '$lib/api/client'
+  import { uploadScreenshot } from '$lib/api/uploads'
   import { userState } from '$lib/state/userState.svelte'
   import { Button } from '$lib/components/ui/button'
   import EmployeeSelector from '$lib/components/points/EmployeeSelector.svelte'
   import { Star, AlertTriangle, ChevronRight } from 'lucide-svelte'
   import * as m from '$lib/paraglide/messages'
   import { getErrorMessage } from '$lib/api/client'
-
-  type UploadData = { uploadUrl: string; fileKey: string }
-  type ConfirmData = { url: string }
 
   const user = $derived(userState.current)
   const isSelfOnly = $derived(!(user?.canSubmitPoints ?? false))
@@ -34,28 +32,6 @@
       screenshotFile = file
       screenshotPreview = URL.createObjectURL(file)
     }
-  }
-
-  async function uploadScreenshot(file: File): Promise<string> {
-    // 1. Get signed upload URL
-    const signedRes = await api.api.v1.uploads['signed-url'].get({
-      query: { filename: file.name, contentType: file.type },
-    })
-    if (signedRes.error) throw new Error('Failed to get upload URL')
-    const { uploadUrl, fileKey } = signedRes.data!.data as UploadData
-
-    // 2. PUT to GCS
-    const putRes = await fetch(uploadUrl, {
-      method: 'PUT',
-      body: file,
-      headers: { 'Content-Type': file.type },
-    })
-    if (!putRes.ok) throw new Error('Upload failed')
-
-    // 3. Confirm upload
-    const confirmRes = await api.api.v1.uploads.confirm.post({ fileKey })
-    if (confirmRes.error) throw new Error('Upload confirmation failed')
-    return (confirmRes.data!.data as ConfirmData).url
   }
 
   async function handleSubmit(e: SubmitEvent) {

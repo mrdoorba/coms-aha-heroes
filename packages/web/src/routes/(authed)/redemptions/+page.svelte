@@ -149,7 +149,7 @@
   <!-- Card list -->
   <div class="space-y-3">
     {#if isLoading}
-      {#each [0, 1, 2, 3] as _i}
+      {#each [0, 1, 2, 3] as _i (_i)}
         <div class="h-24 animate-pulse rounded-xl border border-border bg-card shadow-card"></div>
       {/each}
     {:else if redemptions.length === 0}
