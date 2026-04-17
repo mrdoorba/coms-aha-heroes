@@ -35,7 +35,7 @@
         area: {
           class: 'fill-primary/20',
         },
-        spline: {
+        line: {
           class: 'stroke-primary stroke-2',
         },
       }}

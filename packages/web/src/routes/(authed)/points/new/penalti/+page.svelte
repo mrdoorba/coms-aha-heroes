@@ -16,8 +16,8 @@
   const user = $derived(userState.current)
   const isSelfOnly = $derived(!(user?.canSubmitPoints ?? false))
 
-  let userId = $state('')
-  let kittaComponent = $state<KittaCode | ''>('')
+  let userId = $state<string>('')
+  let kittaComponent = $state<KittaCode | undefined>(undefined)
   let violationLevel = $state(1)
   let reason = $state('')
   let relatedStaff = $state('')
@@ -88,13 +88,13 @@
       const screenshotUrl = await uploadScreenshot(screenshotFile)
       const result = await api.api.v1.points.post({
         userId,
-        categoryCode: 'PENALTI',
+        categoryCode: 'PENALTI' as any,
         points: violationLevel,
         reason: reason.trim(),
         relatedStaff: relatedStaff.trim() || undefined,
         screenshotUrl,
         kittaComponent: kittaComponent as KittaCode,
-      })
+      } as any)
       if (result.error) {
         error = (result.error as any)?.value?.error?.message ?? m.form_error_submission_failed()
         return

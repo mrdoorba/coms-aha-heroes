@@ -37,7 +37,7 @@
         return
       }
       if (result.data) {
-        localComments = [...localComments, result.data as Comment]
+        localComments = [...localComments, result.data as unknown as Comment]
       }
       body = ''
     } catch (err) {
