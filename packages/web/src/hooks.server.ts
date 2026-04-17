@@ -84,4 +84,12 @@ const auth: Handle = async ({ event, resolve }) => {
   return resolve(event)
 }
 
-export const handle = sequence(i18n, auth)
+const theme: Handle = async ({ event, resolve }) => {
+  const cookieValue = event.cookies.get('theme') ?? 'light'
+  const resolvedClass = cookieValue === 'dark' ? 'dark' : 'light'
+  return resolve(event, {
+    transformPageChunk: ({ html }) => html.replace('%theme-class%', resolvedClass),
+  })
+}
+
+export const handle = sequence(i18n, auth, theme)
