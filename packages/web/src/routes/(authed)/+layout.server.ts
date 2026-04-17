@@ -10,7 +10,22 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
     redirect(302, '/change-password')
   }
 
+  const actor = locals.user
+
+  const { withRLS } = await import('@coms/server/repositories/base')
+  const usersRepo = await import('@coms/server/repositories/users')
+  const notificationsRepo = await import('@coms/server/repositories/notifications')
+
+  const [avatarUrl, unreadCount] = await withRLS(actor, (db) =>
+    Promise.all([
+      usersRepo.getUserById(actor.id, db).then((u) => u?.avatarUrl ?? null),
+      notificationsRepo.countUnread(actor.id, db),
+    ]),
+  )
+
   return {
-    user: locals.user,
+    user: actor,
+    avatarUrl,
+    unreadCount,
   }
 }
