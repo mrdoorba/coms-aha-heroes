@@ -35,8 +35,9 @@ export async function getLeaderboard(
   const { bintangPointImpact, penaltiPointImpact } = await getPointImpactSettings()
 
   // Time-filtered path: aggregate from achievement_points directly
-  if (input.months) {
-    return getLeaderboardFiltered(input, ctx, bintangPointImpact, penaltiPointImpact)
+  const months = input.months
+  if (months !== undefined) {
+    return getLeaderboardFiltered({ ...input, months }, ctx, bintangPointImpact, penaltiPointImpact)
   }
 
   return withRLS(ctx.actor, async (db) => {

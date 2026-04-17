@@ -1,4 +1,5 @@
-import { resolve } from 'path'
+import { dirname, resolve } from 'path'
+import { fileURLToPath } from 'url'
 import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
 import { health } from './routes/health'
@@ -65,8 +66,9 @@ const app = new Elysia()
   )
 
 // --- SvelteKit handler ---
+const __dirname = dirname(fileURLToPath(import.meta.url))
 const SVELTEKIT_BUILD_PATH = process.env.SVELTEKIT_BUILD_PATH
-  ?? resolve(import.meta.dir, '../../web/build')
+  ?? resolve(__dirname, '../../web/build')
 
 if (process.env.NODE_ENV === 'production') {
   // In production, import the built SvelteKit handler (svelte-adapter-bun)
