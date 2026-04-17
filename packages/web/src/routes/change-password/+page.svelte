@@ -7,6 +7,7 @@
 
   let { data } = $props()
 
+  // svelte-ignore state_referenced_locally (superForm intentionally snapshots the server-provided initial form state)
   const { form, errors, enhance, delayed, message } = superForm(data.form)
 
   let showCurrent = $state(false)
