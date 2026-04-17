@@ -1,56 +1,185 @@
 <script lang="ts">
-  import * as Card from '$lib/components/ui/card'
+  import { Button } from '$lib/components/ui/button'
   import * as m from '$lib/paraglide/messages'
+  import { Settings, AlertTriangle, Save, Globe, Tag } from 'lucide-svelte'
 
   let { data } = $props()
 
-  function formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
+  type Setting = { key: string; value: string; description: string | null; updatedAt: string }
+
+  const settings = $derived((data.settings ?? []) as Setting[])
+
+  function findValue(key: string, fallback: number): number {
+    const entry = settings.find((s) => s.key === key)
+    return entry !== undefined ? Number(entry.value) : fallback
+  }
+
+  let bintangImpact = $state(findValue('bintang_impact', 10))
+  let penaltiImpact = $state(findValue('penalti_impact', -5))
+  let saving = $state(false)
+  let saveError = $state<string | null>(null)
+  let saveSuccess = $state(false)
+
+  const BRANCHES = [
+    { name: 'Indonesia', timezone: 'Asia/Jakarta (GMT+7)', flag: '🇮🇩' },
+    { name: 'Thailand', timezone: 'Asia/Bangkok (GMT+7)', flag: '🇹🇭' },
+  ]
+
+  const POINT_CATEGORIES = [
+    { name: 'Bintang sAHAbat', type: 'bintang', active: true },
+    { name: 'Penalti', type: 'penalti', active: true },
+    { name: 'Poin AHA', type: 'poin_aha', active: true },
+  ]
+
+  async function handleSaveImpacts() {
+    saving = true
+    saveError = null
+    saveSuccess = false
+    try {
+      await Promise.all([
+        fetch('/api/v1/settings', {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: 'bintang_impact', value: bintangImpact }),
+        }),
+        fetch('/api/v1/settings', {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: 'penalti_impact', value: penaltiImpact }),
+        }),
+      ])
+      saveSuccess = true
+    } catch (err) {
+      saveError = err instanceof Error ? err.message : m.settings_save_failed()
+    } finally {
+      saving = false
+    }
   }
 </script>
 
-<div class="space-y-4">
-  <div>
-    <h1 class="text-2xl font-bold">{m.settings_title()}</h1>
-    <p class="text-sm text-muted-foreground">{m.settings_admin_only()}</p>
+<div class="mx-auto max-w-2xl space-y-6 p-4 pb-24 pt-6 md:pb-8 page-transition">
+  <!-- Header -->
+  <div class="flex items-center gap-3">
+    <div
+      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#325FEC] to-[#759EEE] shadow-[0_4px_12px_rgba(50,95,236,0.25)]"
+    >
+      <Settings class="h-5 w-5 text-white" />
+    </div>
+    <div>
+      <h1 class="text-xl font-extrabold text-foreground">{m.settings_title()}</h1>
+      <p class="text-[13px] font-medium text-muted-foreground">{m.settings_admin_only()}</p>
+    </div>
   </div>
 
-  <Card.Root>
-    <Card.Header>
-      <Card.Title>{m.settings_title()}</Card.Title>
-      <Card.Description>
-        {data.settings.length}
-      </Card.Description>
-    </Card.Header>
-    <Card.Content>
-      {#if data.settings.length === 0}
-        <p class="py-4 text-center text-sm text-muted-foreground">{m.common_no_data()}</p>
-      {:else}
-        <div class="divide-y">
-          {#each data.settings as setting (setting.key)}
-            <div class="flex flex-col gap-1 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-start sm:justify-between">
-              <div class="min-w-0 flex-1">
-                <p class="font-mono text-sm font-medium">{setting.key}</p>
-                {#if setting.description}
-                  <p class="mt-0.5 text-xs text-muted-foreground">{setting.description}</p>
-                {/if}
-              </div>
-              <div class="sm:ml-4 sm:text-right">
-                <p class="max-w-xs break-all text-sm">{setting.value}</p>
-                <p class="mt-0.5 text-xs text-muted-foreground">
-                  {formatDate(setting.updatedAt)}
-                </p>
-              </div>
-            </div>
-          {/each}
-        </div>
+  <!-- Section 1: Point Impact Values -->
+  <div class="rounded-xl border border-border bg-card p-5 shadow-card">
+    <div class="mb-1 flex items-center gap-2">
+      <Tag class="h-4 w-4 text-primary" />
+      <h2 class="text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
+        {m.settings_point_impact()}
+      </h2>
+    </div>
+
+    <div class="mt-4 space-y-4">
+      <div class="space-y-1.5">
+        <label for="bintang-impact" class="text-sm font-semibold text-foreground">
+          {m.settings_bintang_impact()}
+        </label>
+        <input
+          id="bintang-impact"
+          type="number"
+          bind:value={bintangImpact}
+          placeholder="+10"
+          class="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
+        />
+      </div>
+
+      <div class="space-y-1.5">
+        <label for="penalti-impact" class="text-sm font-semibold text-foreground">
+          {m.settings_penalti_impact()}
+        </label>
+        <input
+          id="penalti-impact"
+          type="number"
+          bind:value={penaltiImpact}
+          placeholder="-5"
+          class="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
+        />
+      </div>
+
+      <!-- Warning -->
+      <div
+        class="flex items-start gap-2.5 rounded-xl border border-[#F4C144]/25 bg-[#F4C144]/10 px-4 py-3 text-sm text-[#7a5800] dark:border-yellow-800/40 dark:bg-yellow-900/20 dark:text-yellow-300"
+      >
+        <AlertTriangle class="mt-0.5 h-4 w-4 shrink-0 text-[#F4C144]" />
+        <span>{m.settings_impact_warning()}</span>
+      </div>
+
+      {#if saveError}
+        <p class="text-sm font-medium text-destructive">{saveError}</p>
       {/if}
-    </Card.Content>
-  </Card.Root>
+      {#if saveSuccess}
+        <p class="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+          {m.settings_saved()}
+        </p>
+      {/if}
+
+      <Button
+        onclick={handleSaveImpacts}
+        disabled={saving}
+        class="w-full rounded-xl bg-gradient-to-br from-[#325FEC] to-[#759EEE] font-semibold text-white shadow-[0_2px_8px_rgba(50,95,236,0.25)]"
+      >
+        <Save class="mr-1.5 h-4 w-4" />
+        {saving ? m.settings_saving() : m.common_save()}
+      </Button>
+    </div>
+  </div>
+
+  <!-- Section 2: Branch Management -->
+  <div class="rounded-xl border border-border bg-card p-5 shadow-card">
+    <div class="mb-4 flex items-center gap-2">
+      <Globe class="h-4 w-4 text-primary" />
+      <h2 class="text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
+        {m.settings_branch_management()}
+      </h2>
+    </div>
+    <ul class="space-y-2">
+      {#each BRANCHES as branch}
+        <li
+          class="flex items-center justify-between rounded-xl border border-border bg-muted px-4 py-3"
+        >
+          <span class="text-sm font-semibold text-foreground">{branch.flag} {branch.name}</span>
+          <span class="text-xs font-medium text-muted-foreground">{branch.timezone}</span>
+        </li>
+      {/each}
+    </ul>
+  </div>
+
+  <!-- Section 3: Point Categories -->
+  <div class="rounded-xl border border-border bg-card p-5 shadow-card">
+    <div class="mb-4 flex items-center gap-2">
+      <Tag class="h-4 w-4 text-primary" />
+      <h2 class="text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
+        {m.settings_point_categories()}
+      </h2>
+    </div>
+    <ul class="space-y-2">
+      {#each POINT_CATEGORIES as cat}
+        <li
+          class="flex items-center justify-between rounded-xl border border-border bg-muted px-4 py-3"
+        >
+          <span class="text-sm font-semibold text-foreground">{cat.name}</span>
+          <span
+            class="rounded-full px-2.5 py-0.5 text-[11px] font-semibold {cat.active
+              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+              : 'bg-muted text-muted-foreground'}"
+          >
+            {cat.active ? m.status_active() : m.status_inactive()}
+          </span>
+        </li>
+      {/each}
+    </ul>
+  </div>
 </div>
