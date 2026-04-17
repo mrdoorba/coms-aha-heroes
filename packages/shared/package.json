@@ -16,6 +16,7 @@
     "generate:schemas": "bun run scripts/generate-schemas.ts"
   },
   "dependencies": {
+    "better-auth": "^1.5.6",
     "drizzle-orm": "^0.45.0",
     "postgres": "^3.4.5",
     "@sinclair/typebox": "^0.34.0",

@@ -7,6 +7,8 @@ const config = {
     alias: {
       '$lib': './src/lib',
       '$lib/*': './src/lib/*',
+      '@coms/shared': '../shared/src',
+      '@coms/shared/*': '../shared/src/*',
     },
   },
 }

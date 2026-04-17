@@ -11,6 +11,10 @@ const SIGNED_URL_EXPIRY = 15 * 60 * 1000 // 15 minutes
 const GCS_BUCKET = process.env.GCS_BUCKET
 const isGCS = !!GCS_BUCKET
 
+if (process.env.NODE_ENV === 'production' && !GCS_BUCKET) {
+  throw new Error('GCS_BUCKET is required in production; refusing to fall back to local disk storage')
+}
+
 const gcs = isGCS ? new Storage() : null
 const bucket = isGCS ? gcs!.bucket(GCS_BUCKET!) : null
 
