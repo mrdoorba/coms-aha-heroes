@@ -65,22 +65,23 @@ export default ts.config(
 			'@typescript-eslint/no-unused-vars': 'off'
 		}
 	},
-	{
-		files: ['**/paraglide/**'],
-		rules: {
-			'@typescript-eslint/no-unused-vars': 'off',
-			'no-misleading-character-class': 'off'
+		{
+			files: ['**/paraglide/**'],
+			rules: {
+				'@typescript-eslint/no-unused-vars': 'off',
+				'no-misleading-character-class': 'off'
+			}
+		},
+		{
+			ignores: [
+				'**/node_modules/',
+				'**/.svelte-kit/',
+				'**/build/',
+				'**/dist/',
+				'**/paraglide/',
+				'**/.old_modules*/',
+				'**/.output/',
+				'my-designs/'
+			]
 		}
-	},
-	{
-		ignores: [
-			'**/node_modules/',
-			'**/.svelte-kit/',
-			'**/build/',
-			'**/dist/',
-			'**/.old_modules*/',
-			'**/.output/',
-			'my-designs/'
-		]
-	}
 );
