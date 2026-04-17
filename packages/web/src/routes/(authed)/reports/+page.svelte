@@ -3,6 +3,7 @@
   import * as Card from '$lib/components/ui/card'
   import { Button } from '$lib/components/ui/button'
   import * as m from '$lib/paraglide/messages'
+  import { buildSearchParams } from '$lib/utils'
 
   let { data } = $props()
 
@@ -12,10 +13,8 @@
   let endDate = $derived(data.filters.endDate ?? '')
 
   function applyFilters() {
-    const params = new URLSearchParams()
-    if (startDate) params.set('startDate', startDate)
-    if (endDate) params.set('endDate', endDate)
-    goto(`?${params.toString()}`, { replaceState: true })
+    const query = buildSearchParams({ startDate, endDate })
+    goto(`?${query}`, { replaceState: true })
   }
 
   function clearFilters() {

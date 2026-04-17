@@ -238,7 +238,7 @@
 
     {#if isLoading}
       <div class="space-y-2">
-        {#each [0, 1, 2, 3, 4] as _i}
+        {#each [0, 1, 2, 3, 4] as _i (_i)}
           <div class="h-14 animate-pulse rounded-xl border border-border bg-muted/50"></div>
         {/each}
       </div>

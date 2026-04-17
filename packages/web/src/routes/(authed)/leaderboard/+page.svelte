@@ -5,6 +5,7 @@
   import Podium from '$lib/components/leaderboard/Podium.svelte'
   import LeaderboardRow from '$lib/components/leaderboard/LeaderboardRow.svelte'
   import * as m from '$lib/paraglide/messages'
+  import { buildSearchParams } from '$lib/utils'
 
   let { data } = $props()
 
@@ -24,22 +25,30 @@
     { value: '12', label: m.leaderboard_last_months({ count: 12 }) },
   ])
 
-  const entries = $derived(data.leaderboard.data ?? [])
-  const top3 = $derived(entries.filter((e: any) => e.rank <= 3))
-  const rest = $derived(entries.filter((e: any) => e.rank > 3))
+  type LeaderboardEntry = {
+    rank: number
+    name: string
+    avatarUrl: string | null
+    score: number
+    userId: string
+  }
+
+  const entries = $derived((data.leaderboard.data ?? []) as LeaderboardEntry[])
+  const top3 = $derived(entries.filter((e) => e.rank <= 3))
+  const rest = $derived(entries.filter((e) => e.rank > 3))
 
   function setFilter(key: 'months' | 'type', value: string) {
-    const params = new URLSearchParams($page.url.searchParams)
-    if (key === 'months') {
-      if (params.get('months') === value) {
-        params.delete('months')
-      } else {
-        params.set('months', value)
-      }
-    } else {
-      params.set('type', value)
-    }
-    goto(`?${params.toString()}`, { replaceState: true })
+    const query = buildSearchParams(
+      {
+        months:
+          key === 'months'
+            ? ($page.url.searchParams.get('months') === value ? null : value)
+            : $page.url.searchParams.get('months'),
+        type: key === 'type' ? value : $page.url.searchParams.get('type'),
+      },
+      $page.url.searchParams,
+    )
+    goto(`?${query}`, { replaceState: true })
   }
 </script>
 

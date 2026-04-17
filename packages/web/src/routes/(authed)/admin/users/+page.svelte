@@ -3,6 +3,7 @@
   import { Badge } from '$lib/components/ui/badge'
   import * as Table from '$lib/components/ui/table'
   import * as m from '$lib/paraglide/messages'
+  import { buildSearchParams } from '$lib/utils'
   import { Search, Plus, User, Pencil, Archive, ChevronLeft, ChevronRight } from 'lucide-svelte'
 
   let { data } = $props()
@@ -50,11 +51,14 @@
     const a = params?.isActive ?? activeFilter
     const p = params?.page ?? page
     try {
-      const q = new URLSearchParams({ limit: '20', page: String(p) })
-      if (s) q.set('search', s)
-      if (r) q.set('role', r)
-      if (a !== '') q.set('isActive', a)
-      const res = await fetch(`/api/v1/users?${q.toString()}`, { credentials: 'include' })
+      const query = buildSearchParams({
+        limit: '20',
+        page: String(p),
+        search: s,
+        role: r,
+        isActive: a !== '' ? a : null,
+      })
+      const res = await fetch(`/api/v1/users?${query}`, { credentials: 'include' })
       const json = await res.json()
       users = (json.data ?? []) as UserRow[]
       meta = json.meta ?? { total: 0, page: p, limit: 20 }
@@ -165,7 +169,7 @@
       </Table.Header>
       <Table.Body>
         {#if isLoading}
-          {#each [0, 1, 2, 3, 4] as _i}
+          {#each [0, 1, 2, 3, 4] as _i (_i)}
             <Table.Row class="border-b border-border/50">
               <Table.Cell>
                 <div class="flex items-center gap-3">

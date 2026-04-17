@@ -1,4 +1,5 @@
 import type { PageServerLoad } from './$types'
+import type { PointCategoryCode, PointStatus } from '@coms/shared/constants'
 
 export const load: PageServerLoad = async ({ locals, url }) => {
   const actor = locals.user!
@@ -11,8 +12,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
     {
       page,
       limit: 20,
-      ...(status ? { status: status as any } : {}),
-      ...(category ? { categoryCode: category as any } : {}),
+      ...(status ? { status: status as PointStatus } : {}),
+      ...(category ? { categoryCode: category as PointCategoryCode } : {}),
     },
     { actor },
   )
@@ -22,7 +23,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
       ...p,
       createdAt: p.createdAt instanceof Date ? p.createdAt.toISOString() : p.createdAt,
       category: { code: p.categoryId },
-      user: { name: (p as any).userName ?? '' },
+      user: { name: (p as typeof p & { userName?: string }).userName ?? '' },
     })),
     meta: { ...result.meta, page },
     status: status ?? '',
