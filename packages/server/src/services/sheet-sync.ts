@@ -32,17 +32,6 @@ type SyncResult = {
 
 const BATCH_SIZE = 100
 
-async function batchInsert<T extends Record<string, unknown>>(
-  db: ReturnType<typeof getDb>,
-  table: Parameters<ReturnType<typeof getDb>['insert']>[0],
-  rows: T[],
-) {
-  if (rows.length === 0) return
-  for (let i = 0; i < rows.length; i += BATCH_SIZE) {
-    await (db.insert(table) as any).values(rows.slice(i, i + BATCH_SIZE)).onConflictDoNothing()
-  }
-}
-
 async function getOrCreateInactiveTeam(
   branchId: string,
   db: ReturnType<typeof getDb>,

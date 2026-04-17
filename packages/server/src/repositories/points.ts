@@ -1,4 +1,4 @@
-import { eq, and, count, desc, ilike, gte, lte, sql } from 'drizzle-orm'
+import { eq, and, count, desc, ilike, gte, lte } from 'drizzle-orm'
 import { achievementPoints, pointCategories, users } from '@coms/shared/db/schema'
 import type { DbClient } from './base'
 import { getDb } from './base'

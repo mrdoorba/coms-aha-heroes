@@ -7,6 +7,7 @@
   import { Label } from '$lib/components/ui/label'
   import { Textarea } from '$lib/components/ui/textarea'
   import * as m from '$lib/paraglide/messages'
+  import { getErrorMessage } from '$lib/api/client'
 
   interface Props {
     pointId: string
@@ -27,8 +28,7 @@
     try {
       const result = await api.api.v1.points({ id: pointId }).challenges.post({ reason: reason.trim() })
       if (result.error) {
-        const msg = (result.error as any)?.value?.error?.message ?? m.challenge_failed()
-        toast.error(msg)
+        toast.error(getErrorMessage(result.error, m.challenge_failed()))
         return
       }
       toast.success(m.challenge_success())

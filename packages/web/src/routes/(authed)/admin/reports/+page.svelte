@@ -218,7 +218,7 @@
               class="flex min-w-0 items-end gap-1.5"
               style="min-width:{overTime.length * 36}px"
             >
-              {#each overTime as point}
+              {#each overTime as point (point.date)}
                 {@const heightPct = Math.max(8, Math.round((point.count / maxTimeCount) * 100))}
                 {@const shortDate = String(point.date).slice(5)}
                 <div class="flex flex-1 flex-col items-center gap-1">

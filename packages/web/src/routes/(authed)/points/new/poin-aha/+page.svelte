@@ -7,9 +7,10 @@
   import EmployeeSelector from '$lib/components/points/EmployeeSelector.svelte'
   import { Award, AlertTriangle, ChevronRight } from 'lucide-svelte'
   import * as m from '$lib/paraglide/messages'
+  import { getErrorMessage } from '$lib/api/client'
 
-  // data prop kept for SvelteKit compatibility; employees fetched dynamically by EmployeeSelector
-  let { data } = $props()
+  type UploadData = { uploadUrl: string; fileKey: string }
+  type ConfirmData = { url: string }
 
   const user = $derived(userState.current)
   const isSelfOnly = $derived(!(user?.canSubmitPoints ?? false))
@@ -55,14 +56,14 @@
       query: { filename: file.name, contentType: file.type },
     })
     if (signedRes.error) throw new Error('Failed to get upload URL')
-    const { uploadUrl, fileKey } = (signedRes.data as any).data
+    const { uploadUrl, fileKey } = signedRes.data!.data as UploadData
     const putRes = await fetch(uploadUrl, {
       method: 'PUT', body: file, headers: { 'Content-Type': file.type },
     })
     if (!putRes.ok) throw new Error('Upload failed')
     const confirmRes = await api.api.v1.uploads.confirm.post({ fileKey })
     if (confirmRes.error) throw new Error('Upload confirmation failed')
-    return ((confirmRes.data as any).data.url as string)
+    return (confirmRes.data!.data as ConfirmData).url
   }
 
   async function handleSubmit(e: SubmitEvent) {
@@ -75,16 +76,17 @@
     isSubmitting = true
     try {
       const screenshotUrl = screenshotFile ? await uploadScreenshot(screenshotFile) : undefined
-      const result = await api.api.v1.points.post({
+      const payload = {
         userId,
-        categoryCode: 'POIN_AHA' as any,
+        categoryCode: 'POIN_AHA',
         points: level,
         reason: reason.trim(),
         relatedStaff: relatedStaff.trim() || undefined,
         screenshotUrl,
-      } as any)
+      }
+      const result = await api.api.v1.points.post(payload as never)
       if (result.error) {
-        error = (result.error as any)?.value?.error?.message ?? m.form_error_submission_failed()
+        error = getErrorMessage(result.error, m.form_error_submission_failed())
         return
       }
       toast.success(m.poin_aha_form_submit())

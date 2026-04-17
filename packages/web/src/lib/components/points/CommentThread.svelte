@@ -1,6 +1,7 @@
 <script lang="ts">
   import { toast } from 'svelte-sonner'
   import { api } from '$lib/api/client'
+  import { getErrorMessage } from '$lib/api/client'
   import { Textarea } from '$lib/components/ui/textarea'
   import { Button } from '$lib/components/ui/button'
   import { Send, User as UserIcon } from 'lucide-svelte'
@@ -32,8 +33,7 @@
     try {
       const result = await api.api.v1.comments.post({ entityType, entityId, body: body.trim() })
       if (result.error) {
-        const msg = (result.error as any)?.value?.error?.message ?? 'Failed to post comment'
-        toast.error(msg)
+        toast.error(getErrorMessage(result.error, 'Failed to post comment'))
         return
       }
       if (result.data) {

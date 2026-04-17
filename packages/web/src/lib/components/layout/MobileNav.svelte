@@ -18,14 +18,14 @@
 
 <nav class="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-stretch md:hidden
   bg-[#0d1229]/85 backdrop-blur-xl border-t border-white/10">
-  {#each navItems as item}
+  {#each navItems as item (item.href)}
     {@const active = isActive(item.href)}
     <a
       href={item.href}
       class="relative flex flex-1 flex-col items-center justify-center gap-1 min-h-[44px] transition-colors duration-200
         {active ? 'text-[#F4C144] bnav-active' : 'text-white/40 hover:text-white/70'}"
     >
-      <svelte:component this={item.icon} class="h-5 w-5 shrink-0" />
+      <item.icon class="h-5 w-5 shrink-0" />
       <span class="text-[10px] font-semibold leading-none tracking-wide">{item.label()}</span>
     </a>
   {/each}

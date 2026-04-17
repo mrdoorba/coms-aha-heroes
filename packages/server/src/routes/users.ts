@@ -15,7 +15,7 @@ type Ctx = { authUser: AuthUser }
 export const usersRoute = new Elysia({ prefix: '/users' })
   // All user routes require admin or hr
   .onBeforeHandle((ctx) => {
-    requireRole('admin', 'hr')(ctx as any)
+    requireRole('admin', 'hr')(ctx as unknown as { authUser: AuthUser })
   })
 
   // POST /users/bulk — bulk archive/activate users (Admin/HR only)

@@ -145,7 +145,7 @@
   <div class="space-y-1">
     {#if isLoading}
       <div class="space-y-2">
-        {#each [0, 1, 2, 3, 4] as _i}
+        {#each [0, 1, 2, 3, 4] as _i (_i)}
           <div class="h-16 animate-pulse rounded-xl border border-border bg-primary/4"></div>
         {/each}
       </div>

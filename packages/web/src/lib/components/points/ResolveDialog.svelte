@@ -8,6 +8,7 @@
   import { Textarea } from '$lib/components/ui/textarea'
   import { Check, X } from 'lucide-svelte'
   import * as m from '$lib/paraglide/messages'
+  import { getErrorMessage } from '$lib/api/client'
 
   interface Props {
     type: 'challenge' | 'appeal'
@@ -35,10 +36,12 @@
           : await api.api.v1.appeals({ id }).resolve.patch(body)
 
       if (result.error) {
-        const msg =
-          (result.error as any)?.value?.error?.message ??
-          (type === 'challenge' ? m.resolve_failed_challenge() : m.resolve_failed_appeal())
-        toast.error(msg)
+        toast.error(
+          getErrorMessage(
+            result.error,
+            type === 'challenge' ? m.resolve_failed_challenge() : m.resolve_failed_appeal(),
+          ),
+        )
         return
       }
       toast.success(type === 'challenge' ? m.resolve_success_challenge() : m.resolve_success_appeal())

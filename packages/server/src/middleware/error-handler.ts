@@ -1,6 +1,11 @@
 import type { ErrorHandler } from 'elysia'
 import { AuthError } from './auth'
 
+type ValidationErrorLike = {
+  readonly name: string
+  readonly issues?: unknown
+}
+
 export const errorHandler: ErrorHandler = ({ error, set }) => {
   // Only log unexpected errors — AuthError and validation are expected control flow
   if (!(error instanceof AuthError) && !('name' in error && error.name === 'ValidationError')) {
@@ -17,6 +22,7 @@ export const errorHandler: ErrorHandler = ({ error, set }) => {
   }
 
   if ('name' in error && (error.name === 'ValidationError' || error.name === 'ZodError')) {
+    const validationError = error as ValidationErrorLike
     set.status = 400
     return {
       success: false,
@@ -24,7 +30,7 @@ export const errorHandler: ErrorHandler = ({ error, set }) => {
       error: {
         code: 'VALIDATION_ERROR',
         message: 'Invalid request data',
-        details: 'issues' in error ? (error as any).issues : undefined,
+        details: validationError.issues,
       },
     }
   }
