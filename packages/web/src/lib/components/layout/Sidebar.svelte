@@ -1,134 +1,155 @@
 <script lang="ts">
   import { page } from '$app/stores'
   import {
-    LayoutDashboard,
     Trophy,
-    Star,
-    Users,
+    LayoutDashboard,
+    Award,
     Gift,
-    Bell,
-    Settings,
+    ShoppingCart,
+    Users,
+    Building2,
+    BarChart3,
     FileText,
-    Shield,
-    ChevronLeft,
-    LogOut,
+    RefreshCw,
+    Settings,
+    User,
   } from 'lucide-svelte'
-  import Icon from '$lib/components/Icon.svelte'
   import { userState } from '$lib/state/userState.svelte'
   import { uiState } from '$lib/state/uiState.svelte'
-  import { signOut } from '$lib/auth/client'
-  import { goto, invalidateAll } from '$app/navigation'
   import * as m from '$lib/paraglide/messages'
 
-  const navItems = $derived([
-    { href: '/dashboard', label: m.nav_dashboard(), icon: LayoutDashboard },
-    { href: '/leaderboard', label: m.nav_leaderboard(), icon: Trophy },
-    { href: '/points', label: m.nav_points(), icon: Star },
-    { href: '/teams', label: m.nav_teams(), icon: Users },
-    { href: '/rewards', label: m.nav_rewards(), icon: Gift },
-    { href: '/notifications', label: m.nav_notifications(), icon: Bell },
-  ])
+  let { avatarUrl }: { avatarUrl?: string | null } = $props()
 
-  const adminItems = $derived([
-    { href: '/admin/users', label: m.nav_users(), icon: Users },
-    { href: '/admin/settings', label: m.nav_settings(), icon: Settings },
-    { href: '/admin/audit-log', label: m.nav_audit_log(), icon: FileText },
-  ])
+  const mainNavItems = [
+    { href: '/dashboard', label: () => m.nav_dashboard(), icon: LayoutDashboard },
+    { href: '/points', label: () => m.nav_points(), icon: Award },
+    { href: '/leaderboard', label: () => m.nav_leaderboard(), icon: Trophy },
+    { href: '/rewards', label: () => m.nav_rewards(), icon: Gift },
+    { href: '/redemptions', label: () => m.nav_redemptions(), icon: ShoppingCart },
+  ]
+
+  const adminNavItems = [
+    { href: '/users', label: () => m.nav_users(), icon: Users },
+    { href: '/teams', label: () => m.nav_teams(), icon: Building2 },
+    { href: '/reports', label: () => m.nav_reports(), icon: BarChart3 },
+    { href: '/admin/audit-log', label: () => m.nav_audit_log(), icon: FileText },
+    { href: '/admin/sheet-sync', label: () => m.nav_sheet_sync(), icon: RefreshCw },
+    { href: '/settings', label: () => m.nav_settings(), icon: Settings },
+  ]
 
   function isActive(href: string) {
     return $page.url.pathname === href || $page.url.pathname.startsWith(href + '/')
   }
 
-  async function handleSignOut() {
-    await signOut()
-    await invalidateAll()
-    goto('/login')
-  }
+  const initials = $derived(
+    userState.current?.name
+      ? userState.current.name
+          .split(' ')
+          .map((n) => n[0])
+          .slice(0, 2)
+          .join('')
+          .toUpperCase()
+      : '',
+  )
+
+  const isAdminOrHr = $derived(
+    userState.isAdmin || userState.current?.role === 'hr',
+  )
 </script>
 
 <aside
-  class="hidden md:flex flex-col bg-card border-r border-border transition-all duration-300 {uiState.sidebarCollapsed
-    ? 'w-16'
-    : 'w-64'}"
+  class="fixed top-0 left-0 z-40 hidden md:flex h-full flex-col transition-[width] duration-200 bg-card border-r border-border
+    {uiState.sidebarCollapsed ? 'w-16' : 'w-64'}"
+  onmouseenter={() => uiState.setSidebarCollapsed(false)}
+  onmouseleave={() => uiState.setSidebarCollapsed(true)}
+  role="navigation"
 >
-  <!-- Branding -->
-  <div class="flex items-center gap-3 px-4 py-5 border-b border-border">
-    <div class="flex items-center justify-center w-8 h-8 rounded-md bg-primary text-primary-foreground shrink-0">
-      <Icon icon={Shield} size={16} strokeWidth={2} />
+  <!-- Logo -->
+  <div class="flex h-16 items-center border-b border-border {uiState.sidebarCollapsed ? 'justify-center px-0' : 'px-4'}">
+    <div class="flex items-center gap-2">
+      <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#F4C144] to-[#FFD97D] shadow-md">
+        <Trophy class="h-4 w-4 text-[#7a5800]" />
+      </div>
+      {#if !uiState.sidebarCollapsed}
+        <span class="font-manrope text-[15px] font-extrabold tracking-wide text-foreground">
+          AHA HEROES
+        </span>
+      {/if}
     </div>
-    {#if !uiState.sidebarCollapsed}
-      <span class="font-bold text-sm tracking-wide text-foreground">{m.app_name()}</span>
-    {/if}
-    <button
-      onclick={() => uiState.toggleSidebar()}
-      class="ml-auto p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-      aria-label={uiState.sidebarCollapsed ? m.sidebar_expand() : m.sidebar_collapse()}
-    >
-      <Icon
-        icon={ChevronLeft}
-        size={16}
-        class="transition-transform duration-300 {uiState.sidebarCollapsed ? 'rotate-180' : ''}"
-      />
-    </button>
   </div>
 
-  <!-- Main nav -->
-  <nav class="flex-1 overflow-y-auto py-4 px-2 space-y-1">
-    {#each navItems as item}
+  <!-- Navigation -->
+  <nav class="flex-1 overflow-y-auto px-2 py-3 space-y-0.5">
+    {#each mainNavItems as item}
+      {@const active = isActive(item.href)}
       <a
         href={item.href}
-        class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors
-          {isActive(item.href)
-          ? 'bg-primary text-primary-foreground'
-          : 'text-muted-foreground hover:bg-accent hover:text-foreground'}"
-        title={uiState.sidebarCollapsed ? item.label : undefined}
+        class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-150 hover:bg-primary/8 hover:text-foreground
+          {uiState.sidebarCollapsed ? 'justify-center px-0' : ''}
+          {active ? 'sidebar-link-active' : ''}"
+        title={uiState.sidebarCollapsed ? item.label() : undefined}
       >
-        <Icon icon={item.icon} size={18} strokeWidth={1.5} class="shrink-0" />
+        <svelte:component this={item.icon} class="h-[18px] w-[18px] shrink-0" />
         {#if !uiState.sidebarCollapsed}
-          <span>{item.label}</span>
+          <span class="leading-none">{item.label()}</span>
         {/if}
       </a>
     {/each}
 
-    {#if userState.isAdmin}
-      <div class="pt-4">
+    {#if isAdminOrHr}
+      <div class="pt-4 pb-1.5 {uiState.sidebarCollapsed ? 'px-1' : 'px-3'}">
         {#if !uiState.sidebarCollapsed}
-          <p class="px-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            {m.nav_admin()}
-          </p>
+          <span class="section-label text-muted-foreground/50">{m.nav_admin()}</span>
         {:else}
-          <div class="border-t border-border my-2"></div>
+          <div class="border-t border-border"></div>
         {/if}
-        {#each adminItems as item}
-          <a
-            href={item.href}
-            class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors
-              {isActive(item.href)
-              ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:bg-accent hover:text-foreground'}"
-            title={uiState.sidebarCollapsed ? item.label : undefined}
-          >
-            <Icon icon={item.icon} size={18} strokeWidth={1.5} class="shrink-0" />
-            {#if !uiState.sidebarCollapsed}
-              <span>{item.label}</span>
-            {/if}
-          </a>
-        {/each}
       </div>
+      {#each adminNavItems as item}
+        {@const active = isActive(item.href)}
+        <a
+          href={item.href}
+          class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-150 hover:bg-primary/8 hover:text-foreground
+            {uiState.sidebarCollapsed ? 'justify-center px-0' : ''}
+            {active ? 'sidebar-link-active' : ''}"
+          title={uiState.sidebarCollapsed ? item.label() : undefined}
+        >
+          <svelte:component this={item.icon} class="h-[18px] w-[18px] shrink-0" />
+          {#if !uiState.sidebarCollapsed}
+            <span class="leading-none">{item.label()}</span>
+          {/if}
+        </a>
+      {/each}
     {/if}
   </nav>
 
-  <!-- Sign out -->
+  <!-- User footer -->
   <div class="border-t border-border p-2">
-    <button
-      onclick={handleSignOut}
-      class="flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-      title={uiState.sidebarCollapsed ? m.common_logout() : undefined}
-    >
-      <Icon icon={LogOut} size={18} strokeWidth={1.5} class="shrink-0" />
+    <div class="flex items-center gap-3 rounded-lg px-3 py-2.5 {uiState.sidebarCollapsed ? 'justify-center px-0' : ''}">
+      <div class="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-xs font-bold text-primary ring-1 ring-primary/15">
+        {#if avatarUrl}
+          <img
+            src={avatarUrl}
+            alt={userState.current?.name ?? ''}
+            class="h-full w-full object-cover"
+            width={32}
+            height={32}
+            loading="lazy"
+            decoding="async"
+          />
+        {:else if initials}
+          <span>{initials}</span>
+        {:else}
+          <User class="h-4 w-4" />
+        {/if}
+      </div>
       {#if !uiState.sidebarCollapsed}
-        <span>{m.common_logout()}</span>
+        <div class="min-w-0 flex-1">
+          <p class="truncate text-sm font-semibold text-foreground">{userState.current?.name ?? ''}</p>
+          <span class="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary">
+            {userState.current?.role ?? ''}
+          </span>
+        </div>
       {/if}
-    </button>
+    </div>
   </div>
 </aside>
