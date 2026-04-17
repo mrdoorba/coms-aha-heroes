@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { userState } from '$lib/state/userState.svelte'
   import CategoryIcon from '$lib/components/points/CategoryIcon.svelte'
   import StatusBadge from '$lib/components/points/StatusBadge.svelte'
   import PointActions from '$lib/components/points/PointActions.svelte'

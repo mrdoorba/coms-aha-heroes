@@ -501,7 +501,7 @@ export async function syncPoints(
   // 4. Batch-create missing users (instead of findOrCreateUser per row)
   try {
     await findOrCreateUsersBatch(allNames, branchId, userCache, db)
-  } catch (err) {
+  } catch {
     // Non-fatal — individual rows will fail below
   }
 
@@ -589,7 +589,7 @@ export async function syncPoints(
   for (let i = 0; i < toInsert.length; i += BATCH_SIZE) {
     try {
       await db.insert(achievementPoints).values(toInsert.slice(i, i + BATCH_SIZE))
-    } catch (err) {
+    } catch {
       // If batch fails, fall back to individual inserts for this chunk
       for (const row of toInsert.slice(i, i + BATCH_SIZE)) {
         try {
@@ -725,7 +725,7 @@ export async function syncRedemptions(
   // 5. Batch-create missing users
   try {
     await findOrCreateUsersBatch(allNames, branchId, userCache, db)
-  } catch (err) {
+  } catch {
     // Non-fatal
   }
 
@@ -836,7 +836,7 @@ export async function syncRedemptions(
   for (let i = 0; i < toInsert.length; i += BATCH_SIZE) {
     try {
       await db.insert(redemptions).values(toInsert.slice(i, i + BATCH_SIZE))
-    } catch (err) {
+    } catch {
       for (const row of toInsert.slice(i, i + BATCH_SIZE)) {
         try {
           await db.insert(redemptions).values(row)

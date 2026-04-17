@@ -119,7 +119,7 @@
   <!-- Team cards -->
   {#if isLoading}
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {#each [0, 1, 2, 3, 4, 5] as _i}
+      {#each [0, 1, 2, 3, 4, 5] as _i (_i)}
         <div
           class="animate-pulse space-y-3 rounded-2xl border border-border bg-card p-5 shadow-card"
         >
@@ -196,7 +196,7 @@
               <div class="mt-1 border-t border-border pt-3">
                 {#if loadingMembers}
                   <div class="space-y-2 py-1">
-                    {#each [0, 1, 2] as _i}
+                    {#each [0, 1, 2] as _i (_i)}
                       <div class="h-8 animate-pulse rounded-lg bg-primary/6"></div>
                     {/each}
                   </div>

@@ -220,12 +220,12 @@
   <div class="mx-auto max-w-lg animate-pulse space-y-5 p-4 pt-6">
     <div class="h-48 rounded-2xl bg-primary/10"></div>
     <div class="grid grid-cols-3 gap-3">
-      {#each [0, 1, 2] as _i}
+      {#each [0, 1, 2] as _i (_i)}
         <div class="h-24 rounded-2xl border border-border bg-card"></div>
       {/each}
     </div>
     <div class="space-y-2">
-      {#each [0, 1, 2] as _i}
+      {#each [0, 1, 2] as _i (_i)}
         <div class="h-14 rounded-2xl border border-border bg-card"></div>
       {/each}
     </div>
