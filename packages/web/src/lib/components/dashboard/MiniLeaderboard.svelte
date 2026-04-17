@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ChevronRight, Trophy } from 'lucide-svelte'
+  import { ChevronRight, Crown, Trophy } from 'lucide-svelte'
   import * as m from '$lib/paraglide/messages'
 
   type LeaderboardEntry = {
@@ -27,10 +27,10 @@
       .toUpperCase()
   }
 
-  const RANK_MEDAL: Record<number, { emoji: string; ring: string; bg: string }> = {
-    1: { emoji: '🥇', ring: 'ring-2 ring-[#F4C144]/60', bg: 'bg-[#F4C144]/15' },
-    2: { emoji: '🥈', ring: 'ring-2 ring-[#C0C0C0]/60', bg: 'bg-[#C0C0C0]/10' },
-    3: { emoji: '🥉', ring: 'ring-2 ring-[#CD7F32]/60', bg: 'bg-[#CD7F32]/10' },
+  const RANK_MEDAL: Record<number, { ring: string; bg: string }> = {
+    1: { ring: 'ring-2 ring-[#F4C144]/60', bg: 'bg-[#F4C144]/15' },
+    2: { ring: 'ring-2 ring-[#C0C0C0]/60', bg: 'bg-[#C0C0C0]/10' },
+    3: { ring: 'ring-2 ring-[#CD7F32]/60', bg: 'bg-[#CD7F32]/10' },
   }
 
   const RANK_NUM_STYLE: Record<number, string> = {
@@ -70,8 +70,12 @@
           {isCurrentUser ? 'bg-gradient-to-r from-primary/6 to-transparent' : 'hover:bg-primary/4'}">
 
           <!-- Rank -->
-          <span class="w-5 shrink-0 text-center text-sm {numStyle ?? 'text-muted-foreground text-xs font-medium'}">
-            {entry.rank <= 3 && medal ? medal.emoji : entry.rank}
+          <span class="flex w-5 shrink-0 items-center justify-center text-sm {numStyle ?? 'text-muted-foreground text-xs font-medium'}">
+            {#if entry.rank === 1}
+              <Crown class="h-4 w-4 text-[#F4C144]" />
+            {:else}
+              {entry.rank}
+            {/if}
           </span>
 
           <!-- Avatar -->
