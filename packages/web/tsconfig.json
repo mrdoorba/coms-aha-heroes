@@ -5,6 +5,9 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "skipLibCheck": true,
+    "allowJs": true,
+    "checkJs": false,
     "paths": {
       "$lib": ["./src/lib"],
       "$lib/*": ["./src/lib/*"],
