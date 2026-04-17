@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Bell, User, ChevronDown, Search, LogOut, Sun } from 'lucide-svelte'
+  import { User, ChevronDown, Search, LogOut } from 'lucide-svelte'
   import {
     DropdownMenu,
     DropdownMenuContent,
@@ -11,8 +11,9 @@
   import { signOut } from '$lib/auth/client'
   import { goto, invalidateAll } from '$app/navigation'
   import * as m from '$lib/paraglide/messages'
-
-  const LANGUAGES = ['id', 'en', 'th'] as const
+  import ThemeToggle from '$lib/components/ThemeToggle.svelte'
+  import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte'
+  import NotificationsBadge from '$lib/components/NotificationsBadge.svelte'
 
   let {
     avatarUrl,
@@ -46,7 +47,7 @@
   bg-card/80 border-border border-b backdrop-blur-md
   shadow-[0_1px_0_0_rgba(29,56,139,0.06)] dark:shadow-none">
 
-  <!-- Command palette trigger (placeholder — real wiring in Phase 4) -->
+  <!-- Command palette trigger -->
   <button
     type="button"
     onclick={onOpenPalette}
@@ -64,42 +65,9 @@
   </button>
 
   <div class="flex items-center gap-2">
-    <!-- Language switcher (placeholder — real wiring in Phase 4) -->
-    <div class="border-border bg-muted flex items-center overflow-hidden rounded-lg border">
-      {#each LANGUAGES as lang}
-        <button
-          type="button"
-          class="px-2.5 py-1.5 text-[11px] font-bold tracking-wide transition-all text-muted-foreground hover:text-[#325FEC]"
-          onclick={() => { /* TODO Phase 4 */ }}
-        >
-          {lang.toUpperCase()}
-        </button>
-      {/each}
-    </div>
-
-    <!-- Theme toggle (placeholder — real wiring in Phase 4) -->
-    <button
-      type="button"
-      class="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-primary/8 hover:text-foreground transition-colors"
-      aria-label="Toggle theme"
-      onclick={() => { /* TODO Phase 4 */ }}
-    >
-      <Sun class="h-4 w-4" />
-    </button>
-
-    <!-- Notifications badge (functional — unreadCount from layout data) -->
-    <a
-      href="/notifications"
-      class="text-muted-foreground hover:bg-primary/8 hover:text-primary relative flex h-9 w-9 items-center justify-center rounded-full transition-colors"
-      aria-label="Notifications"
-    >
-      <Bell class="h-4.5 w-4.5" />
-      {#if unreadCount > 0}
-        <span class="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#F4C144] text-[9px] leading-none font-bold text-[#7a5800]">
-          {unreadCount > 99 ? '99+' : unreadCount}
-        </span>
-      {/if}
-    </a>
+    <LanguageSwitcher />
+    <ThemeToggle />
+    <NotificationsBadge {unreadCount} />
 
     <!-- User dropdown -->
     <DropdownMenu>
