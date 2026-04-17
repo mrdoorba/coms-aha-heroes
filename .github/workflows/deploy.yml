@@ -141,25 +141,22 @@ jobs:
 
       - name: Smoke test staging revision
         run: |
-          gcloud run services proxy "${{ env.SERVICE }}" \
-            --region "${{ env.REGION }}" \
-            --tag staging \
-            --port 8080 &
-          PROXY_PID=$!
-
-          cleanup() {
-            kill "$PROXY_PID" 2>/dev/null || true
-          }
-          trap cleanup EXIT
+          STAGING_URL=$(
+            gcloud run services describe "${{ env.SERVICE }}" \
+              --region "${{ env.REGION }}" \
+              --format=json \
+            | jq -r '.. | objects | select(.tag? == "staging" and .url?) | .url' \
+            | head -n1
+          )
 
           for _ in $(seq 1 20); do
-            if curl -fsS http://127.0.0.1:8080/api/healthz | tee /tmp/staging-healthz.json | grep -q '"status":"ok"'; then
+            if curl -fsS "${STAGING_URL%/}/api/healthz" | tee /tmp/staging-healthz.json | grep -q '"status":"ok"'; then
               break
             fi
             sleep 3
           done
 
-          curl -fsS -o /tmp/staging-login.html http://127.0.0.1:8080/login
+          curl -fsS -o /tmp/staging-login.html "${STAGING_URL%/}/login"
           grep -q "AHA HEROES" /tmp/staging-login.html
 
   # ─────────────────────────────────────────────────────────────────────────────
