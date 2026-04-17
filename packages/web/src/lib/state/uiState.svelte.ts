@@ -41,6 +41,10 @@ class UIState {
   toggleSidebar() {
     this.sidebarCollapsed = !this.sidebarCollapsed
   }
+
+  setSidebarCollapsed(value: boolean) {
+    this.sidebarCollapsed = value
+  }
 }
 
 export const uiState = new UIState()
