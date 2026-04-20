@@ -156,8 +156,11 @@ jobs:
             sleep 3
           done
 
-          curl -fsS -o /tmp/staging-login.html "${STAGING_URL%/}/login"
-          grep -q "AHA HEROES" /tmp/staging-login.html
+          # Verify the SvelteKit bundle is serving: the root now 302s to the
+          # portal sign-in (local /login was retired in 819e110). A 2xx/3xx
+          # from / proves the adapter-bun handler mounted correctly.
+          curl -fsS -o /dev/null -w '%{http_code}\n' "${STAGING_URL%/}/" \
+            | grep -Eq '^(2|3)[0-9]{2}$'
 
   # ─────────────────────────────────────────────────────────────────────────────
   # 3. Manual gate — requires a reviewer to approve via the "production"
