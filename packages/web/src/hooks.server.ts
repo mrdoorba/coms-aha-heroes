@@ -3,6 +3,10 @@ import type { Handle } from '@sveltejs/kit'
 import type { AuthUser } from '@coms/shared/types'
 import { paraglideMiddleware } from '$lib/paraglide/server'
 import { getTextDirection } from '$lib/paraglide/runtime'
+import {
+  PORTAL_SESSION_COOKIE,
+  getLocalSessionByToken,
+} from '@coms/shared/auth/session'
 
 const i18n: Handle = ({ event, resolve }) =>
   paraglideMiddleware(event.request, ({ request: localizedRequest, locale }) => {
@@ -14,24 +18,27 @@ const i18n: Handle = ({ event, resolve }) =>
   })
 
 const auth: Handle = async ({ event, resolve }) => {
-  const [{ auth }, { db }, { users, userEmails }, { eq }] = await Promise.all([
-    import('@coms/server/auth'),
-    import('@coms/shared/db'),
-    import('@coms/shared/db/schema'),
-    import('drizzle-orm'),
-  ])
-
-  const session = await auth.api.getSession({
-    headers: event.request.headers,
-  })
-
-  if (!session) {
+  const token = event.cookies.get(PORTAL_SESSION_COOKIE)
+  if (!token) {
     event.locals.user = null
     event.locals.session = null
     return resolve(event)
   }
 
-  // Look up app user by primary email first, then secondary emails
+  const session = await getLocalSessionByToken(token)
+  if (!session) {
+    event.cookies.delete(PORTAL_SESSION_COOKIE, { path: '/' })
+    event.locals.user = null
+    event.locals.session = null
+    return resolve(event)
+  }
+
+  const [{ db }, { users, userEmails }, { eq }] = await Promise.all([
+    import('@coms/shared/db'),
+    import('@coms/shared/db/schema'),
+    import('drizzle-orm'),
+  ])
+
   let [appUser] = await db
     .select({
       id: users.id,
@@ -44,14 +51,14 @@ const auth: Handle = async ({ event, resolve }) => {
       mustChangePassword: users.mustChangePassword,
     })
     .from(users)
-    .where(eq(users.email, session.user.email))
+    .where(eq(users.email, session.email))
     .limit(1)
 
   if (!appUser) {
     const [secondary] = await db
       .select({ userId: userEmails.userId })
       .from(userEmails)
-      .where(eq(userEmails.email, session.user.email))
+      .where(eq(userEmails.email, session.email))
       .limit(1)
 
     if (secondary) {
@@ -73,13 +80,11 @@ const auth: Handle = async ({ event, resolve }) => {
   }
 
   event.locals.user = (appUser as AuthUser) ?? null
-  event.locals.session = session.session
-    ? {
-        id: session.session.id,
-        userId: session.session.userId,
-        expiresAt: new Date(session.session.expiresAt),
-      }
-    : null
+  event.locals.session = {
+    id: session.sessionId,
+    userId: session.userId,
+    expiresAt: session.expiresAt,
+  }
 
   return resolve(event)
 }

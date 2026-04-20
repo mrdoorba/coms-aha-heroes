@@ -7,7 +7,10 @@ import {
   cleanupStaleJobs,
 } from '../services/sheet-sync-scheduler'
 import * as repo from '../repositories/sheet-sync'
-import { auth } from '../auth'
+import {
+  getLocalSessionByToken,
+  readSessionCookieFromHeaders,
+} from '@coms/shared/auth/session'
 import { db } from '@coms/shared/db'
 import { users } from '@coms/shared/db/schema'
 import { eq } from 'drizzle-orm'
@@ -29,8 +32,9 @@ export const sheetSyncTriggerRoute = new Elysia().post(
       return { success: true, data: job, error: null }
     }
 
-    // Path 2: Admin user with a session cookie.
-    const session = await auth.api.getSession({ headers: request.headers })
+    // Path 2: Admin user with a portal-issued local session cookie.
+    const token = readSessionCookieFromHeaders(request.headers)
+    const session = token ? await getLocalSessionByToken(token) : null
     if (!session) {
       set.status = 401
       return {
@@ -43,7 +47,7 @@ export const sheetSyncTriggerRoute = new Elysia().post(
     const [appUser] = await db
       .select({ id: users.id, role: users.role })
       .from(users)
-      .where(eq(users.email, session.user.email))
+      .where(eq(users.email, session.email))
       .limit(1)
 
     if (!appUser || appUser.role !== 'admin') {

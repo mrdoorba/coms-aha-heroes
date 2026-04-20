@@ -1,11 +1,9 @@
-import { createAuthClient } from 'better-auth/svelte'
-import { adminClient } from 'better-auth/client/plugins'
+// Auth is brokered by the COMS portal. The previous better-auth client has
+// been removed; only logout remains client-side. The endpoint clears the local
+// session cookie and 303-redirects the browser to the portal logout page.
 
-const authBaseURL = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
-
-export const authClient = createAuthClient({
-  baseURL: authBaseURL,
-  plugins: [adminClient()],
-})
-
-export const { signIn, signUp, signOut } = authClient
+export function signOut(): void {
+  if (typeof window !== 'undefined') {
+    window.location.assign('/auth/portal/logout')
+  }
+}

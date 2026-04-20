@@ -1,4 +1,3 @@
-import { auth } from '../auth'
 import * as usersRepo from '../repositories/users'
 import { writeAuditLog } from './audit'
 import type { AuthUser } from '../middleware/auth'
@@ -83,20 +82,8 @@ export async function createUser(input: CreateUserInput, ctx: ServiceContext) {
     return user
   })
 
-  // Create Better Auth account so the user can log in
-  // Default password = changeme123 — mustChangePassword is true by default
-  try {
-    await auth.api.signUpEmail({
-      body: {
-        email: input.email,
-        password: 'changeme123',
-        name: input.name,
-      },
-    })
-  } catch {
-    // Better Auth account may already exist if re-creating a previously archived user
-  }
-
+  // Auth identity is provisioned lazily on first portal SSO handoff —
+  // no local credential is created here.
   return created
 }
 

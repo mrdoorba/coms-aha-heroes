@@ -1,9 +1,12 @@
 import { redirect } from '@sveltejs/kit'
+import { env } from '$env/dynamic/public'
+import { buildPortalSignInUrl } from '$lib/server/portal-broker'
 import type { LayoutServerLoad } from './$types'
 
 export const load: LayoutServerLoad = async ({ locals, url }) => {
   if (!locals.user) {
-    redirect(302, `/login?redirect=${encodeURIComponent(url.pathname)}`)
+    const absoluteDeepLink = `${env.PUBLIC_APP_ORIGIN}${url.pathname}${url.search}`
+    redirect(302, buildPortalSignInUrl(absoluteDeepLink))
   }
 
   if (locals.user.mustChangePassword && url.pathname !== '/change-password') {

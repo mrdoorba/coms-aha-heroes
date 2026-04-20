@@ -4,7 +4,6 @@ import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
 import { health } from './routes/health'
 import { healthz } from './routes/healthz'
-import { authRoute } from './routes/auth'
 import { authPlugin } from './middleware/auth'
 import { errorHandler } from './middleware/error-handler'
 import { apiCacheControl } from './middleware/cache-control'
@@ -25,6 +24,7 @@ import { settingsRoute } from './routes/settings'
 import { auditLogsRoute } from './routes/audit-logs'
 import { reportsRoute } from './routes/reports'
 import { sheetSyncRoute, sheetSyncTriggerRoute } from './routes/sheet-sync'
+import { portalWebhooksRoute } from './routes/portal-webhooks'
 
 const app = new Elysia()
   .onError(errorHandler)
@@ -40,8 +40,8 @@ const app = new Elysia()
       .use(apiCacheControl)
       .use(health)
       .use(healthz)
-      .use(authRoute)
       .use(sheetSyncTriggerRoute)
+      .use(portalWebhooksRoute)
       .group('/v1', (v1) =>
         v1
           .use(authPlugin)

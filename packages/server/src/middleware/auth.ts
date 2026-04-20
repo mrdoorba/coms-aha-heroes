@@ -1,8 +1,11 @@
 import Elysia from 'elysia'
-import { auth } from '../auth'
+import { eq } from 'drizzle-orm'
 import { db } from '@coms/shared/db'
 import { users, userEmails } from '@coms/shared/db/schema'
-import { eq } from 'drizzle-orm'
+import {
+  getLocalSessionByToken,
+  readSessionCookieFromHeaders,
+} from '@coms/shared/auth/session'
 import type { UserRole } from '@coms/shared/constants'
 
 export type AuthUser = {
@@ -19,17 +22,16 @@ export type AuthUser = {
 export const authPlugin = new Elysia({ name: 'auth' }).derive(
   { as: 'scoped' },
   async ({ request }) => {
-    const session = await auth.api.getSession({ headers: request.headers })
-
-    if (!session) {
-      throw new AuthError(
-        401,
-        'UNAUTHORIZED',
-        'Authentication required',
-      )
+    const token = readSessionCookieFromHeaders(request.headers)
+    if (!token) {
+      throw new AuthError(401, 'UNAUTHORIZED', 'Authentication required')
     }
 
-    // Look up by primary email first, then by secondary emails
+    const session = await getLocalSessionByToken(token)
+    if (!session) {
+      throw new AuthError(401, 'UNAUTHORIZED', 'Authentication required')
+    }
+
     let [appUser] = await db
       .select({
         id: users.id,
@@ -42,14 +44,14 @@ export const authPlugin = new Elysia({ name: 'auth' }).derive(
         mustChangePassword: users.mustChangePassword,
       })
       .from(users)
-      .where(eq(users.email, session.user.email))
+      .where(eq(users.email, session.email))
       .limit(1)
 
     if (!appUser) {
       const [secondary] = await db
         .select({ userId: userEmails.userId })
         .from(userEmails)
-        .where(eq(userEmails.email, session.user.email))
+        .where(eq(userEmails.email, session.email))
         .limit(1)
 
       if (secondary) {

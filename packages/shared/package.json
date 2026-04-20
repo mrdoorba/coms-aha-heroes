@@ -8,7 +8,8 @@
     "./db/schema": "./src/db/schema/index.ts",
     "./schemas": "./src/schemas/index.ts",
     "./constants": "./src/constants/index.ts",
-    "./types": "./src/types/index.ts"
+    "./types": "./src/types/index.ts",
+    "./auth/session": "./src/auth/session.ts"
   },
   "scripts": {
     "build": "echo 'shared uses direct TS imports — no build needed'",
@@ -16,7 +17,6 @@
     "generate:schemas": "bun run scripts/generate-schemas.ts"
   },
   "dependencies": {
-    "better-auth": "^1.5.6",
     "drizzle-orm": "^0.45.0",
     "postgres": "^3.4.5",
     "@sinclair/typebox": "^0.34.0",
