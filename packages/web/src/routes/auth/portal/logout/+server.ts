@@ -3,6 +3,7 @@ import {
   PORTAL_SESSION_COOKIE,
   destroyLocalSessionByToken,
 } from '@coms/shared/auth/session'
+import { buildPortalSignInUrl } from '$lib/server/portal-broker'
 import type { RequestHandler } from './$types'
 
 // Local-only logout. Cross-origin portal cookie clearing isn't possible, and
@@ -12,7 +13,7 @@ const handler: RequestHandler = async ({ cookies }) => {
   const token = cookies.get(PORTAL_SESSION_COOKIE)
   if (token) await destroyLocalSessionByToken(token)
   cookies.delete(PORTAL_SESSION_COOKIE, { path: '/' })
-  redirect(303, '/login')
+  redirect(303, buildPortalSignInUrl())
 }
 
 export const GET: RequestHandler = handler

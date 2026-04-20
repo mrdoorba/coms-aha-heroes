@@ -4,7 +4,6 @@
 
 // --- Hand-written domain schemas (ported from src/shared/schemas) ---
 export { uuidSchema, paginationSchema, type PaginationInput } from './common'
-export { loginSchema, changePasswordSchema, type LoginInput, type ChangePasswordInput } from './auth'
 export {
   createUserSchema,
   updateUserSchema,

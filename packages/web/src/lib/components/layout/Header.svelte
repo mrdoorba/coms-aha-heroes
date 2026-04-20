@@ -9,7 +9,7 @@
   } from '$lib/components/ui/dropdown-menu'
   import { userState } from '$lib/state/userState.svelte'
   import { signOut } from '$lib/auth/client'
-  import { goto, invalidateAll } from '$app/navigation'
+  import { invalidateAll } from '$app/navigation'
   import * as m from '$lib/paraglide/messages'
   import ThemeToggle from '$lib/components/ThemeToggle.svelte'
   import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte'
@@ -39,7 +39,6 @@
   async function handleSignOut() {
     await signOut()
     await invalidateAll()
-    goto('/login')
   }
 </script>
 

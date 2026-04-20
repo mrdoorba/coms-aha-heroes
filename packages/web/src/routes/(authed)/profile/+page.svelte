@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { goto } from '$app/navigation'
   import { Button } from '$lib/components/ui/button'
   import { userState } from '$lib/state/userState.svelte'
   import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte'
@@ -53,7 +52,6 @@
       // ignore
     } finally {
       userState.clear()
-      goto('/login')
     }
   }
 </script>
