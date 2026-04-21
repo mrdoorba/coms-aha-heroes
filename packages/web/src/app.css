@@ -22,6 +22,7 @@
 @theme {
   /* AHA HEROES brand colors (direct usage via bg-gold, text-sky-blue, etc.) */
   --color-primary-dark: #1D388B;
+  --color-primary-light: #96ADF5;
   --color-deep-navy: #0F0E7F;
   --color-gold: #F4C144;
   --color-purple: #6D50B8;

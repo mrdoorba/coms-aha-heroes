@@ -16,8 +16,9 @@
   }
 </script>
 
-<nav class="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-stretch md:hidden
-  bg-[#0d1229]/85 backdrop-blur-xl border-t border-white/10">
+<nav class="fixed bottom-0 left-0 right-0 z-50 flex items-stretch md:hidden
+  bg-[#0d1229]/85 backdrop-blur-xl border-t border-white/10
+  h-[calc(4rem+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)]">
   {#each navItems as item (item.href)}
     {@const active = isActive(item.href)}
     <a

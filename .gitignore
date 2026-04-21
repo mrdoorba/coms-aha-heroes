@@ -62,8 +62,6 @@ npm-debug.log*
 .gitnexus
 
 
-docs/
-
 # SvelteKit
 packages/web/.svelte-kit/
 packages/web/build/
