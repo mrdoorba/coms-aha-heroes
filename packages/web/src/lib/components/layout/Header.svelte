@@ -42,7 +42,7 @@
   }
 </script>
 
-<header class="sticky top-0 z-30 hidden md:flex h-14 items-center justify-between px-6
+<header class="sticky top-9 z-30 hidden md:flex h-14 items-center justify-between px-6
   bg-card/80 border-border border-b backdrop-blur-md
   shadow-[0_1px_0_0_rgba(29,56,139,0.06)] dark:shadow-none">
 

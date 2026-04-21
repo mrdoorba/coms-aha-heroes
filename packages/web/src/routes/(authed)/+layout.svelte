@@ -2,6 +2,7 @@
   import Sidebar from '$lib/components/layout/Sidebar.svelte'
   import Header from '$lib/components/layout/Header.svelte'
   import TopBar from '$lib/components/layout/TopBar.svelte'
+  import ServiceBar from '$lib/components/layout/ServiceBar.svelte'
   import MobileNav from '$lib/components/layout/MobileNav.svelte'
   import PullToRefresh from '$lib/components/ui/PullToRefresh.svelte'
   import CommandPalette from '$lib/components/CommandPalette.svelte'
@@ -34,6 +35,7 @@
 </script>
 
 <div class="app-bg min-h-screen {uiState.sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}">
+  <ServiceBar />
   <TopBar
     user={data.user}
     avatarUrl={data.avatarUrl}
@@ -41,7 +43,7 @@
     onOpenPalette={() => (paletteOpen = true)}
   />
   <Sidebar avatarUrl={data.avatarUrl} />
-  <div class="md:ml-[var(--sidebar-width)] transition-[margin-left] duration-200">
+  <div class="pt-9 md:ml-[var(--sidebar-width)] transition-[margin-left] duration-200">
     <Header
       avatarUrl={data.avatarUrl}
       unreadCount={data.unreadCount}

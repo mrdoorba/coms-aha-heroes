@@ -74,7 +74,6 @@ packages/web/build/
 docs/superpowers/
 .omx
 .omx/
-graphify-out
 AGENTS.md
 
 coms-portal

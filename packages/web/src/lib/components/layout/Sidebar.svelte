@@ -58,7 +58,7 @@
 </script>
 
 <aside
-  class="fixed top-0 left-0 z-40 hidden md:flex h-full flex-col transition-[width] duration-200 bg-card border-r border-border
+  class="fixed top-9 left-0 z-40 hidden md:flex h-[calc(100vh-2.25rem)] flex-col transition-[width] duration-200 bg-card border-r border-border
     {uiState.sidebarCollapsed ? 'w-16' : 'w-64'}"
   onmouseenter={() => uiState.setSidebarCollapsed(false)}
   onmouseleave={() => uiState.setSidebarCollapsed(true)}
