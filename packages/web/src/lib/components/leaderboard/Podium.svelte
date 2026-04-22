@@ -24,11 +24,11 @@
     }
   > = {
     1: {
-      avatarRing: 'ring-4 ring-[#F4C144] glow-gold',
-      podiumBg: 'bg-gradient-to-t from-[#F4C144] to-[#FFD97D]',
+      avatarRing: 'ring-4 ring-gold glow-gold',
+      podiumBg: 'bg-gradient-to-t from-gold to-gold-light',
       podiumHeight: 'h-20',
-      scoreBg: 'bg-[#F4C144]/15',
-      scoreText: 'text-[#a07700] font-extrabold',
+      scoreBg: 'bg-gold/15',
+      scoreText: 'text-status-pending font-extrabold',
       glow: 'drop-shadow-[0_0_12px_rgba(244,193,68,0.5)]',
     },
     2: {
@@ -82,8 +82,8 @@
   <div class="relative flex flex-1 flex-col items-center gap-1.5">
     {#if entry.rank === 1}
       <!-- Crown for rank 1 -->
-      <div class="mb-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#F4C144] to-[#FFD97D] shadow-lg">
-        <Crown class="h-4 w-4 text-[#7a5800]" />
+      <div class="mb-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-gold to-gold-light shadow-lg">
+        <Crown class="h-4 w-4 text-gold-dark" />
       </div>
     {:else}
       <!-- Numbered circle for ranks 2 and 3 -->

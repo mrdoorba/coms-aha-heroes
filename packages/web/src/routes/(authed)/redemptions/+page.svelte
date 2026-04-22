@@ -33,7 +33,7 @@
 
   const STATUS_CLASS: Record<string, string> = {
     pending:
-      'bg-[#F4C144]/15 text-[#a07700] border-[#F4C144]/30 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800/40',
+      'bg-gold/15 text-status-pending border-gold/30 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800/40',
     approved:
       'bg-emerald-50 text-emerald-700 border-emerald-200/70 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800/50',
     rejected:
@@ -108,9 +108,9 @@
   <!-- Header -->
   <div class="flex items-center gap-3 pt-2">
     <div
-      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#F4C144] to-[#FFD97D] shadow-[0_4px_12px_rgba(244,193,68,0.25)]"
+      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-gold to-gold-light shadow-[0_4px_12px_rgba(244,193,68,0.25)]"
     >
-      <Gift class="h-5 w-5 text-[#7a5800]" />
+      <Gift class="h-5 w-5 text-gold-dark" />
     </div>
     <div>
       <h1 class="text-xl font-extrabold text-foreground">{m.redemptions_title()}</h1>
@@ -124,7 +124,7 @@
       type="button"
       class="flex flex-1 min-h-[44px] items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-bold transition-all duration-200 {activeTab ===
       'mine'
-        ? 'border border-[#F4C144]/30 bg-gradient-to-br from-[#F4C144]/18 to-[#F4C144]/8 text-[#a07700] shadow-[0_2px_8px_rgba(244,193,68,0.20)] dark:text-yellow-300'
+        ? 'border border-gold/30 bg-gradient-to-br from-gold/18 to-gold/8 text-status-pending shadow-[0_2px_8px_rgba(244,193,68,0.20)] dark:text-yellow-300'
         : 'text-muted-foreground hover:text-foreground'}"
       onclick={() => handleTabChange('mine')}
     >
@@ -154,8 +154,8 @@
       {/each}
     {:else if redemptions.length === 0}
       <div class="flex flex-col items-center justify-center gap-3 py-16 text-center">
-        <div class="flex h-14 w-14 items-center justify-center rounded-full bg-[#F4C144]/12">
-          <Gift class="h-7 w-7 text-[#F4C144]" />
+        <div class="flex h-14 w-14 items-center justify-center rounded-full bg-gold/12">
+          <Gift class="h-7 w-7 text-gold" />
         </div>
         <p class="text-sm font-medium text-muted-foreground">{m.redemptions_empty()}</p>
       </div>
@@ -225,7 +225,7 @@
               <div class="mt-2 flex gap-2">
                 <Button
                   size="sm"
-                  class="h-7 rounded-lg px-3 text-xs font-semibold bg-gradient-to-br from-[#325FEC] to-[#759EEE] text-white"
+                  class="h-7 rounded-lg px-3 text-xs font-semibold bg-gradient-to-br from-primary to-sky-blue text-white"
                   disabled={isSubmitting}
                   onclick={() => handleApprove(item.id)}
                 >

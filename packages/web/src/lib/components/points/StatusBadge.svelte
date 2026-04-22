@@ -12,17 +12,17 @@
     active: {
       label: 'Active',
       className:
-        'bg-emerald-50 text-emerald-700 border border-emerald-200/70 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800/50',
+        'bg-status-approved-bg text-status-approved border border-status-approved/20 dark:bg-status-approved-bg dark:text-status-approved dark:border-status-approved/20',
     },
     pending: {
       label: 'Pending',
       className:
-        'bg-[#F4C144]/10 text-[#a07700] border border-[#F4C144]/30 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800/40',
+        'bg-status-pending-bg text-status-pending border border-status-pending/20 dark:bg-status-pending-bg dark:text-status-pending dark:border-status-pending/20',
     },
     challenged: {
       label: 'Challenged',
       className:
-        'bg-purple-50 text-purple-700 border border-purple-200/70 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800/50',
+        'bg-status-challenged-bg text-status-challenged border border-status-challenged/20 dark:bg-status-challenged-bg dark:text-status-challenged dark:border-status-challenged/20',
     },
     frozen: {
       label: 'Frozen',
@@ -32,12 +32,12 @@
     revoked: {
       label: 'Revoked',
       className:
-        'bg-red-50 text-red-600 border border-red-200/70 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/50',
+        'bg-status-rejected-bg text-status-rejected border border-status-rejected/20 dark:bg-status-rejected-bg dark:text-status-rejected dark:border-status-rejected/20',
     },
     rejected: {
       label: 'Rejected',
       className:
-        'bg-red-50 text-red-600 border border-red-200/70 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/50',
+        'bg-status-rejected-bg text-status-rejected border border-status-rejected/20 dark:bg-status-rejected-bg dark:text-status-rejected dark:border-status-rejected/20',
     },
   }
 

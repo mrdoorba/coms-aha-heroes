@@ -27,8 +27,8 @@
 
   function getCategoryStyle(code: string): { bg: string; text: string; dot: string } {
     const upper = code.toUpperCase()
-    if (upper.includes('BINTANG')) return { bg: 'bg-[#F4C144]/12', text: 'text-[#a07700]', dot: 'bg-[#F4C144]' }
-    if (upper.includes('PENALTI')) return { bg: 'bg-[#C73E3E]/10', text: 'text-[#C73E3E]', dot: 'bg-[#C73E3E]' }
+    if (upper.includes('BINTANG')) return { bg: 'bg-gold/12', text: 'text-status-pending', dot: 'bg-gold' }
+    if (upper.includes('PENALTI')) return { bg: 'bg-penalti/10', text: 'text-penalti', dot: 'bg-penalti' }
     return { bg: 'bg-primary/10', text: 'text-primary', dot: 'bg-primary' }
   }
 
@@ -36,13 +36,13 @@
     if (status === 'approved' || status === 'active') return { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400' }
     if (status === 'rejected' || status === 'revoked') return { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-600 dark:text-red-400' }
     if (status === 'challenged') return { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-400' }
-    return { bg: 'bg-[#F4C144]/15', text: 'text-[#a07700]' }
+    return { bg: 'bg-gold/15', text: 'text-status-pending' }
   }
 
   function getPointStyle(code: string): string {
     const upper = code.toUpperCase()
     if (upper.includes('PENALTI')) return 'text-destructive bg-destructive/8'
-    if (upper.includes('BINTANG')) return 'text-[#a07700] bg-[#F4C144]/12'
+    if (upper.includes('BINTANG')) return 'text-status-pending bg-gold/12'
     return 'text-primary bg-primary/8'
   }
 

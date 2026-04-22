@@ -18,8 +18,8 @@
     <button
       type="button"
       class="px-2.5 py-1.5 text-[11px] font-bold tracking-wide transition-all {isActive
-        ? 'bg-[#325FEC] text-white shadow-sm'
-        : 'text-muted-foreground hover:text-[#325FEC]'}"
+        ? 'bg-primary text-white shadow-sm'
+        : 'text-muted-foreground hover:text-primary'}"
       onclick={() => handleSet(lang)}
     >
       {lang.toUpperCase()}

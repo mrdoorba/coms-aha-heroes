@@ -47,7 +47,7 @@
 {#if challenges.length > 0}
   <div class="space-y-4">
     <h3 class="text-sm font-semibold text-foreground flex items-center gap-2">
-      <span class="w-1.5 h-1.5 rounded-full bg-[#6D50B8]"></span>
+      <span class="w-1.5 h-1.5 rounded-full bg-purple"></span>
       {m.issue_challenges()}
     </h3>
     <div class="space-y-3">
@@ -119,7 +119,7 @@
 {#if appeals.length > 0}
   <div class="space-y-4">
     <h3 class="text-sm font-semibold text-foreground flex items-center gap-2">
-      <span class="w-1.5 h-1.5 rounded-full bg-[#F4C144]"></span>
+      <span class="w-1.5 h-1.5 rounded-full bg-gold"></span>
       {m.issue_appeals()}
     </h3>
     <div class="space-y-3">

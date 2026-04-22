@@ -35,7 +35,7 @@
   const IMPACT_LABELS = { low: 'Kecil', medium: 'Sedang', high: 'Besar' }
   const IMPACT_COLORS = {
     low: 'text-sky-600 bg-sky-50 border-sky-200',
-    medium: 'text-[#325FEC] bg-blue-50 border-blue-200',
+    medium: 'text-primary bg-blue-50 border-blue-200',
     high: 'text-blue-700 bg-blue-100 border-blue-300',
   }
 
@@ -84,7 +84,7 @@
 
 <div class="min-h-screen bg-background">
   <!-- Page header -->
-  <div class="bg-[#1D388B] px-4 pt-5 pb-6">
+  <div class="bg-primary-dark px-4 pt-5 pb-6">
     <div class="max-w-lg mx-auto">
       <div class="flex items-center gap-1.5 text-white/60 text-xs font-medium mb-3">
         <a href="/points" class="hover:text-white/80 transition-colors">Poin</a>
@@ -93,7 +93,7 @@
       </div>
       <div class="flex items-start gap-3">
         <div
-          class="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-xl bg-[#325FEC]/20 border border-[#325FEC]/30 mt-0.5"
+          class="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-xl bg-primary/20 border border-primary/30 mt-0.5"
         >
           <Award class="w-5 h-5 text-[#7B9FFF]" />
         </div>
@@ -115,7 +115,7 @@
       <div class="rounded-xl border border-border bg-card overflow-hidden">
         <div class="flex items-center gap-2.5 px-4 py-3 border-b border-border bg-muted/40">
           <span
-            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-[#325FEC] text-white text-[10px] font-bold leading-none"
+            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold leading-none"
           >1</span>
           <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             {m.form_staff_name()}
@@ -142,7 +142,7 @@
       <div class="rounded-xl border border-border bg-card overflow-hidden">
         <div class="flex items-center gap-2.5 px-4 py-3 border-b border-border bg-muted/40">
           <span
-            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-[#325FEC] text-white text-[10px] font-bold leading-none"
+            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold leading-none"
           >2</span>
           <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             {m.poin_aha_form_activity()}
@@ -150,7 +150,7 @@
         </div>
         <div class="p-4">
           <textarea
-            class="flex min-h-28 w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#325FEC]/40 focus-visible:border-[#325FEC]/50 transition-colors resize-none"
+            class="flex min-h-28 w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary/50 transition-colors resize-none"
             placeholder={m.poin_aha_form_activity_placeholder()}
             bind:value={reason}
             maxlength={1000}
@@ -165,7 +165,7 @@
       <div class="rounded-xl border border-border bg-card overflow-hidden">
         <div class="flex items-center gap-2.5 px-4 py-3 border-b border-border bg-muted/40">
           <span
-            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-[#325FEC] text-white text-[10px] font-bold leading-none"
+            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold leading-none"
           >3</span>
           <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             {m.poin_aha_form_level({ level: String(level) })}
@@ -188,9 +188,9 @@
                 type="button"
                 onclick={() => (level = n)}
                 class="flex flex-col items-center justify-center h-11 rounded-lg border text-sm font-bold transition-all {isSelected
-                  ? 'border-[#325FEC] bg-[#325FEC] text-white shadow-md scale-105'
+                  ? 'border-primary bg-primary text-white shadow-md scale-105'
                   : band === 'high'
-                    ? 'border-blue-200 bg-blue-50/50 text-blue-700 hover:border-[#325FEC]/60 hover:bg-blue-100'
+                    ? 'border-blue-200 bg-blue-50/50 text-blue-700 hover:border-primary/60 hover:bg-blue-100'
                     : band === 'medium'
                       ? 'border-sky-200 bg-sky-50/50 text-sky-700 hover:border-sky-400 hover:bg-sky-100'
                       : 'border-slate-200 bg-slate-50/50 text-slate-600 hover:border-slate-400 hover:bg-slate-100'}"
@@ -206,7 +206,7 @@
       <div class="rounded-xl border border-border bg-card overflow-hidden">
         <div class="flex items-center gap-2.5 px-4 py-3 border-b border-border bg-muted/40">
           <span
-            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-[#325FEC] text-white text-[10px] font-bold leading-none"
+            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold leading-none"
           >4</span>
           <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             {m.form_related_staff()}
@@ -215,7 +215,7 @@
         <div class="p-4">
           <input
             type="text"
-            class="flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#325FEC]/40 focus-visible:border-[#325FEC]/50 transition-colors"
+            class="flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary/50 transition-colors"
             placeholder={m.form_related_staff_placeholder()}
             bind:value={relatedStaff}
             maxlength={500}
@@ -227,7 +227,7 @@
       <div class="rounded-xl border border-border bg-card overflow-hidden">
         <div class="flex items-center gap-2.5 px-4 py-3 border-b border-border bg-muted/40">
           <span
-            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-[#325FEC] text-white text-[10px] font-bold leading-none"
+            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold leading-none"
           >5</span>
           <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             {m.form_screenshot_optional()}

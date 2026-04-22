@@ -23,9 +23,9 @@
   let loggingOut = $state(false)
 
   const ROLE_GRADIENTS: Record<string, string> = {
-    admin: 'from-[#1D388B] to-[#325FEC]',
-    hr: 'from-[#325FEC] to-[#759EEE]',
-    leader: 'from-[#6D50B8] to-[#9B7FE8]',
+    admin: 'from-primary-dark to-primary',
+    hr: 'from-primary to-sky-blue',
+    leader: 'from-purple to-purple-light',
     employee: 'from-[#5a7a9a] to-[#7a9aba]',
   }
 
@@ -136,11 +136,11 @@
         class="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-3.5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)]"
       >
         <div
-          class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F4C144]/10 text-[#7a5800]"
+          class="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/10 text-gold-dark"
         >
           <Star class="h-5 w-5" />
         </div>
-        <span class="text-xl font-extrabold leading-none text-[#7a5800]">—</span>
+        <span class="text-xl font-extrabold leading-none text-gold-dark">—</span>
         <span class="text-center text-[10px] font-semibold leading-tight text-muted-foreground/70"
           >{m.points_bintang()}</span
         >
@@ -149,11 +149,11 @@
         class="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-3.5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)]"
       >
         <div
-          class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#325FEC]/10 text-[#325FEC]"
+          class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary"
         >
           <Award class="h-5 w-5" />
         </div>
-        <span class="text-xl font-extrabold leading-none text-[#325FEC]">—</span>
+        <span class="text-xl font-extrabold leading-none text-primary">—</span>
         <span class="text-center text-[10px] font-semibold leading-tight text-muted-foreground/70"
           >{m.points_poin_aha()}</span
         >
@@ -162,11 +162,11 @@
         class="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-3.5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)]"
       >
         <div
-          class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#C73E3E]/10 text-[#C73E3E]"
+          class="flex h-10 w-10 items-center justify-center rounded-xl bg-penalti/10 text-penalti"
         >
           <AlertTriangle class="h-5 w-5" />
         </div>
-        <span class="text-xl font-extrabold leading-none text-[#C73E3E]">—</span>
+        <span class="text-xl font-extrabold leading-none text-penalti">—</span>
         <span class="text-center text-[10px] font-semibold leading-tight text-muted-foreground/70"
           >{m.points_penalti()}</span
         >

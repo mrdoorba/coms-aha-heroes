@@ -75,7 +75,7 @@
         return 'text-emerald-500'
       case 'point_pending':
       case 'point_needs_approval':
-        return 'text-[#F4C144]'
+        return 'text-gold'
       case 'point_rejected':
         return 'text-destructive'
       default:

@@ -71,9 +71,9 @@
 
       <!-- Cost badge -->
       <div class="mt-3 flex items-center gap-2">
-        <div class="flex items-center gap-1.5 rounded-xl bg-[#325FEC]/10 px-3 py-1.5">
-          <Coins class="h-4 w-4 text-[#325FEC]" />
-          <span class="text-sm font-extrabold text-[#325FEC]">
+        <div class="flex items-center gap-1.5 rounded-xl bg-primary/10 px-3 py-1.5">
+          <Coins class="h-4 w-4 text-primary" />
+          <span class="text-sm font-extrabold text-primary">
             {reward.pointCost.toLocaleString('id-ID')} {m.points_poin_aha()}
           </span>
         </div>
@@ -123,7 +123,7 @@
           <Button
             onclick={handleRedeem}
             disabled={submitting}
-            class="flex-1 rounded-xl bg-gradient-to-br from-[#325FEC] to-[#759EEE] font-bold text-white shadow-[0_2px_8px_rgba(50,95,236,0.25)]"
+            class="flex-1 rounded-xl bg-gradient-to-br from-primary to-sky-blue font-bold text-white shadow-[0_2px_8px_rgba(50,95,236,0.25)]"
           >
             {submitting ? m.common_submitting() : m.redeem_submit()}
           </Button>

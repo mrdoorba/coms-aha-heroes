@@ -67,8 +67,8 @@
   <!-- Logo -->
   <div class="flex h-16 items-center border-b border-border {uiState.sidebarCollapsed ? 'justify-center px-0' : 'px-4'}">
     <div class="flex items-center gap-2">
-      <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#F4C144] to-[#FFD97D] shadow-md">
-        <Trophy class="h-4 w-4 text-[#7a5800]" />
+      <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-gold to-gold-light shadow-md">
+        <Trophy class="h-4 w-4 text-gold-dark" />
       </div>
       {#if !uiState.sidebarCollapsed}
         <span class="font-manrope text-[15px] font-extrabold tracking-wide text-foreground">

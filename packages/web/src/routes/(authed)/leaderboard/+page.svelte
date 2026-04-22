@@ -55,8 +55,8 @@
 <div class="mx-auto max-w-2xl space-y-4 pb-8">
   <!-- Header -->
   <div class="flex items-center gap-2.5 px-4 pt-6">
-    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#F4C144] to-[#FFD97D] shadow-md">
-      <Trophy class="h-4.5 w-4.5 text-[#7a5800]" />
+    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-gold to-gold-light shadow-md">
+      <Trophy class="h-4.5 w-4.5 text-gold-dark" />
     </div>
     <h1 class="text-foreground text-xl font-extrabold">{m.nav_leaderboard()}</h1>
   </div>

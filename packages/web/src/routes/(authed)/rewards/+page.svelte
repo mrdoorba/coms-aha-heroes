@@ -14,13 +14,13 @@
 <div class="mx-auto max-w-2xl space-y-5 p-4 pb-24 md:pb-8">
   <!-- Hero balance bar -->
   <div
-    class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1D388B] via-[#2550C8] to-[#325FEC] p-5 shadow-[0_8px_32px_rgba(29,56,139,0.30)]"
+    class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-dark via-[#2550C8] to-primary p-5 shadow-[0_8px_32px_rgba(29,56,139,0.30)]"
   >
     <div
-      class="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-[#F4C144]/15 blur-2xl"
+      class="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-gold/15 blur-2xl"
     ></div>
     <div
-      class="pointer-events-none absolute bottom-0 left-8 h-16 w-24 rounded-full bg-[#759EEE]/20 blur-xl"
+      class="pointer-events-none absolute bottom-0 left-8 h-16 w-24 rounded-full bg-sky-blue/20 blur-xl"
     ></div>
 
     <div class="relative flex items-center justify-between">
@@ -36,7 +36,7 @@
       <div
         class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-sm"
       >
-        <Coins class="h-7 w-7 text-[#F4C144]" />
+        <Coins class="h-7 w-7 text-gold" />
       </div>
     </div>
   </div>
@@ -47,7 +47,7 @@
     {#if isAdmin}
       <Button
         size="sm"
-        class="h-9 gap-1.5 rounded-xl bg-gradient-to-br from-[#325FEC] to-[#759EEE] px-4 font-bold text-white shadow-[0_2px_8px_rgba(50,95,236,0.25)]"
+        class="h-9 gap-1.5 rounded-xl bg-gradient-to-br from-primary to-sky-blue px-4 font-bold text-white shadow-[0_2px_8px_rgba(50,95,236,0.25)]"
       >
         <Plus class="h-4 w-4" />
         {m.rewards_add()}
@@ -97,7 +97,7 @@
             <div class="mt-3 flex items-center justify-between gap-2">
               <Badge
                 variant="outline"
-                class="gap-1 border-[#325FEC]/25 bg-[#325FEC]/8 text-[#325FEC] dark:border-[#759EEE]/30 dark:bg-[#325FEC]/15 dark:text-[#759EEE]"
+                class="gap-1 border-primary/25 bg-primary/8 text-primary dark:border-sky-blue/30 dark:bg-primary/15 dark:text-sky-blue"
               >
                 {reward.pointCost.toLocaleString('id-ID')} pts
               </Badge>

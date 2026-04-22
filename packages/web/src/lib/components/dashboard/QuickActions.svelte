@@ -23,7 +23,7 @@
       href="/points/new/bintang"
       onclick={() => (open = false)}
       class="flex items-center gap-2 rounded-full px-4 py-3 text-sm font-bold shadow-xl min-h-[44px]
-        btn-gradient-gold text-[#7a5800]
+        btn-gradient-gold text-gold-dark
         transition-all duration-200 opacity-100 translate-y-0"
     >
       <Star class="h-4 w-4" />
@@ -75,7 +75,7 @@
   <a
     href="/points/new/bintang"
     class="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold shadow-sm min-h-[44px] shine-on-hover
-      btn-gradient-gold text-[#7a5800]"
+      btn-gradient-gold text-gold-dark"
   >
     <Star class="h-4 w-4" />
     {m.quick_action_bintang()}

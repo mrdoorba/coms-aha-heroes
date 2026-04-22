@@ -59,7 +59,7 @@
   <div class="flex min-w-0 flex-1 items-center gap-2">
     <span class="text-foreground truncate text-sm font-semibold">{entry.name}</span>
     {#if isCurrentUser}
-      <span class="shrink-0 rounded-full bg-gradient-to-r from-[#325FEC] to-[#759EEE] px-2 py-0.5 text-[10px] font-bold text-white">
+      <span class="shrink-0 rounded-full bg-gradient-to-r from-primary to-sky-blue px-2 py-0.5 text-[10px] font-bold text-white">
         You
       </span>
     {/if}

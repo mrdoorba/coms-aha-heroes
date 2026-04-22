@@ -70,7 +70,7 @@
 
 <div class="min-h-screen bg-background">
   <!-- Page header -->
-  <div class="bg-[#1D388B] px-4 pt-5 pb-6">
+  <div class="bg-primary-dark px-4 pt-5 pb-6">
     <div class="max-w-lg mx-auto">
       <div class="flex items-center gap-1.5 text-white/60 text-xs font-medium mb-3">
         <a href="/points" class="hover:text-white/80 transition-colors">Poin</a>
@@ -79,9 +79,9 @@
       </div>
       <div class="flex items-start gap-3">
         <div
-          class="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-xl bg-[#F4C144]/20 border border-[#F4C144]/30 mt-0.5"
+          class="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-xl bg-gold/20 border border-gold/30 mt-0.5"
         >
-          <Star class="w-5 h-5 text-[#F4C144]" />
+          <Star class="w-5 h-5 text-gold" />
         </div>
         <div>
           <h1 class="text-xl font-bold text-white leading-tight">{m.bintang_form_title()}</h1>
@@ -136,7 +136,7 @@
         </div>
         <div class="p-4">
           <textarea
-            class="flex min-h-28 w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F4C144]/40 focus-visible:border-[#F4C144]/50 transition-colors resize-none"
+            class="flex min-h-28 w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:border-gold/50 transition-colors resize-none"
             placeholder={m.bintang_form_action_placeholder()}
             bind:value={reason}
             maxlength={1000}
@@ -160,7 +160,7 @@
         <div class="p-4">
           <input
             type="text"
-            class="flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F4C144]/40 focus-visible:border-[#F4C144]/50 transition-colors"
+            class="flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 focus-visible:border-gold/50 transition-colors"
             placeholder={m.form_related_staff_placeholder()}
             bind:value={relatedStaff}
             maxlength={500}
@@ -197,7 +197,7 @@
 
       {#if isSelfOnly}
         <div
-          class="flex items-start gap-2.5 rounded-lg border border-[#F4C144]/40 bg-amber-50 px-3 py-2.5"
+          class="flex items-start gap-2.5 rounded-lg border border-gold/40 bg-amber-50 px-3 py-2.5"
         >
           <Star class="w-4 h-4 text-[#D4962A] mt-0.5 flex-shrink-0" />
           <p class="text-sm text-amber-800 leading-snug">{m.form_pending_approval()}</p>
@@ -216,7 +216,7 @@
       <Button
         type="submit"
         disabled={isSubmitting}
-        class="w-full btn-gradient-gold text-[#1D388B] font-semibold h-11 rounded-xl shadow-md"
+        class="w-full btn-gradient-gold text-primary-dark font-semibold h-11 rounded-xl shadow-md"
       >
         {isSubmitting ? m.common_submitting() : m.bintang_form_submit()}
       </Button>

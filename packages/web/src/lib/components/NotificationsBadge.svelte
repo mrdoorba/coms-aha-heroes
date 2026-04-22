@@ -14,7 +14,7 @@
   <Bell class="h-[18px] w-[18px]" />
   {#if unreadCount > 0}
     <span
-      class="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#F4C144] text-[9px] leading-none font-bold text-[#7a5800]"
+      class="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gold text-[9px] leading-none font-bold text-gold-dark"
     >
       {display}
     </span>

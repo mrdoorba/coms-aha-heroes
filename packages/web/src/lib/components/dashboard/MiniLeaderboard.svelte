@@ -28,24 +28,24 @@
   }
 
   const RANK_MEDAL: Record<number, { ring: string; bg: string }> = {
-    1: { ring: 'ring-2 ring-[#F4C144]/60', bg: 'bg-[#F4C144]/15' },
+    1: { ring: 'ring-2 ring-gold/60', bg: 'bg-gold/15' },
     2: { ring: 'ring-2 ring-[#C0C0C0]/60', bg: 'bg-[#C0C0C0]/10' },
     3: { ring: 'ring-2 ring-[#CD7F32]/60', bg: 'bg-[#CD7F32]/10' },
   }
 
   const RANK_NUM_STYLE: Record<number, string> = {
-    1: 'text-[#F4C144] font-extrabold',
+    1: 'text-gold font-extrabold',
     2: 'text-[#9a9a9a] font-bold',
     3: 'text-[#CD7F32] font-bold',
   }
 </script>
 
-<div class="overflow-hidden rounded-2xl bg-card border border-[#F4C144]/15 shadow-card">
+<div class="overflow-hidden rounded-2xl bg-card border border-gold/15 shadow-card">
   <!-- Header -->
   <div class="flex items-center justify-between px-4 py-3 border-b border-border">
     <div class="flex items-center gap-2">
-      <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-[#F4C144]/15">
-        <Trophy class="h-3.5 w-3.5 text-[#F4C144]" />
+      <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-gold/15">
+        <Trophy class="h-3.5 w-3.5 text-gold" />
       </div>
       <h3 class="text-sm font-bold text-foreground">{m.mini_leaderboard_title()}</h3>
     </div>
@@ -72,7 +72,7 @@
           <!-- Rank -->
           <span class="flex w-5 shrink-0 items-center justify-center text-sm {numStyle ?? 'text-muted-foreground text-xs font-medium'}">
             {#if entry.rank === 1}
-              <Crown class="h-4 w-4 text-[#F4C144]" />
+              <Crown class="h-4 w-4 text-gold" />
             {:else}
               {entry.rank}
             {/if}
@@ -99,7 +99,7 @@
           <span class="flex-1 truncate text-sm font-medium text-foreground">
             {entry.name}
             {#if isCurrentUser}
-              <span class="ml-1.5 rounded-full bg-gradient-to-r from-[#325FEC] to-[#759EEE] px-1.5 py-0.5 text-[9px] font-bold text-white">
+              <span class="ml-1.5 rounded-full bg-gradient-to-r from-primary to-sky-blue px-1.5 py-0.5 text-[9px] font-bold text-white">
                 {m.mini_leaderboard_you()}
               </span>
             {/if}

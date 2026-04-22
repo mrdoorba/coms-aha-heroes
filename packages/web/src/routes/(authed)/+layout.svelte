@@ -35,22 +35,20 @@
 </script>
 
 <div class="app-bg min-h-screen {uiState.sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}">
-  <ServiceBar />
+  <ServiceBar user={data.user} avatarUrl={data.avatarUrl} />
   <TopBar
     user={data.user}
-    avatarUrl={data.avatarUrl}
     unreadCount={data.unreadCount}
     onOpenPalette={() => (paletteOpen = true)}
   />
   <Sidebar avatarUrl={data.avatarUrl} />
   <div class="pt-9 md:ml-[var(--sidebar-width)] transition-[margin-left] duration-200">
     <Header
-      avatarUrl={data.avatarUrl}
       unreadCount={data.unreadCount}
       onOpenPalette={() => (paletteOpen = true)}
     />
     <PullToRefresh>
-      <main class="page-transition pt-14 pb-16 md:pt-0 md:pb-0 px-4 md:px-6 max-w-screen-xl mx-auto">
+      <main class="page-transition pt-14 pb-16 md:pt-0 md:pb-0 px-4 md:px-6 max-w-5xl mx-auto">
         {@render children()}
       </main>
     </PullToRefresh>

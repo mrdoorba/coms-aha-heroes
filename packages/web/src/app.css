@@ -25,15 +25,26 @@
   --color-primary-light: #96ADF5;
   --color-deep-navy: #0F0E7F;
   --color-gold: #F4C144;
+  --color-gold-light: #FFD97D;
+  --color-gold-dark: #7a5800;
   --color-purple: #6D50B8;
+  --color-purple-light: #9B7FE8;
   --color-penalti: #C73E3E;
+  --color-penalti-light: #E06B6B;
   --color-sky-blue: #759EEE;
+  --color-chrome-navy: #0d1229;
 
-  /* Status colors */
-  --color-status-active: #22C55E;
-  --color-status-pending: #F4C144;
+  /* Status colors (text colors per guideline) */
+  --color-status-approved: #16a34a;
+  --color-status-pending: #a07700;
   --color-status-challenged: #6D50B8;
-  --color-status-rejected: #EF4444;
+  --color-status-rejected: #dc2626;
+
+  /* Status background colors */
+  --color-status-approved-bg: rgba(34, 197, 94, 0.15);
+  --color-status-pending-bg: rgba(244, 193, 68, 0.15);
+  --color-status-challenged-bg: rgba(109, 80, 184, 0.15);
+  --color-status-rejected-bg: rgba(239, 68, 68, 0.1);
 
   /* Shadows — deeper, more layered */
   --shadow-card: 0 2px 12px rgba(15, 14, 127, 0.10), 0 1px 3px rgba(0,0,0,0.06);
@@ -129,6 +140,44 @@
   --sidebar-accent-foreground: oklch(0.95 0.01 264);
   --sidebar-border: oklch(0.28 0.06 264);
   --sidebar-ring: oklch(0.63 0.20 264);
+
+  /* ── Gradients ── */
+  --gradient-hero: linear-gradient(135deg, #1D388B, #2550C8, #325FEC);
+  --gradient-service-bar: linear-gradient(90deg, #0F0E7F, #1D388B);
+  --gradient-gold: linear-gradient(135deg, #F4C144, #FFD97D);
+  --gradient-blue: linear-gradient(135deg, #325FEC, #759EEE);
+  --gradient-red: linear-gradient(135deg, #C73E3E, #E06B6B);
+  --gradient-purple: linear-gradient(135deg, #6D50B8, #9B7FE8);
+
+  /* ── Layout ── */
+  --page-max-width: 1024px;
+  --content-max-width: 640px;
+  --service-bar-height: 36px;
+  --header-height: 56px;
+  --sidebar-collapsed-width: 64px;
+  --sidebar-expanded-width: 256px;
+  --mobile-nav-height: 64px;
+  --touch-target-min: 44px;
+
+  /* ── Spacing Scale ── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ── Motion ── */
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --duration-enter: 250ms;
+  --duration-stagger: 40ms;
 }
 
 .dark {

@@ -92,7 +92,7 @@
     </div>
     {#if isHrOrAdmin}
       <Button
-        class="min-h-[44px] rounded-xl font-semibold shadow-[0_2px_12px_rgba(50,95,236,0.30)] transition-all duration-200 bg-gradient-to-br from-[#325FEC] to-[#759EEE] text-white"
+        class="min-h-[44px] rounded-xl font-semibold shadow-[0_2px_12px_rgba(50,95,236,0.30)] transition-all duration-200 bg-gradient-to-br from-primary to-sky-blue text-white"
       >
         <Plus class="h-4 w-4" />
         {m.teams_create()}
@@ -161,7 +161,7 @@
           <Card.Content class="space-y-3">
             <!-- Leader -->
             <div class="flex items-center gap-2 text-sm">
-              <Crown class="h-4 w-4 text-[#F4C144]" />
+              <Crown class="h-4 w-4 text-gold" />
               <span class="font-medium text-foreground/70">
                 {team.leaderName ?? m.teams_no_leader()}
               </span>

@@ -39,7 +39,7 @@
   const SEVERITY_COLORS = {
     low: 'text-amber-600 bg-amber-50 border-amber-200',
     medium: 'text-orange-600 bg-orange-50 border-orange-200',
-    high: 'text-[#C73E3E] bg-red-50 border-red-200',
+    high: 'text-penalti bg-red-50 border-red-200',
   }
 
   const violationDescriptions: Record<number, () => string> = {
@@ -96,7 +96,7 @@
 
 <div class="min-h-screen bg-background">
   <!-- Page header -->
-  <div class="bg-[#1D388B] px-4 pt-5 pb-6">
+  <div class="bg-primary-dark px-4 pt-5 pb-6">
     <div class="max-w-lg mx-auto">
       <div class="flex items-center gap-1.5 text-white/60 text-xs font-medium mb-3">
         <a href="/points" class="hover:text-white/80 transition-colors">Poin</a>
@@ -105,9 +105,9 @@
       </div>
       <div class="flex items-start gap-3">
         <div
-          class="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-xl bg-[#C73E3E]/20 border border-[#C73E3E]/30 mt-0.5"
+          class="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-xl bg-penalti/20 border border-penalti/30 mt-0.5"
         >
-          <AlertTriangle class="w-5 h-5 text-[#E06B6B]" />
+          <AlertTriangle class="w-5 h-5 text-penalti-light" />
         </div>
         <div>
           <h1 class="text-xl font-bold text-white leading-tight">{m.penalti_form_title()}</h1>
@@ -127,7 +127,7 @@
       <div class="rounded-xl border border-border bg-card overflow-hidden">
         <div class="flex items-center gap-2.5 px-4 py-3 border-b border-border bg-muted/40">
           <span
-            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-[#1D388B] text-white text-[10px] font-bold leading-none"
+            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary-dark text-white text-[10px] font-bold leading-none"
           >1</span>
           <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             {m.form_staff_name()}
@@ -154,7 +154,7 @@
       <div class="rounded-xl border border-border bg-card overflow-hidden">
         <div class="flex items-center gap-2.5 px-4 py-3 border-b border-border bg-muted/40">
           <span
-            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-[#1D388B] text-white text-[10px] font-bold leading-none"
+            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary-dark text-white text-[10px] font-bold leading-none"
           >2</span>
           <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             {m.penalti_form_kitta_category()}
@@ -163,7 +163,7 @@
         <div class="p-4 space-y-2">
           {#each KITTA_CODES as code (code)}
             <label
-              class="flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-all {kittaComponent === code ? 'border-[#C73E3E]/50 bg-red-50 shadow-sm' : 'border-border hover:border-[#C73E3E]/20 hover:bg-muted/40'}"
+              class="flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-all {kittaComponent === code ? 'border-penalti/50 bg-red-50 shadow-sm' : 'border-border hover:border-penalti/20 hover:bg-muted/40'}"
             >
               <input
                 type="radio"
@@ -171,11 +171,11 @@
                 value={code}
                 checked={kittaComponent === code}
                 onchange={() => (kittaComponent = code)}
-                class="mt-1 accent-[#C73E3E]"
+                class="mt-1 accent-penalti"
               />
               <div class="min-w-0">
                 <p
-                  class="text-sm font-semibold {kittaComponent === code ? 'text-[#C73E3E]' : 'text-foreground'}"
+                  class="text-sm font-semibold {kittaComponent === code ? 'text-penalti' : 'text-foreground'}"
                 >
                   {code}<span class="font-normal text-foreground/80 ml-1">— {KITTA_LABELS[code]}</span>
                 </p>
@@ -192,7 +192,7 @@
       <div class="rounded-xl border border-border bg-card overflow-hidden">
         <div class="flex items-center gap-2.5 px-4 py-3 border-b border-border bg-muted/40">
           <span
-            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-[#1D388B] text-white text-[10px] font-bold leading-none"
+            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary-dark text-white text-[10px] font-bold leading-none"
           >3</span>
           <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             {m.penalti_form_violation_level({ level: String(violationLevel) })}
@@ -215,9 +215,9 @@
                 type="button"
                 onclick={() => (violationLevel = n)}
                 class="flex flex-col items-center justify-center h-11 rounded-lg border text-sm font-bold transition-all {isSelected
-                  ? 'border-[#C73E3E] bg-[#C73E3E] text-white shadow-md scale-105'
+                  ? 'border-penalti bg-penalti text-white shadow-md scale-105'
                   : band === 'high'
-                    ? 'border-red-200 bg-red-50/50 text-red-700 hover:border-[#C73E3E]/60 hover:bg-red-100'
+                    ? 'border-red-200 bg-red-50/50 text-red-700 hover:border-penalti/60 hover:bg-red-100'
                     : band === 'medium'
                       ? 'border-orange-200 bg-orange-50/50 text-orange-700 hover:border-orange-400 hover:bg-orange-100'
                       : 'border-amber-200 bg-amber-50/50 text-amber-700 hover:border-amber-400 hover:bg-amber-100'}"
@@ -238,7 +238,7 @@
       <div class="rounded-xl border border-border bg-card overflow-hidden">
         <div class="flex items-center gap-2.5 px-4 py-3 border-b border-border bg-muted/40">
           <span
-            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-[#1D388B] text-white text-[10px] font-bold leading-none"
+            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary-dark text-white text-[10px] font-bold leading-none"
           >4</span>
           <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             {m.penalti_form_incident()}
@@ -246,7 +246,7 @@
         </div>
         <div class="p-4">
           <textarea
-            class="flex min-h-28 w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C73E3E]/40 focus-visible:border-[#C73E3E]/50 transition-colors resize-none"
+            class="flex min-h-28 w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-penalti/40 focus-visible:border-penalti/50 transition-colors resize-none"
             placeholder={m.penalti_form_incident_placeholder()}
             bind:value={reason}
             maxlength={1000}
@@ -261,7 +261,7 @@
       <div class="rounded-xl border border-border bg-card overflow-hidden">
         <div class="flex items-center gap-2.5 px-4 py-3 border-b border-border bg-muted/40">
           <span
-            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-[#1D388B] text-white text-[10px] font-bold leading-none"
+            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary-dark text-white text-[10px] font-bold leading-none"
           >5</span>
           <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             {m.form_related_staff()}
@@ -270,7 +270,7 @@
         <div class="p-4">
           <input
             type="text"
-            class="flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C73E3E]/40 focus-visible:border-[#C73E3E]/50 transition-colors"
+            class="flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-penalti/40 focus-visible:border-penalti/50 transition-colors"
             placeholder={m.form_related_staff_placeholder()}
             bind:value={relatedStaff}
             maxlength={500}
@@ -282,7 +282,7 @@
       <div class="rounded-xl border border-border bg-card overflow-hidden">
         <div class="flex items-center gap-2.5 px-4 py-3 border-b border-border bg-muted/40">
           <span
-            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-[#1D388B] text-white text-[10px] font-bold leading-none"
+            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary-dark text-white text-[10px] font-bold leading-none"
           >6</span>
           <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             {m.form_screenshot_required()}

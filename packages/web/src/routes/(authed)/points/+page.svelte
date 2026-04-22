@@ -14,8 +14,8 @@
 
   const TAB_STYLES: Record<string, { active: string }> = {
     ALL: { active: 'text-foreground border-primary/20 bg-primary/6' },
-    BINTANG: { active: 'text-[#a07700] border-[#F4C144]/30 bg-[#F4C144]/10' },
-    PENALTI: { active: 'text-[#C73E3E] border-[#C73E3E]/25 bg-[#C73E3E]/8' },
+    BINTANG: { active: 'text-status-pending border-gold/30 bg-gold/10' },
+    PENALTI: { active: 'text-penalti border-penalti/25 bg-penalti/8' },
     POIN_AHA: { active: 'text-primary border-primary/20 bg-primary/8' },
   }
 

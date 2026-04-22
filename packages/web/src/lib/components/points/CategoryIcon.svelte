@@ -14,19 +14,19 @@
 
   const categoryConfig: Record<CategoryCode, { color: string; bg: string; ring: string }> = {
     BINTANG: {
-      color: 'text-[#a07700]',
-      bg: 'bg-gradient-to-br from-[#F4C144]/20 to-[#FFD97D]/30',
-      ring: 'ring-1 ring-[#F4C144]/30',
+      color: 'text-status-pending',
+      bg: 'bg-gradient-to-br from-gold/20 to-gold-light/30',
+      ring: 'ring-1 ring-gold/30',
     },
     PENALTI: {
-      color: 'text-[#C73E3E]',
-      bg: 'bg-gradient-to-br from-[#C73E3E]/10 to-[#E06B6B]/15',
-      ring: 'ring-1 ring-[#C73E3E]/20',
+      color: 'text-penalti',
+      bg: 'bg-gradient-to-br from-penalti/10 to-penalti-light/15',
+      ring: 'ring-1 ring-penalti/20',
     },
     POIN_AHA: {
-      color: 'text-[#325FEC]',
-      bg: 'bg-gradient-to-br from-[#325FEC]/10 to-[#759EEE]/20',
-      ring: 'ring-1 ring-[#325FEC]/20',
+      color: 'text-primary',
+      bg: 'bg-gradient-to-br from-primary/10 to-sky-blue/20',
+      ring: 'ring-1 ring-primary/20',
     },
   }
 

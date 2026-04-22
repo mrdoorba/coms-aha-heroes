@@ -23,12 +23,10 @@
 
   let {
     user,
-    avatarUrl,
     unreadCount = 0,
     onOpenPalette,
   }: {
     user: AuthUser
-    avatarUrl?: string | null
     unreadCount?: number
     onOpenPalette?: () => void
   } = $props()
@@ -36,15 +34,6 @@
   let menuOpen = $state(false)
 
   const isAdminOrHr = $derived(user.role === 'admin' || user.role === 'hr')
-
-  const initials = $derived(
-    user.name
-      .split(' ')
-      .map((n) => n[0])
-      .slice(0, 2)
-      .join('')
-      .toUpperCase(),
-  )
 
   const adminNavItems = [
     { href: '/dashboard', label: () => m.nav_dashboard(), icon: LayoutDashboard },
@@ -76,7 +65,7 @@
 
 <!-- Mobile top bar — hidden on desktop -->
 <header class="fixed top-9 left-0 right-0 z-50 flex h-14 items-center justify-between px-4 md:hidden
-  bg-[#0d1229]/85 backdrop-blur-xl border-b border-white/10">
+  bg-chrome-navy/85 backdrop-blur-xl border-b border-white/10">
 
   <div class="flex items-center gap-2">
     <!-- Hamburger — admin/HR only -->
@@ -93,8 +82,8 @@
     {/if}
 
     <!-- Trophy gold logo -->
-    <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#F4C144] to-[#FFD97D] shadow-md">
-      <Trophy class="h-3.5 w-3.5 text-[#7a5800]" />
+    <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-gold to-gold-light shadow-md">
+      <Trophy class="h-3.5 w-3.5 text-gold-dark" />
     </div>
     <span class="font-manrope text-[15px] font-extrabold tracking-wide text-white">
       AHA HEROES
@@ -120,33 +109,12 @@
     >
       <Bell class="h-5 w-5" />
       {#if unreadCount > 0}
-        <span class="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#F4C144] text-[9px] font-bold leading-none text-[#7a5800]">
+        <span class="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-gold text-[9px] font-bold leading-none text-gold-dark">
           {unreadCount > 99 ? '99+' : unreadCount}
         </span>
       {/if}
     </a>
 
-    <!-- Avatar link -->
-    <a
-      href="/profile"
-      class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-[#325FEC]/30 text-xs font-bold text-[#759EEE] ring-1 ring-white/15 hover:ring-[#759EEE]/50 transition-all"
-    >
-      {#if avatarUrl}
-        <img
-          src={avatarUrl}
-          alt={user.name}
-          class="h-full w-full object-cover"
-          width={32}
-          height={32}
-          loading="lazy"
-          decoding="async"
-        />
-      {:else if initials}
-        <span>{initials}</span>
-      {:else}
-        <User class="h-4 w-4" />
-      {/if}
-    </a>
   </div>
 </header>
 
@@ -165,8 +133,8 @@
     <!-- Panel header -->
     <div class="flex h-14 items-center justify-between border-b border-border px-4 shrink-0">
       <div class="flex items-center gap-2">
-        <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#F4C144] to-[#FFD97D] shadow-md">
-          <Trophy class="h-3.5 w-3.5 text-[#7a5800]" />
+        <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-gold to-gold-light shadow-md">
+          <Trophy class="h-3.5 w-3.5 text-gold-dark" />
         </div>
         <span class="font-manrope text-[15px] font-extrabold tracking-wide text-foreground">
           AHA HEROES
@@ -202,21 +170,7 @@
     <div class="border-t border-border p-2 shrink-0">
       <div class="flex items-center gap-3 rounded-lg px-3 py-2.5">
         <div class="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-xs font-bold text-primary ring-1 ring-primary/15">
-          {#if avatarUrl}
-            <img
-              src={avatarUrl}
-              alt={user.name}
-              class="h-full w-full object-cover"
-              width={32}
-              height={32}
-              loading="lazy"
-              decoding="async"
-            />
-          {:else if initials}
-            <span>{initials}</span>
-          {:else}
-            <User class="h-4 w-4" />
-          {/if}
+          <User class="h-4 w-4" />
         </div>
         <div class="min-w-0 flex-1">
           <p class="truncate text-sm font-semibold text-foreground">{user.name}</p>

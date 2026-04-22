@@ -63,7 +63,7 @@
   <!-- Header -->
   <div class="flex items-center gap-3">
     <div
-      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#325FEC] to-[#759EEE] shadow-[0_4px_12px_rgba(50,95,236,0.25)]"
+      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-sky-blue shadow-[0_4px_12px_rgba(50,95,236,0.25)]"
     >
       <Settings class="h-5 w-5 text-white" />
     </div>
@@ -111,9 +111,9 @@
 
       <!-- Warning -->
       <div
-        class="flex items-start gap-2.5 rounded-xl border border-[#F4C144]/25 bg-[#F4C144]/10 px-4 py-3 text-sm text-[#7a5800] dark:border-yellow-800/40 dark:bg-yellow-900/20 dark:text-yellow-300"
+        class="flex items-start gap-2.5 rounded-xl border border-gold/25 bg-gold/10 px-4 py-3 text-sm text-gold-dark dark:border-yellow-800/40 dark:bg-yellow-900/20 dark:text-yellow-300"
       >
-        <AlertTriangle class="mt-0.5 h-4 w-4 shrink-0 text-[#F4C144]" />
+        <AlertTriangle class="mt-0.5 h-4 w-4 shrink-0 text-gold" />
         <span>{m.settings_impact_warning()}</span>
       </div>
 
@@ -129,7 +129,7 @@
       <Button
         onclick={handleSaveImpacts}
         disabled={saving}
-        class="w-full rounded-xl bg-gradient-to-br from-[#325FEC] to-[#759EEE] font-semibold text-white shadow-[0_2px_8px_rgba(50,95,236,0.25)]"
+        class="w-full rounded-xl bg-gradient-to-br from-primary to-sky-blue font-semibold text-white shadow-[0_2px_8px_rgba(50,95,236,0.25)]"
       >
         <Save class="mr-1.5 h-4 w-4" />
         {saving ? m.settings_saving() : m.common_save()}

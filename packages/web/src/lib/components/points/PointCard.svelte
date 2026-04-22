@@ -18,7 +18,7 @@
 
   const POINT_VALUE_STYLE: Record<CategoryCode, string> = {
     PENALTI: 'text-destructive bg-destructive/8',
-    BINTANG: 'text-[#a07700] bg-[#F4C144]/12',
+    BINTANG: 'text-status-pending bg-gold/12',
     POIN_AHA: 'text-primary bg-primary/8',
   }
 

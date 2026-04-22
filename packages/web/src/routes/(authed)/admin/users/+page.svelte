@@ -29,9 +29,9 @@
 
   const ROLE_BADGE: Record<string, string> = {
     admin:
-      'bg-gradient-to-br from-[#325FEC]/15 to-[#759EEE]/10 text-[#325FEC] border-[#325FEC]/25 dark:text-[#759EEE]',
+      'bg-gradient-to-br from-primary/15 to-sky-blue/10 text-primary border-primary/25 dark:text-sky-blue',
     hr: 'bg-primary/8 text-primary border-primary/20',
-    leader: 'bg-[#6D50B8]/10 text-[#6D50B8] border-[#6D50B8]/25 dark:text-[#9B7FE8]',
+    leader: 'bg-purple/10 text-purple border-purple/25 dark:text-purple-light',
     employee: 'bg-muted text-muted-foreground border-border',
   }
 
@@ -91,7 +91,7 @@
   <div class="mb-6 flex items-center justify-between gap-3">
     <div class="flex items-center gap-3">
       <div
-        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#325FEC] to-[#759EEE] shadow-[0_4px_12px_rgba(50,95,236,0.25)]"
+        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-sky-blue shadow-[0_4px_12px_rgba(50,95,236,0.25)]"
       >
         <User class="h-5 w-5 text-white" />
       </div>
@@ -104,7 +104,7 @@
     </div>
     <Button
       href="/admin/users/new"
-      class="h-9 shrink-0 rounded-xl px-4 font-semibold shadow-[0_2px_8px_rgba(50,95,236,0.25)] bg-gradient-to-br from-[#325FEC] to-[#759EEE] text-white"
+      class="h-9 shrink-0 rounded-xl px-4 font-semibold shadow-[0_2px_8px_rgba(50,95,236,0.25)] bg-gradient-to-br from-primary to-sky-blue text-white"
     >
       <Plus class="h-4 w-4" />
       {m.users_add()}

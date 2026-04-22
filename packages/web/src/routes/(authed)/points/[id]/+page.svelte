@@ -18,10 +18,10 @@
 
   const pointColor = $derived(
     categoryCode === 'PENALTI'
-      ? 'text-[#C73E3E]'
+      ? 'text-penalti'
       : categoryCode === 'BINTANG'
-        ? 'text-[#a07700]'
-        : 'text-[#325FEC]',
+        ? 'text-status-pending'
+        : 'text-primary',
   )
   const prefix = $derived(categoryCode === 'PENALTI' ? '-' : '+')
 
