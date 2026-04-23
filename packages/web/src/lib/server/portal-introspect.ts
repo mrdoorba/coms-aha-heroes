@@ -12,11 +12,16 @@ export class PortalIntrospectUnavailableError extends Error {
   }
 }
 
-type CacheEntry = { result: IntrospectResult; expiresAt: number }
+type CacheEntry = {
+  result: IntrospectResult
+  freshUntil: number   // now + 30s
+  staleUntil: number   // now + 300s (5 min)
+}
 
 const cache = new Map<string, CacheEntry>()
 
 const CACHE_TTL_MS = 30_000
+const STALE_TTL_MS = 300_000  // 5 minutes
 const RETRY_DELAYS_MS = [200, 600, 1200]
 
 function requireEnv() {
@@ -55,8 +60,8 @@ export async function introspectSession(args: {
 
   const cached = cache.get(sessionId)
   if (cached) {
-    if (cached.expiresAt > Date.now()) return cached.result
-    cache.delete(sessionId)
+    if (cached.freshUntil > Date.now()) return cached.result
+    if (cached.staleUntil <= Date.now()) cache.delete(sessionId)
   }
 
   let lastStatus = 0
@@ -80,7 +85,12 @@ export async function introspectSession(args: {
     if (res.status === 200) {
       const body = (await res.json()) as IntrospectResult
       if (body.active) {
-        cache.set(sessionId, { result: body, expiresAt: Date.now() + CACHE_TTL_MS })
+        const now = Date.now()
+        cache.set(sessionId, {
+          result: body,
+          freshUntil: now + CACHE_TTL_MS,
+          staleUntil: now + STALE_TTL_MS,
+        })
       }
       return body
     }
@@ -100,6 +110,15 @@ export async function introspectSession(args: {
 
     // Unexpected status — don't retry
     throw new Error(`Portal introspection unexpected status ${res.status}`)
+  }
+
+  // Stale-while-revalidate: serve stale cache if portal is unreachable
+  const stale = cache.get(sessionId)
+  if (stale && stale.staleUntil > Date.now()) {
+    console.warn(
+      `[portal-introspect] Portal unreachable (last status: ${lastStatus}), serving stale cache for session ${sessionId}`,
+    )
+    return stale.result
   }
 
   throw new PortalIntrospectUnavailableError(

@@ -1,19 +1,12 @@
 import { randomBytes } from 'node:crypto'
 import { eq } from 'drizzle-orm'
 import { authSession, authUser, users, userEmails } from '../db/schema'
+import type { PortalSessionUser } from '@coms-portal/shared/contracts/auth'
+
+export type { PortalSessionUser }
 
 export const PORTAL_SESSION_COOKIE = 'coms_session'
 export const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7
-
-export type PortalSessionUser = {
-  id: string
-  gipUid: string
-  email: string
-  name: string
-  portalRole: string
-  teamIds: string[]
-  apps: string[]
-}
 
 export class PortalSessionDeniedError extends Error {
   constructor(public readonly email: string) {

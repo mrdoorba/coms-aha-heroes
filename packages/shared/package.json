@@ -17,9 +17,10 @@
     "generate:schemas": "bun run scripts/generate-schemas.ts"
   },
   "dependencies": {
-    "drizzle-orm": "^0.45.0",
-    "postgres": "^3.4.5",
+    "@coms-portal/shared": "git+https://github.com/mrdoorba/coms-shared.git#v1.1.0",
     "@sinclair/typebox": "^0.34.0",
-    "drizzle-typebox": "^0.2.0"
+    "drizzle-orm": "^0.45.0",
+    "drizzle-typebox": "^0.2.0",
+    "postgres": "^3.4.5"
   }
 }

@@ -42,6 +42,7 @@
       "name": "@coms/shared",
       "version": "0.1.0",
       "dependencies": {
+        "@coms-portal/shared": "git+https://github.com/mrdoorba/coms-shared.git#v1.1.0",
         "@sinclair/typebox": "^0.34.0",
         "drizzle-orm": "^0.45.0",
         "drizzle-typebox": "^0.2.0",
@@ -278,6 +279,8 @@
     "@babel/types": ["@babel/types@7.29.0", "", { "dependencies": { "@babel/helper-string-parser": "^7.27.1", "@babel/helper-validator-identifier": "^7.28.5" } }, "sha512-LwdZHpScM4Qz8Xw2iKSzS+cfglZzJGvofQICy7W7v4caru4EaAmyUuO6BGrbyQ2mYV11W0U8j5mBhd14dd3B0A=="],
 
     "@borewit/text-codec": ["@borewit/text-codec@0.2.2", "", {}, "sha512-DDaRehssg1aNrH4+2hnj1B7vnUGEjU6OIlyRdkMd0aUdIUvKXrJfXsy8LVtXAy7DRvYVluWbMspsRhz2lcW0mQ=="],
+
+    "@coms-portal/shared": ["@coms-portal/shared@github:mrdoorba/coms-shared#9678dbf", {}, "mrdoorba-coms-shared-9678dbf", "sha512-hyJU9PjKYaMXKwcZ33VdiolTelU5fvcMGM6h2QqNWam8hP8MwpD5sr0Aukn+QSChChfwJ1SFYFpAizi9s8fKEw=="],
 
     "@coms/server": ["@coms/server@workspace:packages/server"],
 

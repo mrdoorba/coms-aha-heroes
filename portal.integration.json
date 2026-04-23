@@ -73,6 +73,12 @@
       "description": "Expected audience claim on the exchange response JWS (portal:app:heroes)"
     }
   ],
+  "appRoles": [
+    { "key": "employee", "label": "Employee", "default": true, "description": "Standard user" },
+    { "key": "leader", "label": "Team Leader", "description": "Can submit points for team members" },
+    { "key": "hr", "label": "HR", "description": "Can manage users and view reports" },
+    { "key": "admin", "label": "Administrator", "description": "Full access including settings" }
+  ],
   "compliance": {
     "status": "planned",
     "contractVersion": 1,
