@@ -2,7 +2,7 @@
   import { Moon, Sun, User } from 'lucide-svelte'
   import { uiState } from '$lib/state/uiState.svelte'
 
-  let { user, avatarUrl }: { user: { name: string; role: string }; avatarUrl?: string | null } = $props()
+  let { user, avatarUrl, portalOrigin }: { user: { name: string; role: string }; avatarUrl?: string | null; portalOrigin: string } = $props()
 
   const initials = $derived(
     user?.name
@@ -21,9 +21,7 @@
   <!-- Left: service tabs -->
   <div class="flex items-center gap-1">
     <a
-      href="https://PORTAL_ORIGIN_PLACEHOLDER"
-      target="_blank"
-      rel="noopener noreferrer"
+      href={portalOrigin}
       class="flex h-6 items-center px-2.5 rounded text-[11px] font-semibold text-white/45 hover:text-white/80 hover:bg-white/6 transition-colors"
     >
       COMS

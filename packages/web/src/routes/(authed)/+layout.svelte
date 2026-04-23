@@ -35,7 +35,7 @@
 </script>
 
 <div class="app-bg min-h-screen {uiState.sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}">
-  <ServiceBar user={data.user} avatarUrl={data.avatarUrl} />
+  <ServiceBar user={data.user} avatarUrl={data.avatarUrl} portalOrigin={data.portalOrigin} />
   <TopBar
     user={data.user}
     unreadCount={data.unreadCount}

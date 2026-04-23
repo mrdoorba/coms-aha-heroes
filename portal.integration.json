@@ -15,7 +15,7 @@
     "protectedRouteMode": "app_wide",
     "modulePath": "packages/web/src/hooks.server.ts",
     "audience": "portal:app:heroes",
-    "brokerOrigin": "https://PORTAL_ORIGIN_PLACEHOLDER",
+    "brokerOrigin": "reads PORTAL_ORIGIN env at runtime",
     "callbackUrl": "https://coms-aha-heroes-app-45tyczfska-et.a.run.app/auth/portal/exchange"
   },
   "authEntrypoints": [
@@ -45,7 +45,7 @@
     {
       "name": "PORTAL_ORIGIN",
       "required": true,
-      "description": "Origin of the COMS portal broker (e.g. https://PORTAL_ORIGIN_PLACEHOLDER)"
+      "description": "Origin of the COMS portal broker (e.g. https://coms.ahacommerce.net)"
     },
     {
       "name": "PORTAL_APP_SLUG",

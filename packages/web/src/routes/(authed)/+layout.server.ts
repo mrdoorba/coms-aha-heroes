@@ -30,5 +30,6 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
     user: actor,
     avatarUrl,
     unreadCount,
+    portalOrigin: env.PUBLIC_PORTAL_ORIGIN ?? '/',
   }
 }
