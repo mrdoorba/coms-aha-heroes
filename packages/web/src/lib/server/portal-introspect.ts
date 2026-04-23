@@ -84,14 +84,12 @@ export async function introspectSession(args: {
 
     if (res.status === 200) {
       const body = (await res.json()) as IntrospectResult
-      if (body.active) {
-        const now = Date.now()
-        cache.set(sessionId, {
-          result: body,
-          freshUntil: now + CACHE_TTL_MS,
-          staleUntil: now + STALE_TTL_MS,
-        })
-      }
+      const now = Date.now()
+      cache.set(sessionId, {
+        result: body,
+        freshUntil: now + CACHE_TTL_MS,
+        staleUntil: now + STALE_TTL_MS,
+      })
       return body
     }
 
