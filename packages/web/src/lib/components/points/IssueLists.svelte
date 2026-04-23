@@ -34,9 +34,9 @@
 
   type IssueStatus = 'open' | 'upheld' | 'overturned'
   const issueStatusColors: Record<IssueStatus, string> = {
-    open: 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800/50',
-    upheld: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800/50',
-    overturned: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/50',
+    open: 'bg-status-pending-bg text-status-pending border-status-pending/20 dark:bg-status-pending-bg dark:text-status-pending dark:border-status-pending/20',
+    upheld: 'bg-status-approved-bg text-status-approved border-status-approved/20 dark:bg-status-approved-bg dark:text-status-approved dark:border-status-approved/20',
+    overturned: 'bg-destructive/10 text-destructive border-destructive/20 dark:bg-destructive/10 dark:text-destructive dark:border-destructive/20',
   }
 
   function issueColor(status: string) {

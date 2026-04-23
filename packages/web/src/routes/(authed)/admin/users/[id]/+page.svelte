@@ -38,7 +38,7 @@
     </a>
     <div class="flex items-center gap-3">
       <div
-        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-sky-blue shadow-[0_4px_12px_rgba(50,95,236,0.25)]"
+        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-sky-blue shadow-[var(--shadow-card)]"
       >
         <User class="h-5 w-5 text-white" />
       </div>
@@ -53,20 +53,20 @@
 
   <!-- Summary Cards -->
   <div class="mb-6 grid grid-cols-3 gap-4">
-    <div class="rounded-xl border border-border bg-card p-4 shadow-card">
+    <div class="rounded-2xl border border-border bg-card p-4 shadow-card">
       <div class="flex items-center gap-2 text-[13px] font-semibold text-muted-foreground">
         <Star class="h-4 w-4 text-yellow-500" />
         {m.employee_detail_poin_bintang()}
       </div>
       <div class="mt-1 text-2xl font-extrabold text-foreground">—</div>
     </div>
-    <div class="rounded-xl border border-border bg-card p-4 shadow-card">
+    <div class="rounded-2xl border border-border bg-card p-4 shadow-card">
       <div class="text-[13px] font-semibold text-muted-foreground">
         {m.employee_detail_poin_aha()}
       </div>
       <div class="mt-1 text-2xl font-extrabold text-primary">—</div>
     </div>
-    <div class="rounded-xl border border-border bg-card p-4 shadow-card">
+    <div class="rounded-2xl border border-border bg-card p-4 shadow-card">
       <div class="text-[13px] font-semibold text-destructive/70">
         {m.employee_detail_penalti()}
       </div>
@@ -89,8 +89,8 @@
           <p class="text-xs text-muted-foreground">{m.users_col_status()}</p>
           <span
             class="mt-1 inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold {user.isActive
-              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-              : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'}"
+              ? 'bg-status-approved-bg text-status-approved dark:bg-status-approved/20 dark:text-status-approved'
+              : 'bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive'}"
           >
             {user.isActive ? m.status_active() : m.status_archived()}
           </span>

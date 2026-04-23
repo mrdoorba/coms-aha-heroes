@@ -39,10 +39,10 @@
   let isTriggeringResync = $state(false)
 
   function getStatusBadgeClass(s: string): string {
-    if (s === 'completed') return 'gap-1 border-green-200 bg-green-50 text-[11px] text-green-700 dark:bg-green-900/30 dark:text-green-400'
-    if (s === 'failed') return 'gap-1 border-red-200 bg-red-50 text-[11px] text-red-700 dark:bg-red-900/30 dark:text-red-400'
+    if (s === 'completed') return 'gap-1 border-status-approved/30 bg-status-approved-bg text-[11px] text-status-approved dark:bg-status-approved/20 dark:text-status-approved'
+    if (s === 'failed') return 'gap-1 border-destructive/30 bg-destructive/10 text-[11px] text-destructive dark:bg-destructive/20 dark:text-destructive'
     if (s === 'in_progress') return 'gap-1 border-yellow-200 bg-yellow-50 text-[11px] text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-    return 'gap-1 border-gray-200 bg-gray-100 text-[11px] text-gray-600 dark:bg-gray-800/50 dark:text-gray-400'
+    return 'gap-1 border-border bg-muted text-[11px] text-muted-foreground'
   }
 
   function formatTimestamp(iso: string | null) {
@@ -150,7 +150,7 @@
               running
             </Badge>
           {:else}
-            <Badge variant="outline" class="border-gray-200 bg-gray-100 text-[11px] text-gray-600">
+            <Badge variant="outline" class="border-border bg-muted text-[11px] text-muted-foreground">
               idle
             </Badge>
           {/if}
@@ -211,10 +211,10 @@
           </Button>
         </div>
         {#if syncError}
-          <p class="max-w-xs text-right text-xs text-red-600">{syncError}</p>
+          <p class="max-w-xs text-right text-xs text-destructive">{syncError}</p>
         {/if}
         {#if syncSuccess}
-          <p class="text-xs text-emerald-600">{m.settings_saved()}</p>
+          <p class="text-xs text-status-approved">{m.settings_saved()}</p>
         {/if}
       </div>
     </div>

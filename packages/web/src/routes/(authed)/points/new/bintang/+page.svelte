@@ -101,9 +101,9 @@
       <div class="rounded-xl border border-border bg-card overflow-hidden">
         <div class="flex items-center gap-2.5 px-4 py-3 border-b border-border bg-muted/40">
           <span
-            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-[#D4962A] text-white text-[10px] font-bold leading-none"
+            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-gold text-white text-[10px] font-bold leading-none"
           >1</span>
-          <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          <span class="text-xs font-bold tracking-[0.06em] text-muted-foreground uppercase">
             {m.form_staff_name()}
           </span>
         </div>
@@ -128,9 +128,9 @@
       <div class="rounded-xl border border-border bg-card overflow-hidden">
         <div class="flex items-center gap-2.5 px-4 py-3 border-b border-border bg-muted/40">
           <span
-            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-[#D4962A] text-white text-[10px] font-bold leading-none"
+            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-gold text-white text-[10px] font-bold leading-none"
           >2</span>
-          <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          <span class="text-xs font-bold tracking-[0.06em] text-muted-foreground uppercase">
             {m.bintang_form_action()}
           </span>
         </div>
@@ -151,9 +151,9 @@
       <div class="rounded-xl border border-border bg-card overflow-hidden">
         <div class="flex items-center gap-2.5 px-4 py-3 border-b border-border bg-muted/40">
           <span
-            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-[#D4962A] text-white text-[10px] font-bold leading-none"
+            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-gold text-white text-[10px] font-bold leading-none"
           >3</span>
-          <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          <span class="text-xs font-bold tracking-[0.06em] text-muted-foreground uppercase">
             {m.form_related_staff()}
           </span>
         </div>
@@ -172,9 +172,9 @@
       <div class="rounded-xl border border-border bg-card overflow-hidden">
         <div class="flex items-center gap-2.5 px-4 py-3 border-b border-border bg-muted/40">
           <span
-            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-[#D4962A] text-white text-[10px] font-bold leading-none"
+            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-gold text-white text-[10px] font-bold leading-none"
           >4</span>
-          <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          <span class="text-xs font-bold tracking-[0.06em] text-muted-foreground uppercase">
             {m.form_screenshot_required()}
           </span>
         </div>
@@ -197,10 +197,10 @@
 
       {#if isSelfOnly}
         <div
-          class="flex items-start gap-2.5 rounded-lg border border-gold/40 bg-amber-50 px-3 py-2.5"
+          class="flex items-start gap-2.5 rounded-lg border border-gold/40 bg-gold/10 px-3 py-2.5"
         >
-          <Star class="w-4 h-4 text-[#D4962A] mt-0.5 flex-shrink-0" />
-          <p class="text-sm text-amber-800 leading-snug">{m.form_pending_approval()}</p>
+          <Star class="w-4 h-4 text-gold mt-0.5 flex-shrink-0" />
+          <p class="text-sm text-gold leading-snug">{m.form_pending_approval()}</p>
         </div>
       {/if}
 

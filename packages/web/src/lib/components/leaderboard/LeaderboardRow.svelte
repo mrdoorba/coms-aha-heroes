@@ -29,8 +29,8 @@
   class={[
     'tap-active flex items-center gap-3 rounded-2xl border px-4 py-3 transition-all duration-200 hover:-translate-y-0.5',
     isCurrentUser
-      ? 'border-primary/25 from-primary/8 bg-gradient-to-r to-transparent shadow-[0_2px_12px_rgba(50,95,236,0.12)]'
-      : 'border-border bg-card hover:shadow-[0_4px_16px_rgba(0,0,0,0.10)]',
+      ? 'border-primary/25 from-primary/8 bg-gradient-to-r to-transparent shadow-[var(--shadow-glow-blue)]'
+      : 'border-border bg-card hover:shadow-[var(--shadow-card-hover)]',
   ].join(' ')}
 >
   <!-- Rank -->
@@ -67,6 +67,6 @@
 
   <!-- Score -->
   <span class="bg-primary/8 text-primary shrink-0 rounded-xl px-3 py-1 text-sm font-extrabold">
-    {entry.score}
+    {entry.score.toLocaleString()}
   </span>
 </div>

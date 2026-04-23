@@ -17,7 +17,7 @@
 </script>
 
 <nav class="fixed bottom-0 left-0 right-0 z-50 flex items-stretch md:hidden
-  bg-chrome-navy/85 backdrop-blur-xl border-t border-white/10
+  bg-chrome-navy/85 backdrop-blur-[16px] border-t border-white/10
   h-[calc(4rem+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)]">
   {#each navItems as item (item.href)}
     {@const active = isActive(item.href)}
@@ -27,7 +27,7 @@
         {active ? 'text-gold bnav-active' : 'text-white/40 hover:text-white/70'}"
     >
       <item.icon class="h-5 w-5 shrink-0" />
-      <span class="text-[10px] font-semibold leading-none tracking-wide">{item.label()}</span>
+      <span class="text-xs font-semibold leading-none tracking-wide">{item.label()}</span>
     </a>
   {/each}
 </nav>

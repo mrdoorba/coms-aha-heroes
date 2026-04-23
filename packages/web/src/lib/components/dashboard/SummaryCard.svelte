@@ -16,7 +16,7 @@
       iconColor: 'text-gold-dark',
       valueColor: 'text-gold-dark',
       titleColor: 'text-gold-dark/80',
-      glow: 'shadow-[0_4px_20px_rgba(244,193,68,0.35)]',
+      glow: 'shadow-[var(--shadow-glow-gold)]',
       border: 'border-gold/30',
     },
     blue: {
@@ -25,7 +25,7 @@
       iconColor: 'text-white',
       valueColor: 'text-white',
       titleColor: 'text-white/75',
-      glow: 'shadow-[0_4px_20px_rgba(50,95,236,0.35)]',
+      glow: 'shadow-[var(--shadow-glow-blue)]',
       border: 'border-primary/30',
     },
     red: {
@@ -34,7 +34,7 @@
       iconColor: 'text-white',
       valueColor: 'text-white',
       titleColor: 'text-white/75',
-      glow: 'shadow-[0_4px_20px_rgba(199,62,62,0.30)]',
+      glow: 'shadow-[var(--shadow-glow-blue)]',
       border: 'border-penalti/30',
     },
     pending: {
@@ -72,7 +72,7 @@
     {isPending ? 'bg-card' : `bg-gradient-to-br ${styles.gradient}`}
     {styles.border} {styles.glow}
     transition-all duration-200 hover:-translate-y-0.5
-    {isPending ? 'hover:shadow-[0_8px_24px_rgba(244,193,68,0.25)]' : 'hover:brightness-105'}">
+    {isPending ? 'hover:shadow-[var(--shadow-card-hover)]' : 'hover:shadow-[var(--shadow-card-hover)]'}">
 
     <!-- Subtle inner highlight for colored cards -->
     {#if !isPending}
@@ -80,7 +80,7 @@
     {/if}
 
     <!-- Icon -->
-    <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-xl
+    <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-lg
       {styles.iconBg} {isPending ? 'pulse-gold' : ''}">
       {#if IconComponent}
         <span class="h-5 w-5 {styles.iconColor}">
@@ -90,7 +90,7 @@
     </div>
 
     <!-- Title -->
-    <p class="text-[11px] font-semibold leading-tight tracking-wide uppercase {styles.titleColor}">
+    <p class="text-[11px] font-bold leading-tight tracking-[0.06em] uppercase {styles.titleColor}">
       {title}
     </p>
 

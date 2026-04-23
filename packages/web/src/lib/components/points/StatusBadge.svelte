@@ -10,32 +10,32 @@
 
   const statusConfig: Record<string, StatusConfig> = {
     active: {
-      label: 'Active',
+      label: 'active',
       className:
         'bg-status-approved-bg text-status-approved border border-status-approved/20 dark:bg-status-approved-bg dark:text-status-approved dark:border-status-approved/20',
     },
     pending: {
-      label: 'Pending',
+      label: 'pending',
       className:
         'bg-status-pending-bg text-status-pending border border-status-pending/20 dark:bg-status-pending-bg dark:text-status-pending dark:border-status-pending/20',
     },
     challenged: {
-      label: 'Challenged',
+      label: 'challenged',
       className:
         'bg-status-challenged-bg text-status-challenged border border-status-challenged/20 dark:bg-status-challenged-bg dark:text-status-challenged dark:border-status-challenged/20',
     },
     frozen: {
-      label: 'Frozen',
+      label: 'frozen',
       className:
         'bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700',
     },
     revoked: {
-      label: 'Revoked',
+      label: 'revoked',
       className:
         'bg-status-rejected-bg text-status-rejected border border-status-rejected/20 dark:bg-status-rejected-bg dark:text-status-rejected dark:border-status-rejected/20',
     },
     rejected: {
-      label: 'Rejected',
+      label: 'rejected',
       className:
         'bg-status-rejected-bg text-status-rejected border border-status-rejected/20 dark:bg-status-rejected-bg dark:text-status-rejected dark:border-status-rejected/20',
     },
@@ -45,7 +45,7 @@
 </script>
 
 <span
-  class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold leading-none tracking-wide {config.className} {className}"
+  class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold leading-none tracking-wide capitalize {config.className} {className}"
 >
   {config.label}
 </span>

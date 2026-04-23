@@ -74,7 +74,7 @@
           <button
             type="button"
             onclick={() => (status = 'upheld')}
-            class="flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-lg transition-all {status === 'upheld' ? 'bg-card text-emerald-600 shadow-sm' : 'text-muted-foreground hover:bg-card/50'}"
+            class="flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-lg transition-all {status === 'upheld' ? 'bg-card text-status-approved shadow-sm' : 'text-muted-foreground hover:bg-card/50'}"
           >
             <Check class="h-4 w-4 {status === 'upheld' ? 'opacity-100' : 'opacity-0'}" />
             {m.status_upheld()}

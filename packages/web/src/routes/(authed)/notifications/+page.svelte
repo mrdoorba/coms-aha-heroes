@@ -72,7 +72,7 @@
     switch (type) {
       case 'point_received':
       case 'point_approved':
-        return 'text-emerald-500'
+        return 'text-status-approved'
       case 'point_pending':
       case 'point_needs_approval':
         return 'text-gold'
@@ -168,7 +168,7 @@
           onclick={() => handleItemClick(notif)}
         >
           <div
-            class="flex items-start gap-3 rounded-xl border px-4 py-3 transition-colors hover:bg-primary/4 {!notif.isRead
+            class="flex min-h-[44px] items-start gap-3 rounded-xl border px-4 py-3 transition-colors hover:bg-primary/4 {!notif.isRead
               ? 'border-primary/15 bg-primary/5'
               : 'border-border bg-card'}"
           >

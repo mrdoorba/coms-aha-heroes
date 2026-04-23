@@ -14,7 +14,7 @@
 <div class="mx-auto max-w-2xl space-y-5 p-4 pb-24 md:pb-8">
   <!-- Hero balance bar -->
   <div
-    class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-dark via-[#2550C8] to-primary p-5 shadow-[0_8px_32px_rgba(29,56,139,0.30)]"
+    class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-dark via-[#2550C8] to-primary p-5 shadow-[var(--shadow-card)]"
   >
     <div
       class="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-gold/15 blur-2xl"
@@ -47,7 +47,7 @@
     {#if isAdmin}
       <Button
         size="sm"
-        class="h-9 gap-1.5 rounded-xl bg-gradient-to-br from-primary to-sky-blue px-4 font-bold text-white shadow-[0_2px_8px_rgba(50,95,236,0.25)]"
+        class="h-9 gap-1.5 rounded-xl bg-gradient-to-br from-primary to-sky-blue px-4 font-bold text-white shadow-[var(--shadow-card)]"
       >
         <Plus class="h-4 w-4" />
         {m.rewards_add()}
@@ -72,7 +72,7 @@
     <div class="grid grid-cols-2 gap-3 md:grid-cols-3">
       {#each rewards as reward, i (reward.id)}
         <div
-          class="stagger-item overflow-hidden rounded-2xl border border-border bg-card shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)] {reward.isActive
+          class="stagger-item overflow-hidden rounded-2xl border border-border bg-card shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)] {reward.isActive
             ? ''
             : 'opacity-60'}"
           style="animation-delay:{i * 40}ms"

@@ -29,7 +29,7 @@
       podiumHeight: 'h-20',
       scoreBg: 'bg-gold/15',
       scoreText: 'text-status-pending font-extrabold',
-      glow: 'drop-shadow-[0_0_12px_rgba(244,193,68,0.5)]',
+      glow: 'drop-shadow-[var(--shadow-glow-gold)]',
     },
     2: {
       avatarRing: 'ring-3 ring-[#C0C0C0]',
@@ -118,7 +118,7 @@
 
     <!-- Score -->
     <span class="rounded-full px-2.5 py-0.5 text-xs {styles.scoreBg} {styles.scoreText} {scoreTextSize}">
-      {entry.score}
+      {entry.score.toLocaleString()}
     </span>
 
     <!-- Podium base -->

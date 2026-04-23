@@ -4,7 +4,7 @@
   let {
     icon: IconComponent,
     size = 20,
-    strokeWidth = 1.5,
+    strokeWidth = 2,
     class: className = '',
     ...restProps
   }: {

@@ -35,7 +35,7 @@
 
 <a
   href="/points/{id}"
-  class="tap-active flex items-center gap-3 rounded-2xl bg-card border border-border px-4 py-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)] group"
+  class="tap-active flex items-center gap-3 rounded-2xl bg-card border border-border px-4 py-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)] group"
 >
   <CategoryIcon code={categoryCode} size="md" />
 
@@ -49,6 +49,6 @@
   </div>
 
   <span class="shrink-0 rounded-xl px-2.5 py-1.5 text-base font-extrabold leading-none {ptStyle}">
-    {prefix}{points}
+    {prefix}{points.toLocaleString()}
   </span>
 </a>

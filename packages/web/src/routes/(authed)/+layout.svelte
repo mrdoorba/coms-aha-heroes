@@ -38,6 +38,7 @@
   <ServiceBar user={data.user} avatarUrl={data.avatarUrl} portalOrigin={data.portalOrigin} />
   <TopBar
     user={data.user}
+    avatarUrl={data.avatarUrl}
     unreadCount={data.unreadCount}
     onOpenPalette={() => (paletteOpen = true)}
   />
@@ -48,7 +49,7 @@
       onOpenPalette={() => (paletteOpen = true)}
     />
     <PullToRefresh>
-      <main class="page-transition pt-14 pb-16 md:pt-0 md:pb-0 px-4 md:px-6 max-w-5xl mx-auto">
+      <main class="page-transition pt-14 pb-24 md:pt-0 md:pb-8 px-4 md:px-6 max-w-5xl mx-auto">
         {@render children()}
       </main>
     </PullToRefresh>

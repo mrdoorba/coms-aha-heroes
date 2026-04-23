@@ -52,9 +52,9 @@
       <Dialog.Description>{m.appeal_description()}</Dialog.Description>
     </Dialog.Header>
     <form onsubmit={onSubmit} class="grid gap-4 py-4">
-      <div class="flex gap-3 p-3 rounded-lg bg-yellow-50 border border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800/50">
-        <AlertCircle class="h-5 w-5 text-yellow-600 dark:text-yellow-400 shrink-0" />
-        <p class="text-xs text-yellow-700 dark:text-yellow-300 leading-relaxed">
+      <div class="flex gap-3 p-3 rounded-lg bg-status-pending-bg border border-status-pending/20 dark:bg-status-pending-bg dark:border-status-pending/20">
+        <AlertCircle class="h-5 w-5 text-status-pending shrink-0" />
+        <p class="text-xs text-status-pending leading-relaxed">
           <strong>Point Frozen:</strong> {m.appeal_frozen_note()}
         </p>
       </div>

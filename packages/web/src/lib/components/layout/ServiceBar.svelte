@@ -26,7 +26,7 @@
     >
       COMS
     </a>
-    <div class="flex h-6 items-center px-2.5 rounded text-[11px] font-semibold bg-white/10 text-gold cursor-default">
+    <div class="flex h-6 items-center px-2.5 rounded text-[11px] font-semibold bg-gold/20 text-gold tracking-[0.02em] cursor-default">
       Heroes
     </div>
   </div>

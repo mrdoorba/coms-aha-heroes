@@ -70,9 +70,8 @@
     }
   }
 
-  function branchFlag(code?: string) {
-    if (code === 'TH') return '🇹🇭'
-    return '🇮🇩'
+  function branchCode(code?: string) {
+    return code ?? 'ID'
   }
 </script>
 
@@ -145,7 +144,7 @@
             <div class="flex items-start justify-between">
               <div class="flex items-center gap-2">
                 <Card.Title class="text-lg text-foreground">{team.name}</Card.Title>
-                <span class="text-base leading-none">{branchFlag(team.branchCode)}</span>
+                <span class="rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground bg-muted">{branchCode(team.branchCode)}</span>
               </div>
               {#if isHrOrAdmin}
                 <button

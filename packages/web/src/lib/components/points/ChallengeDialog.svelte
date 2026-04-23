@@ -61,8 +61,8 @@
           disabled={isSubmitting}
         />
       </div>
-      <div class="p-3 rounded-lg bg-blue-50 border border-blue-100 dark:bg-blue-900/20 dark:border-blue-800/50">
-        <p class="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
+      <div class="p-3 rounded-lg bg-primary/10 border border-primary/15 dark:bg-primary/10 dark:border-primary/20">
+        <p class="text-xs text-primary leading-relaxed">
           <strong>Note:</strong> {m.challenge_note()}
         </p>
       </div>

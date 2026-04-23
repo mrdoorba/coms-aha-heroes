@@ -37,9 +37,9 @@
 
   const SEVERITY_LABELS = { low: 'Ringan', medium: 'Sedang', high: 'Berat' }
   const SEVERITY_COLORS = {
-    low: 'text-amber-600 bg-amber-50 border-amber-200',
-    medium: 'text-orange-600 bg-orange-50 border-orange-200',
-    high: 'text-penalti bg-red-50 border-red-200',
+    low: 'text-status-pending bg-status-pending-bg border-status-pending/20',
+    medium: 'text-destructive/70 bg-destructive/5 border-destructive/20',
+    high: 'text-penalti bg-destructive/10 border-destructive/20',
   }
 
   const violationDescriptions: Record<number, () => string> = {
@@ -129,7 +129,7 @@
           <span
             class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary-dark text-white text-[10px] font-bold leading-none"
           >1</span>
-          <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          <span class="text-xs font-bold tracking-[0.06em] text-muted-foreground uppercase">
             {m.form_staff_name()}
           </span>
         </div>
@@ -156,14 +156,14 @@
           <span
             class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary-dark text-white text-[10px] font-bold leading-none"
           >2</span>
-          <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          <span class="text-xs font-bold tracking-[0.06em] text-muted-foreground uppercase">
             {m.penalti_form_kitta_category()}
           </span>
         </div>
         <div class="p-4 space-y-2">
           {#each KITTA_CODES as code (code)}
             <label
-              class="flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-all {kittaComponent === code ? 'border-penalti/50 bg-red-50 shadow-sm' : 'border-border hover:border-penalti/20 hover:bg-muted/40'}"
+              class="flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-all {kittaComponent === code ? 'border-penalti/50 bg-destructive/10 shadow-sm' : 'border-border hover:border-penalti/20 hover:bg-muted/40'}"
             >
               <input
                 type="radio"
@@ -194,7 +194,7 @@
           <span
             class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary-dark text-white text-[10px] font-bold leading-none"
           >3</span>
-          <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          <span class="text-xs font-bold tracking-[0.06em] text-muted-foreground uppercase">
             {m.penalti_form_violation_level({ level: String(violationLevel) })}
           </span>
         </div>
@@ -217,10 +217,10 @@
                 class="flex flex-col items-center justify-center h-11 rounded-lg border text-sm font-bold transition-all {isSelected
                   ? 'border-penalti bg-penalti text-white shadow-md scale-105'
                   : band === 'high'
-                    ? 'border-red-200 bg-red-50/50 text-red-700 hover:border-penalti/60 hover:bg-red-100'
+                    ? 'border-destructive/20 bg-destructive/5 text-destructive hover:border-penalti/60 hover:bg-destructive/10'
                     : band === 'medium'
-                      ? 'border-orange-200 bg-orange-50/50 text-orange-700 hover:border-orange-400 hover:bg-orange-100'
-                      : 'border-amber-200 bg-amber-50/50 text-amber-700 hover:border-amber-400 hover:bg-amber-100'}"
+                      ? 'border-destructive/15 bg-destructive/5 text-destructive/70 hover:border-destructive/30 hover:bg-destructive/10'
+                      : 'border-status-pending/20 bg-status-pending-bg text-status-pending hover:border-status-pending/40 hover:bg-status-pending/20'}"
               >
                 {n}
               </button>
@@ -240,7 +240,7 @@
           <span
             class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary-dark text-white text-[10px] font-bold leading-none"
           >4</span>
-          <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          <span class="text-xs font-bold tracking-[0.06em] text-muted-foreground uppercase">
             {m.penalti_form_incident()}
           </span>
         </div>
@@ -263,7 +263,7 @@
           <span
             class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary-dark text-white text-[10px] font-bold leading-none"
           >5</span>
-          <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          <span class="text-xs font-bold tracking-[0.06em] text-muted-foreground uppercase">
             {m.form_related_staff()}
           </span>
         </div>
@@ -284,7 +284,7 @@
           <span
             class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary-dark text-white text-[10px] font-bold leading-none"
           >6</span>
-          <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          <span class="text-xs font-bold tracking-[0.06em] text-muted-foreground uppercase">
             {m.form_screenshot_required()}
           </span>
         </div>

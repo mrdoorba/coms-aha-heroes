@@ -35,9 +35,9 @@
     pending:
       'bg-gold/15 text-status-pending border-gold/30 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800/40',
     approved:
-      'bg-emerald-50 text-emerald-700 border-emerald-200/70 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800/50',
+      'bg-status-approved-bg text-status-approved border-status-approved/30 dark:bg-status-approved/20 dark:text-status-approved dark:border-status-approved/40',
     rejected:
-      'bg-red-50 text-red-700 border-red-200/70 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/50',
+      'bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/20 dark:text-destructive dark:border-destructive/40',
   }
 
   function statusLabel(s: string) {
@@ -201,7 +201,7 @@
             {/if}
 
             <p class="mt-0.5 text-xs font-semibold text-primary">
-              {item.pointsSpent} {m.points_poin_aha()}
+              {item.pointsSpent.toLocaleString('id-ID')} {m.points_poin_aha()}
             </p>
 
             <div class="mt-1 flex flex-wrap items-center gap-2">

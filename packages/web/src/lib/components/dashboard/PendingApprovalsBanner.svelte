@@ -7,7 +7,7 @@
 
 <a
   href="/points?status=pending"
-  class="group flex items-center justify-between rounded-xl bg-card border border-gold/30 px-4 py-3 shadow-[0_2px_12px_rgba(244,193,68,0.15)] hover:shadow-[0_4px_20px_rgba(244,193,68,0.25)] hover:border-gold/60 transition-all duration-200"
+  class="group flex items-center justify-between rounded-xl bg-card border border-gold/30 px-4 py-3 shadow-[var(--shadow-glow-gold)] hover:shadow-[var(--shadow-card-hover)] hover:border-gold/60 transition-all duration-200"
 >
   <span class="flex items-center gap-2.5 text-sm font-semibold text-foreground">
     <span class="pulse-gold flex h-8 w-8 items-center justify-center rounded-full bg-gold/15">

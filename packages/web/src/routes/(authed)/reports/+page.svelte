@@ -39,7 +39,7 @@
 
 <div class="space-y-6">
   <div>
-    <h1 class="text-2xl font-bold">{m.reports_title()}</h1>
+    <h1 class="text-2xl font-extrabold">{m.reports_title()}</h1>
     <p class="text-sm text-muted-foreground">{m.reports_subtitle()}</p>
   </div>
 

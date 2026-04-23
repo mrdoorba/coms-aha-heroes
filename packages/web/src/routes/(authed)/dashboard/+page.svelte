@@ -38,7 +38,7 @@
   const welcomeLabel = $derived(m.dashboard_welcome({ name: '' }).split(',')[0])
 </script>
 
-<div class="mx-auto max-w-screen-lg px-4 pb-24 pt-5 md:pb-8">
+<div class="pb-24 pt-5 md:pb-8">
   <!-- Bento grid — single col on mobile, 4-col asymmetric on desktop -->
   <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
 

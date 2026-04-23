@@ -77,7 +77,7 @@
       {@const styles = TAB_STYLES[tab.value]}
       <button
         type="button"
-        class="flex-1 rounded-xl px-2 py-2 text-xs font-bold transition-all duration-200 min-h-[36px] border {isActive ? styles.active : 'border-transparent text-muted-foreground hover:text-foreground'}"
+        class="flex-1 rounded-xl px-2 py-2 text-xs font-bold transition-all duration-200 min-h-[44px] border {isActive ? styles.active : 'border-transparent text-muted-foreground hover:text-foreground'}"
         onclick={() => handleTabChange(tab.value)}
       >
         {tab.label()}

@@ -69,10 +69,10 @@
       {@const statusStyle = getStatusStyle(item.status)}
       {@const ptStyle = getPointStyle(item.categoryCode)}
       {@const prefix = item.categoryCode.toUpperCase().includes('PENALTI') ? '-' : '+'}
-      <li class="stagger-item" style="animation-delay: {i * 50}ms">
+      <li class="stagger-item" style="animation-delay: {i * 40}ms">
         <a
           href="/points/{item.id}"
-          class="tap-active flex items-center gap-3 rounded-xl bg-card border border-border p-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.12)] group"
+          class="tap-active flex items-center gap-3 rounded-2xl bg-card border border-border p-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)] group"
         >
           <!-- Avatar -->
           <div class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-primary">
@@ -92,7 +92,7 @@
               </span>
             </div>
             <div class="mt-0.5 flex items-center gap-2">
-              <span class="rounded-full px-1.5 py-0.5 text-[10px] font-semibold capitalize {statusStyle.bg} {statusStyle.text}">
+              <span class="rounded-full px-1.5 py-0.5 text-[10px] font-bold capitalize {statusStyle.bg} {statusStyle.text}">
                 {item.status}
               </span>
               <span class="text-[11px] text-muted-foreground/70">{formatRelativeTime(item.createdAt)}</span>

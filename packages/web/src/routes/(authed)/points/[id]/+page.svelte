@@ -83,8 +83,8 @@
             </p>
           </div>
         </div>
-        <span class="text-2xl font-black tracking-tight {pointColor}">
-          {prefix}{point?.points}
+        <span class="text-2xl font-extrabold tracking-tight {pointColor}">
+          {prefix}{point?.points?.toLocaleString()}
         </span>
       </div>
 

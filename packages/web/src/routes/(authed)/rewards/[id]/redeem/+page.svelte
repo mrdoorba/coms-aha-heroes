@@ -89,10 +89,10 @@
     </div>
   {:else if success}
     <div
-      class="flex flex-col items-center gap-3 rounded-2xl border border-emerald-200/60 bg-emerald-50 p-8 text-center shadow-card dark:border-emerald-800/40 dark:bg-emerald-900/20"
+      class="flex flex-col items-center gap-3 rounded-2xl border border-status-approved/30 bg-status-approved-bg p-8 text-center shadow-card dark:border-status-approved/40 dark:bg-status-approved/20"
     >
-      <CheckCircle class="h-12 w-12 text-emerald-500" />
-      <p class="font-bold text-emerald-700 dark:text-emerald-400">{m.settings_saved()}</p>
+      <CheckCircle class="h-12 w-12 text-status-approved" />
+      <p class="font-bold text-status-approved">{m.settings_saved()}</p>
       <p class="text-sm text-muted-foreground">{m.common_loading()}</p>
     </div>
   {:else}

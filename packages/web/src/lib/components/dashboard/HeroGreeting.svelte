@@ -10,7 +10,7 @@
   } = $props()
 </script>
 
-<div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-dark via-[#2550C8] to-primary p-5 shadow-[0_8px_32px_rgba(29,56,139,0.35)]">
+<div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-dark via-[#2550C8] to-primary p-5 shadow-[var(--shadow-glow-blue)]">
   <!-- Decorative glows -->
   <div class="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-gold/15 blur-2xl"></div>
   <div class="pointer-events-none absolute -bottom-4 left-16 h-20 w-20 rounded-full bg-sky-blue/20 blur-xl"></div>

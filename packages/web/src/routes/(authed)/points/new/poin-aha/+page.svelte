@@ -34,9 +34,9 @@
 
   const IMPACT_LABELS = { low: 'Kecil', medium: 'Sedang', high: 'Besar' }
   const IMPACT_COLORS = {
-    low: 'text-sky-600 bg-sky-50 border-sky-200',
-    medium: 'text-primary bg-blue-50 border-blue-200',
-    high: 'text-blue-700 bg-blue-100 border-blue-300',
+    low: 'text-primary/60 bg-primary/8 border-primary/15',
+    medium: 'text-primary bg-primary/10 border-primary/20',
+    high: 'text-primary bg-primary/15 border-primary/30',
   }
 
   const impact = $derived(getImpactBand(level))
@@ -95,7 +95,7 @@
         <div
           class="flex-shrink-0 flex items-center justify-center w-11 h-11 rounded-xl bg-primary/20 border border-primary/30 mt-0.5"
         >
-          <Award class="w-5 h-5 text-[#7B9FFF]" />
+          <Award class="w-5 h-5 text-primary-light" />
         </div>
         <div>
           <h1 class="text-xl font-bold text-white leading-tight">{m.poin_aha_form_title()}</h1>
@@ -117,7 +117,7 @@
           <span
             class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold leading-none"
           >1</span>
-          <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          <span class="text-xs font-bold tracking-[0.06em] text-muted-foreground uppercase">
             {m.form_staff_name()}
           </span>
         </div>
@@ -144,7 +144,7 @@
           <span
             class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold leading-none"
           >2</span>
-          <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          <span class="text-xs font-bold tracking-[0.06em] text-muted-foreground uppercase">
             {m.poin_aha_form_activity()}
           </span>
         </div>
@@ -167,7 +167,7 @@
           <span
             class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold leading-none"
           >3</span>
-          <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          <span class="text-xs font-bold tracking-[0.06em] text-muted-foreground uppercase">
             {m.poin_aha_form_level({ level: String(level) })}
           </span>
         </div>
@@ -190,9 +190,9 @@
                 class="flex flex-col items-center justify-center h-11 rounded-lg border text-sm font-bold transition-all {isSelected
                   ? 'border-primary bg-primary text-white shadow-md scale-105'
                   : band === 'high'
-                    ? 'border-blue-200 bg-blue-50/50 text-blue-700 hover:border-primary/60 hover:bg-blue-100'
+                    ? 'border-primary/20 bg-primary/10 text-primary hover:border-primary/40 hover:bg-primary/20'
                     : band === 'medium'
-                      ? 'border-sky-200 bg-sky-50/50 text-sky-700 hover:border-sky-400 hover:bg-sky-100'
+                      ? 'border-primary/15 bg-primary/8 text-primary/80 hover:border-primary/30 hover:bg-primary/15'
                       : 'border-slate-200 bg-slate-50/50 text-slate-600 hover:border-slate-400 hover:bg-slate-100'}"
               >
                 {n}
@@ -208,7 +208,7 @@
           <span
             class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold leading-none"
           >4</span>
-          <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          <span class="text-xs font-bold tracking-[0.06em] text-muted-foreground uppercase">
             {m.form_related_staff()}
           </span>
         </div>
@@ -229,7 +229,7 @@
           <span
             class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold leading-none"
           >5</span>
-          <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          <span class="text-xs font-bold tracking-[0.06em] text-muted-foreground uppercase">
             {m.form_screenshot_optional()}
           </span>
         </div>

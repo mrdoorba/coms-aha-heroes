@@ -21,8 +21,8 @@
   let saveSuccess = $state(false)
 
   const BRANCHES = [
-    { name: 'Indonesia', timezone: 'Asia/Jakarta (GMT+7)', flag: '🇮🇩' },
-    { name: 'Thailand', timezone: 'Asia/Bangkok (GMT+7)', flag: '🇹🇭' },
+    { name: 'Indonesia', timezone: 'Asia/Jakarta (GMT+7)' },
+    { name: 'Thailand', timezone: 'Asia/Bangkok (GMT+7)' },
   ]
 
   const POINT_CATEGORIES = [
@@ -121,7 +121,7 @@
         <p class="text-sm font-medium text-destructive">{saveError}</p>
       {/if}
       {#if saveSuccess}
-        <p class="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+        <p class="text-sm font-medium text-status-approved">
           {m.settings_saved()}
         </p>
       {/if}
@@ -150,7 +150,7 @@
         <li
           class="flex items-center justify-between rounded-xl border border-border bg-muted px-4 py-3"
         >
-          <span class="text-sm font-semibold text-foreground">{branch.flag} {branch.name}</span>
+          <span class="text-sm font-semibold text-foreground">{branch.name}</span>
           <span class="text-xs font-medium text-muted-foreground">{branch.timezone}</span>
         </li>
       {/each}
@@ -173,7 +173,7 @@
           <span class="text-sm font-semibold text-foreground">{cat.name}</span>
           <span
             class="rounded-full px-2.5 py-0.5 text-[11px] font-semibold {cat.active
-              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+              ? 'bg-status-approved-bg text-status-approved dark:bg-status-approved/20 dark:text-status-approved'
               : 'bg-muted text-muted-foreground'}"
           >
             {cat.active ? m.status_active() : m.status_inactive()}

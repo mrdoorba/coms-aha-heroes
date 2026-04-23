@@ -43,16 +43,16 @@
 
   function getActionBadgeClass(action: string): string {
     if (action.startsWith('POINT_SUBMITTED') || action.startsWith('POINT_APPROVED'))
-      return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300'
+      return 'bg-primary/10 text-primary border-primary/25 dark:bg-primary/20 dark:text-primary'
     if (action.startsWith('POINT_REJECTED') || action.startsWith('POINT_REVOKED'))
-      return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300'
+      return 'bg-destructive/10 text-destructive border-destructive/25 dark:bg-destructive/20 dark:text-destructive'
     if (action.startsWith('CHALLENGE_') || action.startsWith('APPEAL_'))
-      return 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300'
+      return 'bg-purple/10 text-purple border-purple/25 dark:bg-purple/20 dark:text-purple-light'
     if (action.startsWith('REDEMPTION_'))
-      return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300'
+      return 'bg-status-approved-bg text-status-approved border-status-approved/25 dark:bg-status-approved/20 dark:text-status-approved'
     if (action.startsWith('USER_') || action.startsWith('TEAM_'))
-      return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800/50 dark:text-gray-300'
-    return 'bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-800/50 dark:text-gray-400'
+      return 'bg-muted text-muted-foreground border-border'
+    return 'bg-muted text-muted-foreground border-border'
   }
 
   function formatTimestamp(iso: string) {

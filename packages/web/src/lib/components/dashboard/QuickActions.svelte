@@ -22,7 +22,7 @@
     <a
       href="/points/new/bintang"
       onclick={() => (open = false)}
-      class="flex items-center gap-2 rounded-full px-4 py-3 text-sm font-bold shadow-xl min-h-[44px]
+      class="flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-bold shadow-xl min-h-[44px]
         btn-gradient-gold text-gold-dark
         transition-all duration-200 opacity-100 translate-y-0"
     >
@@ -32,7 +32,7 @@
     <a
       href="/points/new/poin-aha"
       onclick={() => (open = false)}
-      class="flex items-center gap-2 rounded-full px-4 py-3 text-sm font-bold shadow-xl min-h-[44px]
+      class="flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-bold shadow-xl min-h-[44px]
         btn-gradient-blue text-white
         transition-all duration-200 opacity-100 translate-y-0"
     >
@@ -43,7 +43,7 @@
       <a
         href="/points/new/penalti"
         onclick={() => (open = false)}
-        class="flex items-center gap-2 rounded-full px-4 py-3 text-sm font-bold shadow-xl min-h-[44px]
+        class="flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-bold shadow-xl min-h-[44px]
           btn-gradient-red text-white
           transition-all duration-200 opacity-100 translate-y-0"
       >

@@ -91,7 +91,7 @@
   <div class="mb-6 flex items-center justify-between gap-3">
     <div class="flex items-center gap-3">
       <div
-        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-sky-blue shadow-[0_4px_12px_rgba(50,95,236,0.25)]"
+        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-sky-blue shadow-[var(--shadow-card)]"
       >
         <User class="h-5 w-5 text-white" />
       </div>
@@ -104,7 +104,7 @@
     </div>
     <Button
       href="/admin/users/new"
-      class="h-9 shrink-0 rounded-xl px-4 font-semibold shadow-[0_2px_8px_rgba(50,95,236,0.25)] bg-gradient-to-br from-primary to-sky-blue text-white"
+      class="h-9 shrink-0 rounded-xl px-4 font-semibold shadow-[var(--shadow-card)] bg-gradient-to-br from-primary to-sky-blue text-white"
     >
       <Plus class="h-4 w-4" />
       {m.users_add()}
@@ -213,8 +213,8 @@
               <Table.Cell>
                 <span
                   class="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold {user.isActive
-                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                    : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'}"
+                    ? 'bg-status-approved-bg text-status-approved dark:bg-status-approved/20 dark:text-status-approved'
+                    : 'bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive'}"
                 >
                   {user.isActive ? m.status_active() : m.status_archived()}
                 </span>
@@ -223,7 +223,7 @@
                 <div class="flex items-center gap-1">
                   <a
                     href="/admin/users/{user.id}"
-                    class="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-primary/8 hover:text-primary"
+                    class="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-primary/8 hover:text-primary"
                     aria-label={m.common_edit()}
                   >
                     <Pencil class="h-3.5 w-3.5" />
@@ -231,7 +231,7 @@
                   {#if user.isActive}
                     <button
                       type="button"
-                      class="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/8 hover:text-destructive"
+                      class="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/8 hover:text-destructive"
                       aria-label={m.status_archived()}
                     >
                       <Archive class="h-3.5 w-3.5" />

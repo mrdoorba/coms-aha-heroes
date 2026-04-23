@@ -107,7 +107,7 @@
 
           <!-- Score -->
           <span class="shrink-0 rounded-lg bg-primary/8 px-2 py-0.5 text-xs font-extrabold text-primary">
-            {entry.score}
+            {entry.score.toLocaleString()}
           </span>
         </li>
       {/each}

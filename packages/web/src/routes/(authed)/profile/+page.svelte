@@ -75,7 +75,7 @@
         <div class="relative -mt-10 mb-3 flex items-end justify-between">
           <div class="relative">
             <div
-              class="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-card text-2xl font-bold text-primary ring-4 ring-card shadow-lg"
+              class="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-card text-2xl font-bold text-primary ring-4 ring-card shadow-lg"
             >
               {#if initials}
                 {initials}
@@ -199,12 +199,12 @@
 
       <Button
         variant="outline"
-        class="min-h-[52px] w-full justify-start gap-3 rounded-2xl border-red-200/70 bg-card py-3.5 text-red-600 shadow-card hover:border-red-300 hover:bg-red-50 hover:text-red-700 dark:border-red-900/50 dark:hover:border-red-800/60 dark:hover:bg-red-900/20"
+        class="min-h-[52px] w-full justify-start gap-3 rounded-2xl border-destructive/30 bg-card py-3.5 text-destructive shadow-card hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive dark:border-destructive/40 dark:hover:border-destructive/60 dark:hover:bg-destructive/20"
         disabled={loggingOut}
         onclick={handleLogout}
       >
         <div
-          class="flex h-8 w-8 items-center justify-center rounded-xl bg-red-50 dark:bg-red-900/30"
+          class="flex h-8 w-8 items-center justify-center rounded-xl bg-destructive/10 dark:bg-destructive/20"
         >
           <LogOut class="h-4 w-4" />
         </div>

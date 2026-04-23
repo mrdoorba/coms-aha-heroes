@@ -7,6 +7,8 @@
     Menu,
     X,
     Search,
+    Sun,
+    Moon,
     LayoutDashboard,
     Award,
     Gift,
@@ -20,13 +22,16 @@
   } from 'lucide-svelte'
   import * as m from '$lib/paraglide/messages'
   import type { AuthUser } from '@coms/shared/types'
+  import { uiState } from '$lib/state/uiState.svelte'
 
   let {
     user,
+    avatarUrl,
     unreadCount = 0,
     onOpenPalette,
   }: {
     user: AuthUser
+    avatarUrl?: string | null
     unreadCount?: number
     onOpenPalette?: () => void
   } = $props()
@@ -34,6 +39,16 @@
   let menuOpen = $state(false)
 
   const isAdminOrHr = $derived(user.role === 'admin' || user.role === 'hr')
+
+  const initials = $derived(
+    user?.name
+      ? user.name.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase()
+      : '',
+  )
+
+  function toggleDark() {
+    uiState.setTheme(uiState.theme === 'dark' ? 'light' : 'dark')
+  }
 
   const adminNavItems = [
     { href: '/dashboard', label: () => m.nav_dashboard(), icon: LayoutDashboard },
@@ -65,7 +80,7 @@
 
 <!-- Mobile top bar — hidden on desktop -->
 <header class="fixed top-9 left-0 right-0 z-50 flex h-14 items-center justify-between px-4 md:hidden
-  bg-chrome-navy/85 backdrop-blur-xl border-b border-white/10">
+  bg-chrome-navy/85 backdrop-blur-[16px] border-b border-white/10">
 
   <div class="flex items-center gap-2">
     <!-- Hamburger — admin/HR only -->
@@ -91,6 +106,43 @@
   </div>
 
   <div class="flex items-center gap-1">
+    <!-- Theme toggle -->
+    <button
+      type="button"
+      onclick={toggleDark}
+      class="flex h-10 w-10 items-center justify-center rounded-full text-white/60 hover:bg-white/8 hover:text-white transition-colors"
+      aria-label={uiState.theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+    >
+      {#if uiState.theme === 'dark'}
+        <Sun class="h-5 w-5" />
+      {:else}
+        <Moon class="h-5 w-5" />
+      {/if}
+    </button>
+
+    <!-- Avatar -->
+    <a
+      href="/profile"
+      class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-primary/30 text-xs font-bold text-primary-light ring-1 ring-white/15 hover:ring-white/30 transition-all"
+      aria-label="Profile"
+    >
+      {#if avatarUrl}
+        <img
+          src={avatarUrl}
+          alt={user?.name ?? ''}
+          class="h-full w-full object-cover"
+          width={32}
+          height={32}
+          loading="lazy"
+          decoding="async"
+        />
+      {:else if initials}
+        <span>{initials}</span>
+      {:else}
+        <User class="h-4 w-4" />
+      {/if}
+    </a>
+
     <!-- Search / Command palette (placeholder — real wiring in Phase 4) -->
     <button
       type="button"
