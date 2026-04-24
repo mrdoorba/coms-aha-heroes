@@ -1,5 +1,4 @@
 import { env } from '$env/dynamic/private'
-import { jwtVerify } from 'jose'
 import type { PortalSessionUser } from '@coms/shared/auth/session'
 
 export type PortalBrokerExchangePayload = {
@@ -23,30 +22,10 @@ export class PortalBrokerError extends Error {
 function requireEnv() {
   const origin = env.PORTAL_ORIGIN
   const appSlug = env.PORTAL_APP_SLUG
-  const audience = env.PORTAL_TOKEN_AUDIENCE
-  const signingSecret = env.PORTAL_BROKER_SIGNING_SECRET
-  if (!origin || !appSlug || !audience || !signingSecret) {
-    throw new Error(
-      'PORTAL_ORIGIN, PORTAL_APP_SLUG, PORTAL_TOKEN_AUDIENCE, and PORTAL_BROKER_SIGNING_SECRET must be set',
-    )
+  if (!origin || !appSlug) {
+    throw new Error('PORTAL_ORIGIN and PORTAL_APP_SLUG must be set')
   }
-  return { origin, appSlug, audience, signingSecret }
-}
-
-type WireResponse = {
-  appSlug: string
-  handoffMode: 'token_exchange'
-  token: string
-  expiresAt: string
-  redirectUrl: string | null
-}
-
-type VerifiedClaims = {
-  appSlug: string
-  brokeredAt: string
-  expiresAt: string
-  redirectTo: string | null
-  sessionUser: PortalSessionUser
+  return { origin, appSlug }
 }
 
 function isPortalSessionUser(v: unknown): v is PortalSessionUser {
@@ -63,14 +42,18 @@ function isPortalSessionUser(v: unknown): v is PortalSessionUser {
   )
 }
 
-function assertVerifiedClaims(payload: Record<string, unknown>): VerifiedClaims {
+function assertExchangePayload(data: unknown): PortalBrokerExchangePayload {
+  if (!data || typeof data !== 'object') {
+    throw new PortalBrokerError(502, 'Invalid exchange response: not an object')
+  }
+  const payload = data as Record<string, unknown>
   if (
     typeof payload.appSlug !== 'string' ||
     typeof payload.brokeredAt !== 'string' ||
     typeof payload.expiresAt !== 'string' ||
     !isPortalSessionUser(payload.sessionUser)
   ) {
-    throw new PortalBrokerError(401, 'Invalid portal token: missing required claims')
+    throw new PortalBrokerError(502, 'Invalid exchange response: missing required fields')
   }
   return {
     appSlug: payload.appSlug,
@@ -81,8 +64,15 @@ function assertVerifiedClaims(payload: Record<string, unknown>): VerifiedClaims 
   }
 }
 
+/**
+ * Exchange a one-time portal_code for a verified session payload.
+ *
+ * The portal's /api/auth/broker/exchange endpoint verifies the code
+ * server-side and returns the session user data as plain JSON over HTTPS.
+ * No client-side JWT verification is needed.
+ */
 export async function exchangePortalCode(code: string): Promise<PortalBrokerExchangePayload> {
-  const { origin, appSlug, audience, signingSecret } = requireEnv()
+  const { origin, appSlug } = requireEnv()
 
   const res = await fetch(`${origin}/api/auth/broker/exchange`, {
     method: 'POST',
@@ -101,22 +91,7 @@ export async function exchangePortalCode(code: string): Promise<PortalBrokerExch
     throw new PortalBrokerError(res.status, message)
   }
 
-  const wrapper = (await res.json()) as WireResponse
-
-  let payload: Record<string, unknown>
-  try {
-    const secret = new TextEncoder().encode(signingSecret)
-    const result = await jwtVerify(wrapper.token, secret, {
-      issuer: 'portal-broker',
-      audience,
-    })
-    payload = result.payload as Record<string, unknown>
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    throw new PortalBrokerError(401, `Invalid portal token: ${msg}`)
-  }
-
-  return assertVerifiedClaims(payload)
+  return assertExchangePayload(await res.json())
 }
 
 export function buildPortalSignInUrl(redirectTo?: string): string {
