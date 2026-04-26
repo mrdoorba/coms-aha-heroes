@@ -1,5 +1,7 @@
 # Spec 03 — Contract Distribution
 
+> **Status: IMPLEMENTED (2026-04-26)** — `@coms-portal/shared` published at `git+https://github.com/mrdoorba/coms-shared.git#v1.1.0`. Portal and Heroes both consume from the published package; local duplicate types removed in Heroes. Option A (Git dependency) was the chosen distribution path.
+
 > Priority: **3 (developer velocity)**
 > Scope: Portal (extract) + Heroes (consume)
 > Prerequisites: Spec 02 contracts should be finalized first so the extracted package includes app roles
@@ -188,6 +190,27 @@ The `PLATFORM_AUTH_CONTRACT_VERSION` in `contracts/auth.ts` is a **wire protocol
 3. Update portal to produce both old and new formats (V +/- 1 support window)
 4. Notify service teams to upgrade within 30 days
 5. After all services upgrade, drop old format support
+
+### Release Process
+
+The spec defines versioning rules but the mechanics of cutting a release need to be explicit:
+
+1. **Who:** The portal team owns the shared package repo
+2. **When:** Tag a new version whenever contract types change (before deploying portal code that depends on the change)
+3. **How:**
+   - Update `version` in `package.json`
+   - `git tag v{x.y.z}` and push the tag
+   - Notify consumers in the team channel with the tag and a one-line changelog
+4. **CI check (future):** Add a GitHub Action that runs `bun run typecheck` on push to `main` and on tag creation, so broken types can't be published
+
+### Consumer Upgrade Tracking
+
+At 2 consumers (portal + Heroes), tracking upgrades is a Slack message. At 3+ services, consider:
+
+- A simple dashboard or script that checks each consumer repo's `package.json` for the `@coms-portal/shared` version
+- The breaking change notification (step 4 above) should include a deadline and a follow-up reminder
+
+Low priority until a third service onboards.
 
 ---
 

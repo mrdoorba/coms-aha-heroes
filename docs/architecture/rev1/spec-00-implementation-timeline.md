@@ -2,6 +2,27 @@
 
 > This document is the coordination plan for all Rev 1 specs.
 > It defines what runs in parallel, what blocks what, and when to communicate with the Heroes team.
+>
+> **Last updated:** 2026-04-26
+
+---
+
+## Completion Status
+
+| Spec | Title | Portal | Heroes |
+|------|-------|--------|--------|
+| 01 | Security Hardening | DONE | N/A |
+| 02 | Provisioning Bridge | DONE | DONE (H1, H2, manifest) |
+| 03 | Contract Distribution | DONE | DONE (H3 — shared package consumed) |
+| 04 | Resilience | DONE (health probes) | DONE (H4 — stale-while-revalidate) |
+| 05 | Architecture | Not started | N/A |
+
+**Verified against the Heroes codebase on 2026-04-26:**
+
+- `packages/server/src/routes/portal-webhooks.ts:101-159` — `user.provisioned` handler implemented per Spec 02 §5 (lookup-or-insert, role mapping, branch resolution with default fallback).
+- `packages/server/src/routes/portal-webhooks.ts:160-190` — `user.updated` handler implemented per Spec 02 §5 (email-keyed update of name + role).
+- `packages/web/src/lib/server/portal-introspect.ts:15-19, 87-92, 113-120` — two-tier cache (`freshUntil` 30s / `staleUntil` 5min), stale-serve on retry exhaustion with `console.warn`, hard-fail when no cache.
+- `portal.integration.json:76-81` — `appRoles` declared (employee default, leader, hr, admin).
 
 ---
 
@@ -10,113 +31,106 @@
 Work is split into two parallel tracks: Portal and Heroes. Most work is independent. Dependencies are called out explicitly.
 
 ```
-Phase 1 (Now)   Phase 2          Phase 3          Phase 4
+Phase 1 (Done)  Phase 2 (Done)   Phase 3          Phase 4
 ──────────────── ──────────────── ──────────────── ────────────
 PORTAL:
-[Spec 01: Security ][Spec 02: Provisioning ][Spec 03: Shared pkg][Spec 05: SSR     ]
-                                             [Spec 04: Health    ][      Cloud Tasks]
+[Spec 01: Security ✓][Spec 02: Provisioning ✓][Spec 03: Shared ✓ ][Spec 05: SSR     ]
+                                                [Spec 04: Health ✓ ][      Cloud Tasks]
 
 HEROES:
-[H4: Introspect][H1+H2: Webhook handlers   ][H3: Use shared pkg ]
-                                                   ↑
-                                                   blocked on Spec 03
+[H4: Introspect ✓][H1+H2: Webhook handlers ✓][H3: Use shared ✓ ][Manifest appRoles ✓]
 ```
 
+All Heroes-side work for Rev 1 is complete. Spec 05 is portal-only.
+
 ---
 
-## Phase 1 — Start Immediately
+## Phase 1 — COMPLETED
 
 ### Portal
 
-| Item | Spec | Dependencies |
-|------|------|-------------|
-| Per-app broker signing keys | 01 | None |
-| Per-app introspect secrets | 01 | None |
-| CSRF on broker launch | 01 | None |
+| Item | Spec | Status |
+|------|------|--------|
+| Per-app broker signing keys | 01 | DONE |
+| Per-app introspect secrets | 01 | DONE |
+| CSRF on broker launch | 01 | DONE |
 
-**Deliverable:** Schema migration (two new columns on `app_registry`), updated broker and introspect code, app-card POST conversion.
+**Delivered:** Schema migration (two new columns on `app_registry`), updated broker and introspect code, app-card POST conversion, ServiceBar POST conversion, `navigateToLaunch()` POST form for handoff intents, `redirectTo` moved from body to query params.
 
 ### Heroes
 
-| Item | Ref | Dependencies |
-|------|-----|-------------|
-| H4: Stale-while-revalidate on introspect client | Spec 04 | None — fully independent |
-| H1: `user.provisioned` webhook handler (skeleton) | Spec 02 | Heroes answers the 3 open questions (see below) |
-| H2: `user.updated` webhook handler (skeleton) | Spec 02 | None |
+| Item | Ref | Status |
+|------|-----|--------|
+| H4: Stale-while-revalidate on introspect client | Spec 04 | DONE |
+| H1: `user.provisioned` webhook handler (skeleton) | Spec 02 | DONE |
+| H2: `user.updated` webhook handler (skeleton) | Spec 02 | DONE |
 
-Heroes can code H1 and H2 against the **current** webhook payload shape. The `appRole` field will be `null`/absent until Portal ships Spec 02. Their handlers should default to `'employee'` when `appRole` is missing — no breakage.
+### ~~Action: Send Handoff Doc Today~~ DONE
 
-### Action: Send Handoff Doc Today
-
-Send `heroes-team-handoff.md` to the Heroes team with these three questions:
-
-1. What should the default `branchId` be for auto-provisioned users?
-2. Should auto-provisioned users get `canSubmitPoints: false` by default?
-3. Any concerns about the `appRole` → `UserRole` mapping being 1:1?
-
-These are Heroes-internal decisions. The answers do not change any portal spec, schema, or code. They only affect what Heroes writes inside their `case 'user.provisioned':` block. The reason to ask early: if they don't have a default branch set up, they may need to create one before they can finish H1.
+Handoff doc sent. Branch question resolved — portal now sends `branch` label in webhook payloads.
 
 ---
 
-## Phase 2 — After Spec 01 + 02 Ship
+## Phase 2 — COMPLETED
 
 ### Portal
 
-| Item | Spec | Dependencies |
-|------|------|-------------|
-| App roles in manifest + DB | 02 | None |
-| Role selection in team-app grant | 02 | App roles in DB |
-| Enriched webhook payloads (`appRole`) | 02 | App roles in DB |
-| Extract `@coms-portal/shared` package | 03 | Spec 02 contracts finalized (so the package includes `PortalAppRole`) |
-| Health probe service | 04 | None |
-| Dashboard degraded state | 04 | Health probe |
+| Item | Spec | Status |
+|------|------|--------|
+| App roles in manifest + DB | 02 | DONE |
+| Role selection in team-app grant | 02 | DONE |
+| Enriched webhook payloads (`appRole`) | 02 | DONE |
+| Extract `@coms-portal/shared` package | 03 | DONE — published as `git+https://github.com/mrdoorba/coms-shared.git#v1.1.0` |
+| Health probe service | 04 | DONE |
+| Dashboard degraded state | 04 | DONE |
 
-**Deliverable:** Provisioning bridge is live — granting team access triggers `user.provisioned` with `appRole`. Shared package is published. Health probes running.
+**Delivered:** Provisioning bridge is live — granting team access triggers `user.provisioned` with `appRole`. Shared package is published at v1.1.0. Health probes running.
 
 ### Heroes
 
-| Item | Ref | Dependencies |
-|------|-----|-------------|
-| H1 + H2: Finalize handlers with `appRole` support | Spec 02 | Portal ships enriched webhooks |
-| H3: Replace duplicated types | Spec 03 | **Blocked on** portal publishing `@coms-portal/shared` |
-| Manifest update: add `appRoles` to `portal.integration.json` | Spec 02 | Portal ships app roles support |
+| Item | Ref | Status |
+|------|-----|--------|
+| H1 + H2: Finalize handlers with `appRole` support | Spec 02 | DONE |
+| H3: Replace duplicated types | Spec 03 | DONE — consuming `@coms-portal/shared` v1.1.0 |
+| Manifest update: add `appRoles` to `portal.integration.json` | Spec 02 | DONE |
 
-### Action: Notify Heroes When Shared Package Is Published
+### ~~Action: Notify Heroes When Shared Package Is Published~~ DONE
 
-Send a short message: "v1.0.0 of `@coms-portal/shared` is published at `github:mrdoorba/coms-portal-shared#v1.0.0`. You can now do H3."
+Package published and Heroes is consuming v1.1.0.
 
 ---
 
-## Phase 3 — When Capacity Allows
+## Phase 3 — Not Started
 
 ### Portal Only (no Heroes involvement)
 
 | Item | Spec | Dependencies |
 |------|------|-------------|
 | SSR migration (adapter-static → adapter-node) | 05 | None |
-| Cloud Tasks for webhook delivery | 05 | Terraform queue + service account |
+| Cloud Tasks for webhook delivery | 05 | OpenTofu queue + service account |
 | Remove in-process webhook worker | 05 | Cloud Tasks live + jobs table drained |
+| Health probe to Cloud Scheduler | 05 | Cloud Scheduler job (same scale-to-zero issue as webhook worker) |
 
 ---
 
 ## Dependency Graph
 
 ```
-Spec 01 (Security)
+Spec 01 (Security) ✓
   └── no dependencies
 
-Spec 02 (Provisioning)
-  ├── Portal: contract types → schema → API → admin UI → webhook dispatch
-  └── Heroes: H1, H2 (can start now, finalize after enriched payloads ship)
+Spec 02 (Provisioning) ✓ portal / ✓ Heroes
+  ├── Portal: contract types → schema → API → admin UI → webhook dispatch ✓
+  └── Heroes: H1, H2 ✓
 
-Spec 03 (Contracts)
-  ├── depends on: Spec 02 contracts finalized
-  ├── Portal: extract + publish package
-  └── Heroes: H3 (blocked on publish)
+Spec 03 (Contracts) ✓
+  ├── depends on: Spec 02 contracts finalized ✓
+  ├── Portal: extract + publish package ✓
+  └── Heroes: H3 ✓
 
-Spec 04 (Resilience)
-  ├── Portal: health probes (independent)
-  └── Heroes: H4 (independent, start now)
+Spec 04 (Resilience) ✓ portal / ✓ Heroes
+  ├── Portal: health probes ✓
+  └── Heroes: H4 ✓
 
 Spec 05 (Architecture)
   └── independent, no Heroes involvement
@@ -126,22 +140,38 @@ Spec 05 (Architecture)
 
 ## What Blocks What (explicit list)
 
-| Blocked item | Blocked by | When unblocked |
+| Blocked item | Blocked by | Status |
 |---|---|---|
-| Heroes H3 (replace types) | Portal publishes `@coms-portal/shared` | After Spec 03 |
-| Spec 03 (extract package) | Spec 02 contracts finalized | After Spec 02 contract types are merged |
-| Portal dashboard degraded UI | Health probe service deployed | After Spec 04 probe is live |
-| Remove webhook worker | Cloud Tasks live + jobs drained | After Spec 05 Cloud Tasks |
-
-Everything else is **unblocked** — it can start now or whenever capacity allows.
+| ~~Heroes H3 (replace types)~~ | ~~Portal publishes `@coms-portal/shared`~~ | UNBLOCKED — done |
+| ~~Spec 03 (extract package)~~ | ~~Spec 02 contracts finalized~~ | UNBLOCKED — done |
+| ~~Portal dashboard degraded UI~~ | ~~Health probe service deployed~~ | UNBLOCKED — done |
+| Remove webhook worker | Cloud Tasks live + jobs drained | Blocked — Spec 05 not started |
+| Health probe to Cloud Scheduler | Cloud Scheduler job created | Blocked — Spec 05 not started |
 
 ---
 
 ## Communication Checkpoints
 
-| When | What | Channel |
-|------|------|---------|
-| Today | Send `heroes-team-handoff.md` + 3 questions | Direct message to Heroes team |
-| After Spec 02 contracts merged | Notify Heroes: enriched payloads are live, finalize H1/H2 | Direct message |
-| After Spec 03 package published | Notify Heroes: `@coms-portal/shared` v1.0.0 available, do H3 | Direct message |
-| After all phases | Confirm all specs implemented, schedule a review | Team sync |
+| When | What | Status |
+|------|------|--------|
+| ~~Today~~ | ~~Send `heroes-team-handoff.md` + 3 questions~~ | DONE |
+| ~~After Spec 02 contracts merged~~ | ~~Notify Heroes: enriched payloads are live, finalize H1/H2~~ | DONE |
+| ~~After Spec 03 package published~~ | ~~Notify Heroes: `@coms-portal/shared` v1.1.0 available, do H3~~ | DONE |
+| After all phases | Confirm all specs implemented, schedule a review | Pending |
+
+---
+
+## Remaining Work
+
+### Heroes
+
+None — all Rev 1 Heroes-side items complete.
+
+**Known follow-up (not Rev 1 scope):** the H4 stale-serve path emits `console.warn` only. Spec 04 §1 calls for severity escalation (`severity: 'ERROR'` after N stale-serves in a window) plus a Cloud Monitoring alert policy. Without it, a multi-minute portal outage is invisible unless logs are tailed manually. Track separately.
+
+### Portal (Spec 05)
+
+- SSR migration
+- Cloud Tasks for webhook delivery
+- Health probe to Cloud Scheduler
+- Remove in-process webhook worker + health probe interval

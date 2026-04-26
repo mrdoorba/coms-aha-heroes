@@ -1,5 +1,13 @@
 # Spec 01 — Security Hardening
 
+> **Status: IMPLEMENTED (2026-04-26)** — sections §1, §2, §3 are shipped in the portal codebase. The env-var fallbacks in §4 remain enabled and §5 (dual-secret rotation) is not implemented; both are obviated by Rev 2 (RS256/JWKS removes the broker secret entirely; OIDC service-to-service for introspect removes that secret too). §6 (KMS envelope encryption) is deferred. The body is preserved as historical context.
+>
+> Verification:
+> - `apps/api/src/db/schema/apps.ts:26-27` — `broker_signing_secret` and `introspect_secret` columns
+> - `apps/api/src/services/auth-broker.ts:110-119` — per-app secret lookup with env fallback
+> - `apps/api/src/routes/auth.ts:271-279` — per-app introspect with `timingSafeEqual`
+> - `apps/api/src/routes/auth.ts` `/broker/launch/:appSlug` — POST-only, GET returns 405
+
 > Priority: **1 (do first)**
 > Scope: Portal only — no changes to relying-party apps
 > Prerequisites: None
@@ -118,67 +126,48 @@ No route-level changes — the app is already looked up before calling `createBr
 
 ## 2. CSRF Protection on Broker Launch
 
-### Current State
+### Current State (Implemented)
 
-The broker launch endpoint in `apps/api/src/routes/auth.ts:171-207`:
+The broker launch endpoint is POST-only. `GET` returns `405 Method Not Allowed`.
+
+The POST endpoint reads `redirectTo` from **query params** (not the request body) to avoid Elysia body-validation failures on form-encoded submissions:
 
 ```typescript
-.get(
+.post(
   '/broker/launch/:appSlug',
-  async ({ request, params, query, set }) => {
+  async ({ request, params, query, set, redirect }) => {
     const authUser = await resolveSessionUser(request)
     const app = await findBrokerAppBySlug(params.appSlug)
     const handoff = await createBrokerHandoff(app, authUser, query.redirectTo)
-    return new Response(null, { status: 302, headers: { Location: handoff.redirectUrl } })
+    return redirect(handoff.redirectUrl)
   },
+  { query: t.Object({ redirectTo: t.Optional(t.String()) }) },
 )
 ```
 
-This is a GET endpoint that:
-1. Reads the `__session` cookie (automatic — `SameSite=Lax` allows GET)
-2. Creates a one-time auth handoff code
-3. 302-redirects the browser to the target app with the code in the URL
+`SameSite=Lax` fully protects: cross-origin POSTs don't send the session cookie.
 
-A malicious page on the same site (or a user tricked into clicking a link) could trigger `GET /api/auth/broker/launch/evil-app` and silently redirect the user to a registered app with a valid handoff code.
+### All Launch Callers
 
-`SameSite=Lax` mitigates cross-origin attacks (the cookie isn't sent on cross-origin navigation triggered by non-top-level requests), but same-site attacks remain possible.
+Every path that triggers a broker launch must use POST. Three caller types exist:
 
-### Target State
+1. **`app-card.svelte`** — `<form method="POST">` with `redirectTo` in the action URL query string
+2. **`ServiceBar.svelte`** — `<form method="POST">` (no `redirectTo`)
+3. **`portal-handoff.ts` → `navigateToLaunch()`** — programmatically creates and submits a POST form for handoff intents (post-login redirect, deep-link interception)
 
-Convert the dashboard app-card launch flow from a direct `<a href>` GET to a form-based POST with a CSRF token.
+### Design Decisions
 
-### Approach: State-Changing Action = POST
+**Why query params instead of body for `redirectTo`?**
 
-**Option A (recommended): Convert to POST**
+HTML `<form method="POST">` sends hidden inputs as `application/x-www-form-urlencoded`. Elysia's `t.Object()` body schema validates against JSON — an empty form-encoded body (no inputs) fails with "Expected object". Moving `redirectTo` to query params avoids body validation entirely while keeping the POST method for CSRF protection.
 
-1. Change the dashboard's `app-card.svelte` (`apps/web/src/lib/components/app-card.svelte`) from an `<a>` tag to a `<form method="POST">` that submits to `/api/auth/broker/launch/:appSlug`
-2. The route handler at `apps/api/src/routes/auth.ts` changes from `.get(...)` to `.post(...)`
-3. `SameSite=Lax` now fully protects: cross-origin POSTs don't send the cookie
+**Why `navigateToLaunch()` instead of `window.location.assign()`?**
 
-```svelte
-<!-- Before -->
-<a href={launchHref}>...</a>
-
-<!-- After -->
-<form method="POST" action="/api/auth/broker/launch/{app.slug}">
-  {#if redirectTo}
-    <input type="hidden" name="redirectTo" value={redirectTo} />
-  {/if}
-  <button type="submit" class="...">...</button>
-</form>
-```
-
-**Option B: CSRF token on GET (more complex, less benefit)**
-
-Mint a short-lived CSRF token in the dashboard page load, embed in the launch URL as a query param, verify server-side. This adds state management complexity for marginal gain over Option A.
-
-### Recommendation
-
-Option A. The semantic meaning of "launch an app" is a state-changing action (it creates a handoff code and consumes a redirect). POST is correct.
+`window.location.assign(url)` performs a GET request. The old `buildLaunchUrl()` helper built GET URLs, which would hit the 405 stub. `navigateToLaunch()` creates a hidden `<form method="POST">`, sets the action URL (with `redirectTo` as a query param if present), and submits it — producing a same-origin POST that carries the session cookie.
 
 ### Migration
 
-The `GET /api/auth/broker/launch/:appSlug` endpoint is also referenced in external documentation. Keep the GET endpoint temporarily but have it return `405 Method Not Allowed` with a message pointing to the POST endpoint, or redirect to the dashboard if no valid session.
+The `GET /api/auth/broker/launch/:appSlug` stub returns `405 Method Not Allowed` for any remaining external references.
 
 ---
 
@@ -276,6 +265,56 @@ Note: Use `timingSafeEqual` from `node:crypto` instead of `!==` for constant-tim
 
 ---
 
+## 4. Fallback Deprecation Enforcement
+
+The env var fallbacks (`?? process.env.PORTAL_BROKER_SIGNING_SECRET` and `?? process.env.PORTAL_INTROSPECT_SECRET`) are temporary migration aids. To ensure they don't linger indefinitely:
+
+- **Log a deprecation warning** every time a fallback is used, including the app slug:
+  ```typescript
+  console.warn(`[auth-broker] app "${app.slug}" using global PORTAL_BROKER_SIGNING_SECRET fallback — migrate to per-app secret`)
+  ```
+- Once all apps have per-app secrets populated, remove the fallback code paths entirely and delete the global env vars from the deployment config.
+
+---
+
+## 5. Secret Rotation
+
+No rotation mechanism currently exists. If a per-app secret is compromised, the admin must update the DB column and coordinate with the relying-party app for a simultaneous switch — any gap causes auth failures.
+
+### Future: Dual-Secret Rotation Window
+
+When secret rotation is needed, support accepting two secrets simultaneously during a transition period:
+
+1. Add a `broker_signing_secret_previous` column (and equivalent for introspect)
+2. On verification, try the current secret first; if it fails, try the previous secret
+3. Admin UI: "Rotate secret" generates a new secret, moves the current one to `_previous`, and shows the new value for the relying-party team to adopt
+4. After the relying-party app has updated, clear `_previous`
+
+This is not needed at current scale (2 apps) but becomes important as more services onboard.
+
+---
+
+## 6. Secrets at Rest
+
+`broker_signing_secret` and `introspect_secret` are stored as plaintext `text` columns. If the database is compromised (leaked backup, SQL injection in a future feature), all signing keys are exposed.
+
+### Current Mitigation
+
+Cloud SQL encrypts data at rest by default (Google-managed keys). This protects against disk-level theft but not application-level DB access.
+
+### Future: Application-Level Envelope Encryption
+
+For stronger isolation, encrypt secrets with a KMS-wrapped data encryption key (DEK) before storing:
+
+1. Generate a DEK per secret (or per app) using Cloud KMS
+2. Encrypt the secret value with the DEK before writing to Postgres
+3. Decrypt on read using the KEK stored in KMS
+4. Only the portal's service account can call KMS — a DB dump alone is useless
+
+Low priority at current scale but worth revisiting before onboarding apps from external teams.
+
+---
+
 ## Implementation Order
 
 1. **Schema migration** — add both columns (`broker_signing_secret`, `introspect_secret`) to `app_registry` in a single migration
@@ -283,7 +322,7 @@ Note: Use `timingSafeEqual` from `node:crypto` instead of `!==` for constant-tim
 3. **Per-app introspect secrets** — update introspect endpoint with fallback to env var + timing-safe comparison
 4. **CSRF on launch** — convert GET to POST, update `app-card.svelte`
 5. **Data migration** — populate columns for existing apps, distribute new secrets
-6. **Deprecate global env vars** — remove fallbacks once all apps have per-app secrets
+6. **Deprecate global env vars** — add deprecation logging on fallback use, remove fallbacks once all apps have per-app secrets
 
 Steps 2-4 can be done in parallel. Step 5 requires coordination with relying-party teams (see `heroes-team-handoff.md`).
 
