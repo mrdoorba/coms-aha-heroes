@@ -41,26 +41,20 @@ function recordStaleServeAndDetermineSeverity(): 'WARNING' | 'ERROR' {
 
 function requireEnv() {
   const origin = env.PORTAL_ORIGIN
-  const secret = env.PORTAL_INTROSPECT_SECRET
   const appSlug = env.PORTAL_APP_SLUG
-  if (!origin || !secret || !appSlug) {
-    throw new Error(
-      'PORTAL_ORIGIN, PORTAL_INTROSPECT_SECRET, and PORTAL_APP_SLUG must be set',
-    )
+  if (!origin || !appSlug) {
+    throw new Error('PORTAL_ORIGIN and PORTAL_APP_SLUG must be set')
   }
-  return { origin, secret, appSlug }
+  return { origin, appSlug }
 }
 
 async function fetchIntrospect(args: {
   userId: string
   sessionIssuedAt: string
 }): Promise<Response> {
-  const { origin, secret, appSlug } = requireEnv()
+  const { origin, appSlug } = requireEnv()
 
-  const headers: Record<string, string> = {
-    'content-type': 'application/json',
-    'x-portal-introspect-secret': secret, // dual-mode: keep legacy header
-  }
+  const headers: Record<string, string> = { 'content-type': 'application/json' }
   const oidcAuth = await getOidcAuthHeader(origin)
   if (oidcAuth) headers['authorization'] = oidcAuth
 
@@ -114,8 +108,10 @@ export async function introspectSession(args: {
     }
 
     if (res.status === 401) {
-      console.error('[portal-introspect] 401 from portal — PORTAL_INTROSPECT_SECRET misconfigured')
-      throw new Error('Portal introspection auth rejected (401) — check PORTAL_INTROSPECT_SECRET')
+      console.error('[portal-introspect] 401 from portal — OIDC bearer token rejected')
+      throw new Error(
+        'Portal introspection auth rejected (401) — verify Heroes Cloud Run SA matches portal app_registry.service_account_email',
+      )
     }
 
     if (res.status === 404) {
