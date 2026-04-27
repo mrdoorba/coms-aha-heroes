@@ -1,5 +1,6 @@
 import { env } from '$env/dynamic/private'
 import type { PortalSessionUser } from '@coms/shared/auth/session'
+import { getOidcAuthHeader } from './google-oidc'
 
 export type PortalBrokerExchangePayload = {
   appSlug: string
@@ -74,9 +75,13 @@ function assertExchangePayload(data: unknown): PortalBrokerExchangePayload {
 export async function exchangePortalCode(code: string): Promise<PortalBrokerExchangePayload> {
   const { origin, appSlug } = requireEnv()
 
+  const headers: Record<string, string> = { 'content-type': 'application/json' }
+  const oidcAuth = await getOidcAuthHeader(origin)
+  if (oidcAuth) headers['authorization'] = oidcAuth
+
   const res = await fetch(`${origin}/api/auth/broker/exchange`, {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers,
     body: JSON.stringify({ appSlug, code }),
   })
 

@@ -1,5 +1,6 @@
 import { env } from '$env/dynamic/private'
 import type { PortalSessionUser } from '@coms/shared/auth/session'
+import { getOidcAuthHeader } from './google-oidc'
 
 export type IntrospectResult =
   | { active: true; user: PortalSessionUser }
@@ -41,12 +42,17 @@ async function fetchIntrospect(args: {
   sessionIssuedAt: string
 }): Promise<Response> {
   const { origin, secret, appSlug } = requireEnv()
+
+  const headers: Record<string, string> = {
+    'content-type': 'application/json',
+    'x-portal-introspect-secret': secret, // dual-mode: keep legacy header
+  }
+  const oidcAuth = await getOidcAuthHeader(origin)
+  if (oidcAuth) headers['authorization'] = oidcAuth
+
   return fetch(`${origin}/api/auth/broker/introspect`, {
     method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-portal-introspect-secret': secret,
-    },
+    headers,
     body: JSON.stringify({ userId: args.userId, sessionIssuedAt: args.sessionIssuedAt, appSlug }),
   })
 }
