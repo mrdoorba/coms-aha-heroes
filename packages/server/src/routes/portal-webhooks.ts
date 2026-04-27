@@ -1,4 +1,3 @@
-import { createHmac, timingSafeEqual } from 'node:crypto'
 import { Elysia } from 'elysia'
 import { eq } from 'drizzle-orm'
 import { db } from '@coms/shared/db'
@@ -20,23 +19,6 @@ type PortalEventBody = {
   changedFields?: string[]
 }
 
-export function verifyPortalSignature(opts: {
-  secret: string
-  timestamp: string
-  rawBody: string
-  signatureHeader: string
-}): boolean {
-  const { secret, timestamp, rawBody, signatureHeader } = opts
-  const expected = createHmac('sha256', secret)
-    .update(`${timestamp}.${rawBody}`)
-    .digest('hex')
-  const provided = signatureHeader.replace(/^sha256=/, '')
-
-  if (expected.length !== provided.length) return false
-
-  return timingSafeEqual(Buffer.from(expected, 'hex'), Buffer.from(provided, 'hex'))
-}
-
 function toUserRole(appRole: string | null | undefined): UserRole | null {
   if (!appRole) return null
   return (USER_ROLES as readonly string[]).includes(appRole) ? (appRole as UserRole) : null
@@ -53,68 +35,33 @@ export const portalWebhooksRoute = new Elysia().post(
       return { message: 'missing header' }
     }
 
-    // ── Rev 2 §03: Google OIDC bearer auth (preferred) with HMAC fallback ──
-    // Portal sends both Authorization: Bearer <id-token> AND legacy
-    // X-Portal-Signature/Timestamp during dual-mode. Try OIDC first; on any
-    // failure fall through to the HMAC path so deploy order doesn't matter.
     const portalSAEmail = process.env.PORTAL_SERVICE_ACCOUNT_EMAIL
     const selfAudience = process.env.SELF_PUBLIC_URL
+    if (!portalSAEmail || !selfAudience) {
+      console.error('[portal-webhook] PORTAL_SERVICE_ACCOUNT_EMAIL and SELF_PUBLIC_URL must be set')
+      set.status = 500
+      return { message: 'webhook auth not configured' }
+    }
+
     const authHeader = request.headers.get('authorization')
-
-    let authenticatedVia: 'oidc' | 'hmac' | null = null
-
-    if (authHeader?.startsWith('Bearer ') && portalSAEmail && selfAudience) {
-      try {
-        await verifyGoogleIdToken({
-          idToken: authHeader.slice('Bearer '.length),
-          expectedAudience: selfAudience,
-          expectedSAEmail: portalSAEmail,
-        })
-        authenticatedVia = 'oidc'
-      } catch (err) {
-        // Dual-mode: do NOT 401 here. Fall through to HMAC so a misissued or
-        // misrouted bearer token cannot lock out a legitimate HMAC sender.
-        console.warn(
-          `[portal-webhook] OIDC verification failed, falling back to HMAC: ${(err as Error).message}`,
-        )
-      }
+    if (!authHeader?.startsWith('Bearer ')) {
+      set.status = 401
+      return { message: 'missing bearer token' }
     }
 
-    // Body must be read exactly once regardless of which auth path wins.
+    try {
+      await verifyGoogleIdToken({
+        idToken: authHeader.slice('Bearer '.length),
+        expectedAudience: selfAudience,
+        expectedSAEmail: portalSAEmail,
+      })
+    } catch (err) {
+      console.warn(`[portal-webhook] OIDC verification failed: ${(err as Error).message}`)
+      set.status = 401
+      return { message: 'invalid bearer token' }
+    }
+
     const rawBody = await request.text()
-
-    if (!authenticatedVia) {
-      const secret = process.env.PORTAL_WEBHOOK_SIGNING_SECRET
-      if (!secret) {
-        console.error('[portal-webhook] PORTAL_WEBHOOK_SIGNING_SECRET is not configured')
-        set.status = 500
-        return { message: 'webhook secret not configured' }
-      }
-
-      const signature = request.headers.get('X-Portal-Signature')
-      const timestamp = request.headers.get('X-Portal-Timestamp')
-
-      if (!signature || !timestamp) {
-        set.status = 400
-        return { message: 'missing header' }
-      }
-
-      const ts = Date.parse(timestamp)
-      if (isNaN(ts) || Math.abs(Date.now() - ts) > 5 * 60 * 1000) {
-        set.status = 400
-        return { message: 'timestamp skew' }
-      }
-
-      if (!verifyPortalSignature({ secret, timestamp, rawBody, signatureHeader: signature })) {
-        set.status = 401
-        return { message: 'invalid signature' }
-      }
-
-      authenticatedVia = 'hmac'
-      console.log(
-        '[portal-webhook] authenticated via legacy HMAC — sender should migrate to OIDC',
-      )
-    }
 
     const inserted = await db
       .insert(portalWebhookEvents)
