@@ -163,6 +163,23 @@ resource "google_cloud_run_v2_service" "app" {
         value = var.uploads_bucket_name
       }
 
+      # Rev 2 §03: portal webhook OIDC verification. PORTAL_SERVICE_ACCOUNT_EMAIL
+      # is the SA the portal Cloud Run runs as; confirm with portal team if it
+      # changes. SELF_PUBLIC_URL must match exactly what portal mints as 'aud'
+      # (computed from app_registry.url).
+      env {
+        name  = "PORTAL_SERVICE_ACCOUNT_EMAIL"
+        value = "coms-portal-run-sa@coms-portal-prod.iam.gserviceaccount.com"
+      }
+
+      env {
+        name = "SELF_PUBLIC_URL"
+        # TODO: replace with custom domain when live. Self-referencing
+        # google_cloud_run_v2_service.app.uri here would create a cycle, so
+        # the value comes from the Rev 2 handoff doc.
+        value = "https://coms-aha-heroes-app-45tyczfska-et.a.run.app"
+      }
+
       dynamic "env" {
         for_each = local.auth_secrets
         content {
