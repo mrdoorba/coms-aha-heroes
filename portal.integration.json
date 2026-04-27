@@ -53,24 +53,14 @@
       "description": "App slug registered with the portal — heroes"
     },
     {
-      "name": "PORTAL_INTROSPECT_SECRET",
+      "name": "PORTAL_SERVICE_ACCOUNT_EMAIL",
       "required": true,
-      "description": "Shared secret for POST /api/auth/broker/introspect — provisioned by portal team"
+      "description": "Portal Cloud Run SA email — used to verify Authorization: Bearer Google ID tokens on inbound webhooks (Rev 2 §03)"
     },
     {
-      "name": "PORTAL_WEBHOOK_SIGNING_SECRET",
+      "name": "SELF_PUBLIC_URL",
       "required": true,
-      "description": "HMAC secret for verifying incoming portal webhooks — issued once at webhook registration"
-    },
-    {
-      "name": "PORTAL_BROKER_SIGNING_SECRET",
-      "required": true,
-      "description": "HS256 shared secret for verifying the exchange response JWS — provisioned out-of-band"
-    },
-    {
-      "name": "PORTAL_TOKEN_AUDIENCE",
-      "required": true,
-      "description": "Expected audience claim on the exchange response JWS (portal:app:heroes)"
+      "description": "Heroes' own public URL — used as the expected 'aud' claim when verifying portal-issued ID tokens (Rev 2 §03)"
     }
   ],
   "appRoles": [
