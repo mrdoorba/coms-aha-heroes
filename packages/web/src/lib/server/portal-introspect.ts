@@ -25,6 +25,20 @@ const CACHE_TTL_MS = 30_000
 const STALE_TTL_MS = 300_000  // 5 minutes
 const RETRY_DELAYS_MS = [200, 600, 1200]
 
+const STALE_SERVE_WINDOW_MS = 120_000 // 2 min
+const STALE_SERVE_ERROR_THRESHOLD = 3
+const staleServeTimestamps: number[] = []
+
+function recordStaleServeAndDetermineSeverity(): 'WARNING' | 'ERROR' {
+  const now = Date.now()
+  // Drop entries outside the window before counting.
+  while (staleServeTimestamps.length > 0 && staleServeTimestamps[0] < now - STALE_SERVE_WINDOW_MS) {
+    staleServeTimestamps.shift()
+  }
+  staleServeTimestamps.push(now)
+  return staleServeTimestamps.length >= STALE_SERVE_ERROR_THRESHOLD ? 'ERROR' : 'WARNING'
+}
+
 function requireEnv() {
   const origin = env.PORTAL_ORIGIN
   const secret = env.PORTAL_INTROSPECT_SECRET
@@ -119,12 +133,23 @@ export async function introspectSession(args: {
   // Stale-while-revalidate: serve stale cache if portal is unreachable
   const stale = cache.get(sessionId)
   if (stale && stale.staleUntil > Date.now()) {
-    console.warn(
-      `[portal-introspect] Portal unreachable (last status: ${lastStatus}), serving stale cache for session ${sessionId}`,
-    )
+    const severity = recordStaleServeAndDetermineSeverity()
+    console.log(JSON.stringify({
+      severity,
+      message: 'portal-introspect-stale-serve',
+      lastStatus,
+      sessionId,
+      staleServeCountInWindow: staleServeTimestamps.length,
+    }))
     return stale.result
   }
 
+  console.log(JSON.stringify({
+    severity: 'ERROR',
+    message: 'portal-introspect-hard-fail',
+    lastStatus,
+    sessionId,
+  }))
   throw new PortalIntrospectUnavailableError(
     `Portal introspection unavailable after retries (last status: ${lastStatus})`,
   )
