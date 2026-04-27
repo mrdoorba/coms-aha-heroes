@@ -123,7 +123,7 @@
           <Button
             onclick={handleRedeem}
             disabled={submitting}
-            class="flex-1 rounded-xl bg-gradient-to-br from-primary to-sky-blue font-bold text-white shadow-[0_2px_8px_rgba(50,95,236,0.25)]"
+            class="flex-1 rounded-xl bg-gradient-to-br from-primary to-sky-blue font-bold text-white shadow-[var(--shadow-glow-blue)]"
           >
             {submitting ? m.common_submitting() : m.redeem_submit()}
           </Button>

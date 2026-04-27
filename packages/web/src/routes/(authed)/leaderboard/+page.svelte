@@ -12,9 +12,27 @@
   const currentUserId = $derived(data.user?.id ?? '')
 
   const TYPE_OPTIONS = $derived([
-    { value: 'bintang' as const, label: m.points_bintang(), icon: Star, color: '#F4C144' },
-    { value: 'poin_aha' as const, label: m.points_poin_aha(), icon: Trophy, color: '#325FEC' },
-    { value: 'penalti' as const, label: m.leaderboard_penalty(), icon: AlertTriangle, color: '#EF4444' },
+    {
+      value: 'bintang' as const,
+      label: m.points_bintang(),
+      icon: Star,
+      activeClass:
+        'bg-gradient-to-br from-gold/15 to-gold/5 text-gold border border-gold/30 shadow-[var(--shadow-glow-gold)]',
+    },
+    {
+      value: 'poin_aha' as const,
+      label: m.points_poin_aha(),
+      icon: Trophy,
+      activeClass:
+        'bg-gradient-to-br from-primary/15 to-primary/5 text-primary border border-primary/30 shadow-[var(--shadow-glow-blue)]',
+    },
+    {
+      value: 'penalti' as const,
+      label: m.leaderboard_penalty(),
+      icon: AlertTriangle,
+      activeClass:
+        'bg-gradient-to-br from-destructive/15 to-destructive/5 text-destructive border border-destructive/30 shadow-[0_2px_8px_rgba(239,68,68,0.20)]',
+    },
   ])
 
   const PERIOD_OPTIONS = $derived([
@@ -69,10 +87,10 @@
         {@const isActive = data.type === tab.value}
         <button
           type="button"
-          class="flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-bold transition-all duration-200"
-          style={isActive
-            ? `background: linear-gradient(135deg, ${tab.color}18, ${tab.color}08); color: ${tab.color}; box-shadow: 0 2px 8px ${tab.color}20; border: 1px solid ${tab.color}30;`
-            : 'color: var(--muted-foreground);'}
+          class={[
+            'flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-bold transition-all duration-200',
+            isActive ? tab.activeClass : 'text-muted-foreground',
+          ].join(' ')}
           onclick={() => setFilter('type', tab.value)}
         >
           <tab.icon class="h-4 w-4" />

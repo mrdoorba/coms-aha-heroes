@@ -23,10 +23,10 @@
   let loggingOut = $state(false)
 
   const ROLE_GRADIENTS: Record<string, string> = {
-    admin: 'from-primary-dark to-primary',
-    hr: 'from-primary to-sky-blue',
-    leader: 'from-purple to-purple-light',
-    employee: 'from-[#5a7a9a] to-[#7a9aba]',
+    admin: 'bg-gradient-role-admin',
+    hr: 'bg-gradient-role-hr',
+    leader: 'bg-gradient-role-leader',
+    employee: 'bg-gradient-role-employee',
   }
 
   const initials = $derived(
@@ -61,7 +61,7 @@
     <!-- Profile hero card -->
     <div class="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
       <!-- Gradient banner -->
-      <div class="relative h-24 bg-gradient-to-br {roleGradient}">
+      <div class="relative h-24 {roleGradient}">
         <div
           class="pointer-events-none absolute -right-6 -top-4 h-24 w-24 rounded-full bg-white/10 blur-xl"
         ></div>
@@ -92,7 +92,7 @@
             </button>
           </div>
           <span
-            class="rounded-xl bg-gradient-to-r {roleGradient} px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-white shadow-sm"
+            class="rounded-xl {roleGradient} px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-white shadow-sm"
           >
             {user.role}
           </span>
@@ -133,7 +133,7 @@
     <!-- Stats row (placeholders — Phase 7 will provide real values) -->
     <div class="grid grid-cols-3 gap-3">
       <div
-        class="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-3.5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)]"
+        class="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-3.5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)]"
       >
         <div
           class="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/10 text-gold-dark"
@@ -146,7 +146,7 @@
         >
       </div>
       <div
-        class="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-3.5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)]"
+        class="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-3.5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)]"
       >
         <div
           class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary"
@@ -159,7 +159,7 @@
         >
       </div>
       <div
-        class="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-3.5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)]"
+        class="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-3.5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)]"
       >
         <div
           class="flex h-10 w-10 items-center justify-center rounded-xl bg-penalti/10 text-penalti"

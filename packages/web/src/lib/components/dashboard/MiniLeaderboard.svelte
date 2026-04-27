@@ -29,14 +29,14 @@
 
   const RANK_MEDAL: Record<number, { ring: string; bg: string }> = {
     1: { ring: 'ring-2 ring-gold/60', bg: 'bg-gold/15' },
-    2: { ring: 'ring-2 ring-[#C0C0C0]/60', bg: 'bg-[#C0C0C0]/10' },
-    3: { ring: 'ring-2 ring-[#CD7F32]/60', bg: 'bg-[#CD7F32]/10' },
+    2: { ring: 'ring-2 ring-silver/60', bg: 'bg-silver/10' },
+    3: { ring: 'ring-2 ring-bronze/60', bg: 'bg-bronze/10' },
   }
 
   const RANK_NUM_STYLE: Record<number, string> = {
     1: 'text-gold font-extrabold',
-    2: 'text-[#9a9a9a] font-bold',
-    3: 'text-[#CD7F32] font-bold',
+    2: 'text-silver-dark font-bold',
+    3: 'text-bronze font-bold',
   }
 </script>
 

@@ -14,7 +14,7 @@
 <div class="mx-auto max-w-2xl space-y-5 p-4 pb-24 md:pb-8">
   <!-- Hero balance bar -->
   <div
-    class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-dark via-[#2550C8] to-primary p-5 shadow-[var(--shadow-card)]"
+    class="relative overflow-hidden rounded-2xl bg-gradient-hero p-5 shadow-[var(--shadow-card)]"
   >
     <div
       class="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full bg-gold/15 blur-2xl"

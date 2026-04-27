@@ -34,6 +34,13 @@
   --color-sky-blue: #759EEE;
   --color-chrome-navy: #0d1229;
 
+  /* Medal accents — leaderboard rank 2/3 (rank 1 uses gold) */
+  --color-silver: #C0C0C0;
+  --color-silver-dark: #9a9a9a;
+  --color-bronze: #CD7F32;
+  --color-bronze-light: #E8A862;
+  --color-bronze-dark: #8B5E00;
+
   /* Status colors (text colors per guideline) */
   --color-status-approved: #16a34a;
   --color-status-pending: #a07700;
@@ -150,6 +157,22 @@
   --gradient-blue: linear-gradient(135deg, #325FEC, #759EEE);
   --gradient-red: linear-gradient(135deg, #C73E3E, #E06B6B);
   --gradient-purple: linear-gradient(135deg, #6D50B8, #9B7FE8);
+
+  /* 3-stop summary card gradients (with explicit mid-stops) */
+  --gradient-summary-gold: linear-gradient(135deg, #F4C144, #F9D46A, #FFD97D);
+  --gradient-summary-blue: linear-gradient(135deg, #325FEC, #4B77F0, #759EEE);
+  --gradient-summary-red: linear-gradient(135deg, #C73E3E, #D45555, #E06B6B);
+
+  /* Role banner gradients (profile page) */
+  --gradient-role-admin: linear-gradient(135deg, #1D388B, #325FEC);
+  --gradient-role-hr: linear-gradient(135deg, #325FEC, #759EEE);
+  --gradient-role-leader: linear-gradient(135deg, #6D50B8, #9B7FE8);
+  --gradient-role-employee: linear-gradient(135deg, #6B7094, #96ADF5);
+
+  /* Hairline shadow — sticky desktop header bottom edge */
+  --shadow-hairline: 0 1px 0 0 rgba(15, 14, 127, 0.06);
+  /* Sticky bottom action bar — upward-facing blue-tinted shadow */
+  --shadow-sticky-up: 0 -4px 20px rgba(15, 14, 127, 0.08);
 
   /* ── Layout ── */
   --page-max-width: 1024px;
@@ -488,6 +511,19 @@
   opacity: 0;
   animation: login-fade-in 0.6s ease-out forwards;
 }
+
+/* ───────────────────────────────────────────────────────
+   GRADIENT BACKGROUNDS — 3-stop variants
+─────────────────────────────────────────────────────── */
+
+.bg-gradient-hero { background-image: var(--gradient-hero); }
+.bg-gradient-summary-gold { background-image: var(--gradient-summary-gold); }
+.bg-gradient-summary-blue { background-image: var(--gradient-summary-blue); }
+.bg-gradient-summary-red { background-image: var(--gradient-summary-red); }
+.bg-gradient-role-admin { background-image: var(--gradient-role-admin); }
+.bg-gradient-role-hr { background-image: var(--gradient-role-hr); }
+.bg-gradient-role-leader { background-image: var(--gradient-role-leader); }
+.bg-gradient-role-employee { background-image: var(--gradient-role-employee); }
 
 /* ───────────────────────────────────────────────────────
    GRADIENT BUTTONS

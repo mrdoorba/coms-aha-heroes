@@ -158,7 +158,7 @@
       md:w-full md:max-w-xl md:rounded-2xl
       md:border md:border-border
       md:bg-card/95 md:backdrop-blur-xl
-      md:shadow-[0_24px_80px_rgba(0,0,0,0.25),0_4px_16px_rgba(0,0,0,0.12)]
+      md:shadow-[var(--shadow-modal)]
       md:overflow-hidden"
   >
     <!-- Search input row -->

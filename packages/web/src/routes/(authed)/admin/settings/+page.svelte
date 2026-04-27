@@ -63,7 +63,7 @@
   <!-- Header -->
   <div class="flex items-center gap-3">
     <div
-      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-sky-blue shadow-[0_4px_12px_rgba(50,95,236,0.25)]"
+      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-sky-blue shadow-[var(--shadow-glow-blue)]"
     >
       <Settings class="h-5 w-5 text-white" />
     </div>
@@ -129,7 +129,7 @@
       <Button
         onclick={handleSaveImpacts}
         disabled={saving}
-        class="w-full rounded-xl bg-gradient-to-br from-primary to-sky-blue font-semibold text-white shadow-[0_2px_8px_rgba(50,95,236,0.25)]"
+        class="w-full rounded-xl bg-gradient-to-br from-primary to-sky-blue font-semibold text-white shadow-[var(--shadow-glow-blue)]"
       >
         <Save class="mr-1.5 h-4 w-4" />
         {saving ? m.settings_saving() : m.common_save()}

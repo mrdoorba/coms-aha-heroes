@@ -11,7 +11,7 @@
     border: string
   }> = {
     gold: {
-      gradient: 'from-gold via-[#F9D46A] to-gold-light',
+      gradient: 'bg-gradient-summary-gold',
       iconBg: 'bg-white/25',
       iconColor: 'text-gold-dark',
       valueColor: 'text-gold-dark',
@@ -20,7 +20,7 @@
       border: 'border-gold/30',
     },
     blue: {
-      gradient: 'from-primary via-[#4B77F0] to-sky-blue',
+      gradient: 'bg-gradient-summary-blue',
       iconBg: 'bg-white/20',
       iconColor: 'text-white',
       valueColor: 'text-white',
@@ -29,16 +29,16 @@
       border: 'border-primary/30',
     },
     red: {
-      gradient: 'from-penalti via-[#D45555] to-penalti-light',
+      gradient: 'bg-gradient-summary-red',
       iconBg: 'bg-white/20',
       iconColor: 'text-white',
       valueColor: 'text-white',
       titleColor: 'text-white/75',
-      glow: 'shadow-[var(--shadow-glow-blue)]',
+      glow: 'shadow-[var(--shadow-glow-red)]',
       border: 'border-penalti/30',
     },
     pending: {
-      gradient: 'from-card to-card',
+      gradient: 'bg-card',
       iconBg: 'bg-gold/15',
       iconColor: 'text-gold',
       valueColor: 'text-foreground',
@@ -69,10 +69,10 @@
 
 {#snippet cardContent()}
   <div class="relative overflow-hidden rounded-2xl border p-4 shine-on-hover
-    {isPending ? 'bg-card' : `bg-gradient-to-br ${styles.gradient}`}
+    {styles.gradient}
     {styles.border} {styles.glow}
     transition-all duration-200 hover:-translate-y-0.5
-    {isPending ? 'hover:shadow-[var(--shadow-card-hover)]' : 'hover:shadow-[var(--shadow-card-hover)]'}">
+    hover:shadow-[var(--shadow-card-hover)]">
 
     <!-- Subtle inner highlight for colored cards -->
     {#if !isPending}

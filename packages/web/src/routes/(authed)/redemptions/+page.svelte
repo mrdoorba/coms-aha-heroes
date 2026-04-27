@@ -108,7 +108,7 @@
   <!-- Header -->
   <div class="flex items-center gap-3 pt-2">
     <div
-      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-gold to-gold-light shadow-[0_4px_12px_rgba(244,193,68,0.25)]"
+      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-gold to-gold-light shadow-[var(--shadow-glow-gold)]"
     >
       <Gift class="h-5 w-5 text-gold-dark" />
     </div>
@@ -124,7 +124,7 @@
       type="button"
       class="flex flex-1 min-h-[44px] items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-bold transition-all duration-200 {activeTab ===
       'mine'
-        ? 'border border-gold/30 bg-gradient-to-br from-gold/18 to-gold/8 text-status-pending shadow-[0_2px_8px_rgba(244,193,68,0.20)] dark:text-yellow-300'
+        ? 'border border-gold/30 bg-gradient-to-br from-gold/18 to-gold/8 text-status-pending shadow-[var(--shadow-glow-gold)] dark:text-yellow-300'
         : 'text-muted-foreground hover:text-foreground'}"
       onclick={() => handleTabChange('mine')}
     >
@@ -136,7 +136,7 @@
         type="button"
         class="flex flex-1 min-h-[44px] items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-bold transition-all duration-200 {activeTab ===
         'pending'
-          ? 'border border-primary/30 bg-gradient-to-br from-primary/18 to-primary/8 text-primary shadow-[0_2px_8px_rgba(50,95,236,0.20)]'
+          ? 'border border-primary/30 bg-gradient-to-br from-primary/18 to-primary/8 text-primary shadow-[var(--shadow-glow-blue)]'
           : 'text-muted-foreground hover:text-foreground'}"
         onclick={() => handleTabChange('pending')}
       >
@@ -162,7 +162,7 @@
     {:else}
       {#each redemptions as item (item.id)}
         <div
-          class="flex items-start gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-card transition-all duration-200 hover:shadow-[0_4px_16px_rgba(0,0,0,0.10)]"
+          class="flex items-start gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-card transition-all duration-200 hover:shadow-[var(--shadow-card-hover)]"
         >
           <!-- Thumbnail -->
           <div

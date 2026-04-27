@@ -33,10 +33,10 @@
   }
 
   function getStatusStyle(status: string): { bg: string; text: string } {
-    if (status === 'approved' || status === 'active') return { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400' }
-    if (status === 'rejected' || status === 'revoked') return { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-600 dark:text-red-400' }
-    if (status === 'challenged') return { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-400' }
-    return { bg: 'bg-gold/15', text: 'text-status-pending' }
+    if (status === 'approved' || status === 'active') return { bg: 'bg-status-approved-bg', text: 'text-status-approved' }
+    if (status === 'rejected' || status === 'revoked') return { bg: 'bg-status-rejected-bg', text: 'text-status-rejected' }
+    if (status === 'challenged') return { bg: 'bg-status-challenged-bg', text: 'text-status-challenged' }
+    return { bg: 'bg-status-pending-bg', text: 'text-status-pending' }
   }
 
   function getPointStyle(code: string): string {

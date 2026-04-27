@@ -32,19 +32,19 @@
       glow: 'drop-shadow-[var(--shadow-glow-gold)]',
     },
     2: {
-      avatarRing: 'ring-3 ring-[#C0C0C0]',
-      podiumBg: 'bg-gradient-to-t from-[#9a9a9a] to-[#d0d0d0]',
+      avatarRing: 'ring-3 ring-silver',
+      podiumBg: 'bg-gradient-to-t from-silver-dark to-silver',
       podiumHeight: 'h-14',
-      scoreBg: 'bg-[#C0C0C0]/15',
+      scoreBg: 'bg-silver/15',
       scoreText: 'text-muted-foreground font-bold',
       glow: '',
     },
     3: {
-      avatarRing: 'ring-3 ring-[#CD7F32]',
-      podiumBg: 'bg-gradient-to-t from-[#CD7F32] to-[#E8A862]',
+      avatarRing: 'ring-3 ring-bronze',
+      podiumBg: 'bg-gradient-to-t from-bronze to-bronze-light',
       podiumHeight: 'h-10',
-      scoreBg: 'bg-[#CD7F32]/15',
-      scoreText: 'text-[#8B5E00] font-bold',
+      scoreBg: 'bg-bronze/15',
+      scoreText: 'text-bronze-dark font-bold',
       glow: '',
     },
   }
@@ -87,7 +87,7 @@
       </div>
     {:else}
       <!-- Numbered circle for ranks 2 and 3 -->
-      <div class="bg-card mb-0.5 flex h-6 w-6 items-center justify-center rounded-full border-2 border-[#C0C0C0] shadow-sm">
+      <div class="bg-card mb-0.5 flex h-6 w-6 items-center justify-center rounded-full border-2 border-silver shadow-sm">
         <span class="text-muted-foreground text-xs font-bold">{entry.rank}</span>
       </div>
     {/if}
