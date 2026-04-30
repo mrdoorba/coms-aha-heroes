@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { Badge } from '$lib/components/ui/badge'
-  import { Button } from '$lib/components/ui/button'
+  import { Badge, Button } from '@coms-portal/ui/primitives'
   import { userState } from '$lib/state/userState.svelte'
   import { api } from '$lib/api/client'
   import * as m from '$lib/paraglide/messages'

@@ -2,8 +2,7 @@
   import { goto } from '$app/navigation'
   import { page } from '$app/stores'
   import { userState } from '$lib/state/userState.svelte'
-  import { Button } from '$lib/components/ui/button'
-  import * as Dialog from '$lib/components/ui/dialog'
+  import { Button, Dialog, DialogContent, DialogHeader, DialogTitle } from '@coms-portal/ui/primitives'
   import PointCard from '$lib/components/points/PointCard.svelte'
   import PointTypeSelector from '$lib/components/points/PointTypeSelector.svelte'
   import { SlidersHorizontal, Plus, Filter } from 'lucide-svelte'
@@ -170,11 +169,11 @@
 {/if}
 
 <!-- Type selector dialog -->
-<Dialog.Root bind:open={showTypeSelector}>
-  <Dialog.Content class="sm:max-w-md rounded-2xl">
-    <Dialog.Header>
-      <Dialog.Title class="text-foreground font-extrabold">{m.points_submit()}</Dialog.Title>
-    </Dialog.Header>
+<Dialog bind:open={showTypeSelector}>
+  <DialogContent class="sm:max-w-md rounded-2xl">
+    <DialogHeader>
+      <DialogTitle class="text-foreground font-extrabold">{m.points_submit()}</DialogTitle>
+    </DialogHeader>
     <PointTypeSelector userRole={userRole} class="mt-2" />
-  </Dialog.Content>
-</Dialog.Root>
+  </DialogContent>
+</Dialog>

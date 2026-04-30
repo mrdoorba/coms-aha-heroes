@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { Button } from '$lib/components/ui/button'
-  import { Badge } from '$lib/components/ui/badge'
-  import * as Table from '$lib/components/ui/table'
+  import { Button, Badge, Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@coms-portal/ui/primitives'
   import * as m from '$lib/paraglide/messages'
   import { buildSearchParams } from '$lib/utils'
   import { Search, Plus, User, Pencil, Archive, ChevronLeft, ChevronRight } from 'lucide-svelte'
@@ -149,29 +147,29 @@
 
   <!-- Table -->
   <div class="overflow-hidden rounded-xl border border-border bg-card shadow-card">
-    <Table.Root>
-      <Table.Header>
-        <Table.Row class="border-b border-border bg-muted/60">
-          <Table.Head class="text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
+    <Table>
+      <TableHeader>
+        <TableRow class="border-b border-border bg-muted/60">
+          <TableHead class="text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
             {m.users_col_name()}
-          </Table.Head>
-          <Table.Head class="text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
+          </TableHead>
+          <TableHead class="text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
             {m.users_col_role()}
-          </Table.Head>
-          <Table.Head class="text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
+          </TableHead>
+          <TableHead class="text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
             {m.users_col_team()}
-          </Table.Head>
-          <Table.Head class="text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
+          </TableHead>
+          <TableHead class="text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
             {m.users_col_status()}
-          </Table.Head>
-          <Table.Head class="w-24"></Table.Head>
-        </Table.Row>
-      </Table.Header>
-      <Table.Body>
+          </TableHead>
+          <TableHead class="w-24"></TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
         {#if isLoading}
           {#each [0, 1, 2, 3, 4] as _i (_i)}
-            <Table.Row class="border-b border-border/50">
-              <Table.Cell>
+            <TableRow class="border-b border-border/50">
+              <TableCell>
                 <div class="flex items-center gap-3">
                   <div class="h-8 w-8 animate-pulse rounded-full bg-primary/8"></div>
                   <div class="space-y-1.5">
@@ -179,17 +177,17 @@
                     <div class="h-3 w-24 animate-pulse rounded bg-primary/5"></div>
                   </div>
                 </div>
-              </Table.Cell>
-              <Table.Cell><div class="h-5 w-16 animate-pulse rounded-full bg-primary/8"></div></Table.Cell>
-              <Table.Cell><div class="h-3.5 w-20 animate-pulse rounded bg-primary/5"></div></Table.Cell>
-              <Table.Cell><div class="h-5 w-14 animate-pulse rounded-full bg-primary/8"></div></Table.Cell>
-              <Table.Cell><div class="h-6 w-12 animate-pulse rounded bg-primary/5"></div></Table.Cell>
-            </Table.Row>
+              </TableCell>
+              <TableCell><div class="h-5 w-16 animate-pulse rounded-full bg-primary/8"></div></TableCell>
+              <TableCell><div class="h-3.5 w-20 animate-pulse rounded bg-primary/5"></div></TableCell>
+              <TableCell><div class="h-5 w-14 animate-pulse rounded-full bg-primary/8"></div></TableCell>
+              <TableCell><div class="h-6 w-12 animate-pulse rounded bg-primary/5"></div></TableCell>
+            </TableRow>
           {/each}
         {:else}
           {#each users as user (user.id)}
-            <Table.Row class="border-b border-border/50 transition-colors hover:bg-muted/40">
-              <Table.Cell>
+            <TableRow class="border-b border-border/50 transition-colors hover:bg-muted/40">
+              <TableCell>
                 <a href="/admin/users/{user.id}" class="flex items-center gap-3">
                   <div
                     class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
@@ -203,14 +201,14 @@
                     <p class="text-xs text-muted-foreground">{user.email}</p>
                   </div>
                 </a>
-              </Table.Cell>
-              <Table.Cell>
+              </TableCell>
+              <TableCell>
                 <Badge variant="outline" class="text-xs font-semibold {roleBadgeClass(user.role)}">
                   {user.role}
                 </Badge>
-              </Table.Cell>
-              <Table.Cell class="text-sm text-muted-foreground">{user.teamName ?? '—'}</Table.Cell>
-              <Table.Cell>
+              </TableCell>
+              <TableCell class="text-sm text-muted-foreground">{user.teamName ?? '—'}</TableCell>
+              <TableCell>
                 <span
                   class="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold {user.isActive
                     ? 'bg-status-approved-bg text-status-approved dark:bg-status-approved/20 dark:text-status-approved'
@@ -218,8 +216,8 @@
                 >
                   {user.isActive ? m.status_active() : m.status_archived()}
                 </span>
-              </Table.Cell>
-              <Table.Cell>
+              </TableCell>
+              <TableCell>
                 <div class="flex items-center gap-1">
                   <a
                     href="/admin/users/{user.id}"
@@ -238,23 +236,23 @@
                     </button>
                   {/if}
                 </div>
-              </Table.Cell>
-            </Table.Row>
+              </TableCell>
+            </TableRow>
           {:else}
-            <Table.Row>
-              <Table.Cell colspan={5} class="py-16">
+            <TableRow>
+              <TableCell colspan={5} class="py-16">
                 <div class="flex flex-col items-center gap-3 text-center">
                   <div class="flex h-14 w-14 items-center justify-center rounded-full bg-primary/8">
                     <User class="h-6 w-6 text-primary/50" />
                   </div>
                   <p class="text-sm font-medium text-muted-foreground">{m.users_empty()}</p>
                 </div>
-              </Table.Cell>
-            </Table.Row>
+              </TableCell>
+            </TableRow>
           {/each}
         {/if}
-      </Table.Body>
-    </Table.Root>
+      </TableBody>
+    </Table>
 
     {#if totalPages > 1}
       <div

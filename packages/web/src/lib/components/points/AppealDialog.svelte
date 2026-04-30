@@ -2,10 +2,7 @@
   import { invalidateAll } from '$app/navigation'
   import { toast } from 'svelte-sonner'
   import { api } from '$lib/api/client'
-  import * as Dialog from '$lib/components/ui/dialog'
-  import { Button } from '$lib/components/ui/button'
-  import { Label } from '$lib/components/ui/label'
-  import { Textarea } from '$lib/components/ui/textarea'
+  import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, Button, Label, Textarea } from '@coms-portal/ui/primitives'
   import { AlertCircle } from 'lucide-svelte'
   import * as m from '$lib/paraglide/messages'
   import { getErrorMessage } from '$lib/api/client'
@@ -45,12 +42,12 @@
   }
 </script>
 
-<Dialog.Root bind:open>
-  <Dialog.Content class="sm:max-w-[425px] rounded-[20px]">
-    <Dialog.Header>
-      <Dialog.Title>{m.appeal_title()}</Dialog.Title>
-      <Dialog.Description>{m.appeal_description()}</Dialog.Description>
-    </Dialog.Header>
+<Dialog bind:open>
+  <DialogContent class="sm:max-w-[425px] rounded-[20px]">
+    <DialogHeader>
+      <DialogTitle>{m.appeal_title()}</DialogTitle>
+      <DialogDescription>{m.appeal_description()}</DialogDescription>
+    </DialogHeader>
     <form onsubmit={onSubmit} class="grid gap-4 py-4">
       <div class="flex gap-3 p-3 rounded-lg bg-status-pending-bg border border-status-pending/20 dark:bg-status-pending-bg dark:border-status-pending/20">
         <AlertCircle class="h-5 w-5 text-status-pending shrink-0" />
@@ -68,7 +65,7 @@
           disabled={isSubmitting}
         />
       </div>
-      <Dialog.Footer>
+      <DialogFooter>
         <Button
           type="button"
           variant="outline"
@@ -83,7 +80,7 @@
         >
           {#if isSubmitting}{m.common_submitting()}{:else}{m.appeal_submit()}{/if}
         </Button>
-      </Dialog.Footer>
+      </DialogFooter>
     </form>
-  </Dialog.Content>
-</Dialog.Root>
+  </DialogContent>
+</Dialog>

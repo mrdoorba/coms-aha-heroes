@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button } from '$lib/components/ui/button'
+  import { Button } from '@coms-portal/ui/primitives'
   import { userState } from '$lib/state/userState.svelte'
   import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte'
   import * as m from '$lib/paraglide/messages'

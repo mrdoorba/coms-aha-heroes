@@ -10,6 +10,7 @@
 @import "@fontsource/manrope/800.css";
 
 @import "tailwindcss";
+@import "@coms-portal/ui/styles.css";
 
 @custom-variant dark (&:is(.dark *));
 

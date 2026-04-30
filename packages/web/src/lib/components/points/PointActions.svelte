@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button } from '$lib/components/ui/button'
+  import { Button } from '@coms-portal/ui/primitives'
   import ChallengeDialog from './ChallengeDialog.svelte'
   import AppealDialog from './AppealDialog.svelte'
   import { userState } from '$lib/state/userState.svelte'

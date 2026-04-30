@@ -2,8 +2,7 @@
   import { toast } from 'svelte-sonner'
   import { api } from '$lib/api/client'
   import { getErrorMessage } from '$lib/api/client'
-  import { Textarea } from '$lib/components/ui/textarea'
-  import { Button } from '$lib/components/ui/button'
+  import { Textarea, Button } from '@coms-portal/ui/primitives'
   import { Send, User as UserIcon } from 'lucide-svelte'
 
   interface Comment {

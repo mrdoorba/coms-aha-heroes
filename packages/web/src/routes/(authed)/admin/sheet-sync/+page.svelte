@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { Button } from '$lib/components/ui/button'
-  import { Badge } from '$lib/components/ui/badge'
-  import * as Table from '$lib/components/ui/table'
+  import { Button, Badge, Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@coms-portal/ui/primitives'
   import * as m from '$lib/paraglide/messages'
   import {
     RefreshCw,
@@ -250,37 +248,37 @@
     {:else}
       <!-- Desktop table -->
       <div class="hidden overflow-hidden rounded-xl border border-border shadow-card md:block">
-        <Table.Root>
-          <Table.Header>
-            <Table.Row class="bg-muted/60">
-              <Table.Head class="w-36 text-xs font-semibold text-muted-foreground">Started at</Table.Head>
-              <Table.Head class="text-xs font-semibold text-muted-foreground">Finished at</Table.Head>
-              <Table.Head class="text-xs font-semibold text-muted-foreground">{m.users_col_status()}</Table.Head>
-              <Table.Head class="text-xs font-semibold text-muted-foreground">Rows</Table.Head>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
+        <Table>
+          <TableHeader>
+            <TableRow class="bg-muted/60">
+              <TableHead class="w-36 text-xs font-semibold text-muted-foreground">Started at</TableHead>
+              <TableHead class="text-xs font-semibold text-muted-foreground">Finished at</TableHead>
+              <TableHead class="text-xs font-semibold text-muted-foreground">{m.users_col_status()}</TableHead>
+              <TableHead class="text-xs font-semibold text-muted-foreground">Rows</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {#each jobs as job (job.id)}
               {@const startTs = formatTimestamp(job.startedAt)}
               {@const endTs = formatTimestamp(job.finishedAt)}
-              <Table.Row class="transition-colors hover:bg-muted/30">
-                <Table.Cell class="text-xs">
+              <TableRow class="transition-colors hover:bg-muted/30">
+                <TableCell class="text-xs">
                   <span class="block font-medium text-foreground">{startTs.date}</span>
                   <span class="block text-muted-foreground">{startTs.time}</span>
-                </Table.Cell>
-                <Table.Cell class="text-xs text-muted-foreground">
+                </TableCell>
+                <TableCell class="text-xs text-muted-foreground">
                   {job.finishedAt ? `${endTs.date} ${endTs.time}` : '—'}
-                </Table.Cell>
-                <Table.Cell>
+                </TableCell>
+                <TableCell>
                   <Badge variant="outline" class={getStatusBadgeClass(job.status)}>
                     {job.status}
                   </Badge>
-                </Table.Cell>
-                <Table.Cell class="text-sm text-foreground">{job.rowsProcessed ?? '—'}</Table.Cell>
-              </Table.Row>
+                </TableCell>
+                <TableCell class="text-sm text-foreground">{job.rowsProcessed ?? '—'}</TableCell>
+              </TableRow>
             {/each}
-          </Table.Body>
-        </Table.Root>
+          </TableBody>
+        </Table>
       </div>
 
       <!-- Mobile cards -->

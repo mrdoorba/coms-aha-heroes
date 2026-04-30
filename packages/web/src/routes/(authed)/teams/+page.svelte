@@ -1,6 +1,5 @@
 <script lang="ts">
-  import * as Card from '$lib/components/ui/card'
-  import { Button } from '$lib/components/ui/button'
+  import { Card, CardHeader, CardTitle, CardContent, Button } from '@coms-portal/ui/primitives'
   import { userState } from '$lib/state/userState.svelte'
   import * as m from '$lib/paraglide/messages'
   import { Search, Plus, Users, Crown, ChevronDown, ChevronUp, Pencil } from 'lucide-svelte'
@@ -139,11 +138,11 @@
   {:else}
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {#each teams as team (team.id)}
-        <Card.Root class="relative overflow-hidden rounded-2xl border-border bg-card shadow-card">
-          <Card.Header class="pb-3">
+        <Card class="relative overflow-hidden rounded-2xl border-border bg-card shadow-card">
+          <CardHeader class="pb-3">
             <div class="flex items-start justify-between">
               <div class="flex items-center gap-2">
-                <Card.Title class="text-lg text-foreground">{team.name}</Card.Title>
+                <CardTitle class="text-lg text-foreground">{team.name}</CardTitle>
                 <span class="rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground bg-muted">{branchCode(team.branchCode)}</span>
               </div>
               {#if isHrOrAdmin}
@@ -156,8 +155,8 @@
                 </button>
               {/if}
             </div>
-          </Card.Header>
-          <Card.Content class="space-y-3">
+          </CardHeader>
+          <CardContent class="space-y-3">
             <!-- Leader -->
             <div class="flex items-center gap-2 text-sm">
               <Crown class="h-4 w-4 text-gold" />
@@ -220,8 +219,8 @@
                 {/if}
               </div>
             {/if}
-          </Card.Content>
-        </Card.Root>
+          </CardContent>
+        </Card>
       {/each}
     </div>
   {/if}

@@ -2,10 +2,7 @@
   import { invalidateAll } from '$app/navigation'
   import { toast } from 'svelte-sonner'
   import { api } from '$lib/api/client'
-  import * as Dialog from '$lib/components/ui/dialog'
-  import { Button } from '$lib/components/ui/button'
-  import { Label } from '$lib/components/ui/label'
-  import { Textarea } from '$lib/components/ui/textarea'
+  import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, Button, Label, Textarea } from '@coms-portal/ui/primitives'
   import * as m from '$lib/paraglide/messages'
   import { getErrorMessage } from '$lib/api/client'
 
@@ -44,12 +41,12 @@
   }
 </script>
 
-<Dialog.Root bind:open>
-  <Dialog.Content class="sm:max-w-[425px] rounded-[20px]">
-    <Dialog.Header>
-      <Dialog.Title>{m.challenge_title()}</Dialog.Title>
-      <Dialog.Description>{m.challenge_description()}</Dialog.Description>
-    </Dialog.Header>
+<Dialog bind:open>
+  <DialogContent class="sm:max-w-[425px] rounded-[20px]">
+    <DialogHeader>
+      <DialogTitle>{m.challenge_title()}</DialogTitle>
+      <DialogDescription>{m.challenge_description()}</DialogDescription>
+    </DialogHeader>
     <form onsubmit={onSubmit} class="grid gap-4 py-4">
       <div class="grid gap-2">
         <Label for="challenge-reason">{m.challenge_reason_label()}</Label>
@@ -66,7 +63,7 @@
           <strong>Note:</strong> {m.challenge_note()}
         </p>
       </div>
-      <Dialog.Footer>
+      <DialogFooter>
         <Button
           type="button"
           variant="outline"
@@ -81,7 +78,7 @@
         >
           {#if isSubmitting}{m.common_submitting()}{:else}{m.challenge_submit()}{/if}
         </Button>
-      </Dialog.Footer>
+      </DialogFooter>
     </form>
-  </Dialog.Content>
-</Dialog.Root>
+  </DialogContent>
+</Dialog>

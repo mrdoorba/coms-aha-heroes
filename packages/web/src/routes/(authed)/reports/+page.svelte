@@ -1,7 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
-  import * as Card from '$lib/components/ui/card'
-  import { Button } from '$lib/components/ui/button'
+  import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button } from '@coms-portal/ui/primitives'
   import * as m from '$lib/paraglide/messages'
   import { buildSearchParams } from '$lib/utils'
 
@@ -44,11 +43,11 @@
   </div>
 
   <!-- Filters -->
-  <Card.Root>
-    <Card.Header>
-      <Card.Title>{m.filter_advanced()}</Card.Title>
-    </Card.Header>
-    <Card.Content>
+  <Card>
+    <CardHeader>
+      <CardTitle>{m.filter_advanced()}</CardTitle>
+    </CardHeader>
+    <CardContent>
       <div class="flex flex-wrap items-end gap-3">
         <div>
           <label for="start-date" class="text-sm text-muted-foreground">{m.reports_start_date()}</label>
@@ -73,32 +72,32 @@
           <Button size="sm" variant="outline" onclick={clearFilters}>{m.filter_clear()}</Button>
         </div>
       </div>
-    </Card.Content>
-  </Card.Root>
+    </CardContent>
+  </Card>
 
   {#if report}
     <!-- Summary cards -->
     <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
       {#each summaryCards as card (card.label)}
-        <Card.Root>
-          <Card.Header class="pb-2">
-            <Card.Description>{card.label}</Card.Description>
-          </Card.Header>
-          <Card.Content>
+        <Card>
+          <CardHeader class="pb-2">
+            <CardDescription>{card.label}</CardDescription>
+          </CardHeader>
+          <CardContent>
             <p class="text-3xl font-bold">{card.value.toLocaleString('id-ID')}</p>
-          </Card.Content>
-        </Card.Root>
+          </CardContent>
+        </Card>
       {/each}
     </div>
 
     <!-- Top performers -->
     {#if report.topPerformers && report.topPerformers.length > 0}
-      <Card.Root>
-        <Card.Header>
-          <Card.Title>{m.reports_top_teams()}</Card.Title>
-          <Card.Description>{m.points_bintang()}</Card.Description>
-        </Card.Header>
-        <Card.Content>
+      <Card>
+        <CardHeader>
+          <CardTitle>{m.reports_top_teams()}</CardTitle>
+          <CardDescription>{m.points_bintang()}</CardDescription>
+        </CardHeader>
+        <CardContent>
           <ol class="divide-y">
             {#each report.topPerformers as performer, i (performer.userId)}
               <li class="flex items-center justify-between py-2 first:pt-0 last:pb-0">
@@ -110,17 +109,17 @@
               </li>
             {/each}
           </ol>
-        </Card.Content>
-      </Card.Root>
+        </CardContent>
+      </Card>
     {/if}
 
     <!-- By branch -->
     {#if report.byBranch && report.byBranch.length > 0}
-      <Card.Root>
-        <Card.Header>
-          <Card.Title>{m.profile_branch()}</Card.Title>
-        </Card.Header>
-        <Card.Content>
+      <Card>
+        <CardHeader>
+          <CardTitle>{m.profile_branch()}</CardTitle>
+        </CardHeader>
+        <CardContent>
           <div class="divide-y">
             {#each report.byBranch as branch (branch.branchId)}
               <div class="flex items-center justify-between py-2 first:pt-0 last:pb-0">
@@ -129,14 +128,14 @@
               </div>
             {/each}
           </div>
-        </Card.Content>
-      </Card.Root>
+        </CardContent>
+      </Card>
     {/if}
   {:else}
-    <Card.Root>
-      <Card.Content class="py-10 text-center text-muted-foreground">
+    <Card>
+      <CardContent class="py-10 text-center text-muted-foreground">
         {m.common_no_data()}
-      </Card.Content>
-    </Card.Root>
+      </CardContent>
+    </Card>
   {/if}
 </div>

@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { Button } from '$lib/components/ui/button'
-  import { Badge } from '$lib/components/ui/badge'
-  import * as Table from '$lib/components/ui/table'
+  import { Button, Badge, Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@coms-portal/ui/primitives'
   import * as m from '$lib/paraglide/messages'
   import { buildSearchParams } from '$lib/utils'
   import { Shield, Search, ChevronLeft, ChevronRight } from 'lucide-svelte'
@@ -183,47 +181,47 @@
   {:else}
     <!-- Desktop table -->
     <div class="hidden overflow-hidden rounded-xl border border-border shadow-card md:block">
-      <Table.Root>
-        <Table.Header>
-          <Table.Row class="bg-muted/60">
-            <Table.Head class="w-36 text-xs font-semibold text-muted-foreground">{m.audit_col_timestamp()}</Table.Head>
-            <Table.Head class="text-xs font-semibold text-muted-foreground">{m.audit_col_actor()}</Table.Head>
-            <Table.Head class="text-xs font-semibold text-muted-foreground">{m.audit_col_action()}</Table.Head>
-            <Table.Head class="text-xs font-semibold text-muted-foreground">{m.audit_col_entity_type()}</Table.Head>
-            <Table.Head class="text-xs font-semibold text-muted-foreground">{m.audit_col_entity_id()}</Table.Head>
-            <Table.Head class="text-xs font-semibold text-muted-foreground">{m.audit_col_details()}</Table.Head>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
+      <Table>
+        <TableHeader>
+          <TableRow class="bg-muted/60">
+            <TableHead class="w-36 text-xs font-semibold text-muted-foreground">{m.audit_col_timestamp()}</TableHead>
+            <TableHead class="text-xs font-semibold text-muted-foreground">{m.audit_col_actor()}</TableHead>
+            <TableHead class="text-xs font-semibold text-muted-foreground">{m.audit_col_action()}</TableHead>
+            <TableHead class="text-xs font-semibold text-muted-foreground">{m.audit_col_entity_type()}</TableHead>
+            <TableHead class="text-xs font-semibold text-muted-foreground">{m.audit_col_entity_id()}</TableHead>
+            <TableHead class="text-xs font-semibold text-muted-foreground">{m.audit_col_details()}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {#each logs as log (log.id)}
             {@const ts = formatTimestamp(log.createdAt)}
-            <Table.Row class="transition-colors hover:bg-muted/30">
-              <Table.Cell class="text-xs">
+            <TableRow class="transition-colors hover:bg-muted/30">
+              <TableCell class="text-xs">
                 <span class="block font-medium text-foreground">{ts.date}</span>
                 <span class="block text-muted-foreground">{ts.time}</span>
-              </Table.Cell>
-              <Table.Cell>
+              </TableCell>
+              <TableCell>
                 <span class="text-xs font-medium text-foreground">
                   {log.actorName ?? log.actorId ?? '—'}
                 </span>
-              </Table.Cell>
-              <Table.Cell>
+              </TableCell>
+              <TableCell>
                 <Badge
                   variant="outline"
                   class="font-mono text-[10px] px-2 py-0.5 {getActionBadgeClass(log.action)}"
                 >
                   {log.action}
                 </Badge>
-              </Table.Cell>
-              <Table.Cell class="text-xs text-muted-foreground">{log.entityType ?? '—'}</Table.Cell>
-              <Table.Cell class="max-w-[100px] truncate font-mono text-xs text-muted-foreground">
+              </TableCell>
+              <TableCell class="text-xs text-muted-foreground">{log.entityType ?? '—'}</TableCell>
+              <TableCell class="max-w-[100px] truncate font-mono text-xs text-muted-foreground">
                 {log.entityId ?? '—'}
-              </Table.Cell>
-              <Table.Cell class="text-xs text-muted-foreground">—</Table.Cell>
-            </Table.Row>
+              </TableCell>
+              <TableCell class="text-xs text-muted-foreground">—</TableCell>
+            </TableRow>
           {/each}
-        </Table.Body>
-      </Table.Root>
+        </TableBody>
+      </Table>
     </div>
 
     <!-- Mobile cards -->

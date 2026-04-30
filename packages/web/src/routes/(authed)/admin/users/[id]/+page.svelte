@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Badge } from '$lib/components/ui/badge'
+  import { Badge } from '@coms-portal/ui/primitives'
   import * as m from '$lib/paraglide/messages'
   import { ArrowLeft, User, Star } from 'lucide-svelte'
 

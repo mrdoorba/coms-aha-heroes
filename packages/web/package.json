@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@coms/server": "workspace:*",
+    "@coms-portal/ui": "git+https://github.com/mrdoorba/coms-ui.git#v1.2.0",
     "@coms/shared": "workspace:*",
     "@elysiajs/eden": "^1.3.0",
     "@fontsource/manrope": "^5.1.1",

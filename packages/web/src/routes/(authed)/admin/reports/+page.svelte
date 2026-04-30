@@ -1,5 +1,5 @@
 <script lang="ts">
-  import * as Card from '$lib/components/ui/card'
+  import { Card, CardContent, CardHeader, CardTitle } from '@coms-portal/ui/primitives'
   import * as m from '$lib/paraglide/messages'
   import { BarChart3, FileText, Star, AlertTriangle, Award, ShieldOff } from 'lucide-svelte'
   import { userState } from '$lib/state/userState.svelte'
@@ -87,8 +87,8 @@
     </div>
 
     <!-- Filter bar -->
-    <Card.Root class="border-border shadow-card">
-      <Card.Content class="flex flex-wrap items-end gap-3 p-4">
+    <Card class="border-border shadow-card">
+      <CardContent class="flex flex-wrap items-end gap-3 p-4">
         <div class="flex flex-col gap-1">
           <label for="admin-reports-start-date" class="text-xs font-medium text-muted-foreground">{m.reports_start_date()}</label>
           <input
@@ -114,8 +114,8 @@
         {#if isLoading}
           <span class="pb-1 text-xs text-muted-foreground animate-pulse">{m.common_loading()}</span>
         {/if}
-      </Card.Content>
-    </Card.Root>
+      </CardContent>
+    </Card>
 
     <!-- Summary cards -->
     <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -150,11 +150,11 @@
     </div>
 
     <!-- By Category -->
-    <Card.Root class="border-border shadow-card">
-      <Card.Header class="pb-2">
-        <Card.Title class="text-sm font-semibold text-foreground">{m.reports_by_category()}</Card.Title>
-      </Card.Header>
-      <Card.Content class="space-y-3 p-4 pt-0">
+    <Card class="border-border shadow-card">
+      <CardHeader class="pb-2">
+        <CardTitle class="text-sm font-semibold text-foreground">{m.reports_by_category()}</CardTitle>
+      </CardHeader>
+      <CardContent class="space-y-3 p-4 pt-0">
         {#if byCategory.length === 0}
           <p class="py-4 text-center text-sm text-muted-foreground">{m.common_no_data()}</p>
         {:else}
@@ -174,15 +174,15 @@
             </div>
           {/each}
         {/if}
-      </Card.Content>
-    </Card.Root>
+      </CardContent>
+    </Card>
 
     <!-- Top Teams -->
-    <Card.Root class="border-border shadow-card">
-      <Card.Header class="pb-2">
-        <Card.Title class="text-sm font-semibold text-foreground">{m.reports_top_teams()}</Card.Title>
-      </Card.Header>
-      <Card.Content class="space-y-3 p-4 pt-0">
+    <Card class="border-border shadow-card">
+      <CardHeader class="pb-2">
+        <CardTitle class="text-sm font-semibold text-foreground">{m.reports_top_teams()}</CardTitle>
+      </CardHeader>
+      <CardContent class="space-y-3 p-4 pt-0">
         {#if byTeam.length === 0}
           <p class="py-4 text-center text-sm text-muted-foreground">{m.common_no_data()}</p>
         {:else}
@@ -201,15 +201,15 @@
             </div>
           {/each}
         {/if}
-      </Card.Content>
-    </Card.Root>
+      </CardContent>
+    </Card>
 
     <!-- Submissions Over Time -->
-    <Card.Root class="border-border shadow-card">
-      <Card.Header class="pb-2">
-        <Card.Title class="text-sm font-semibold text-foreground">{m.reports_over_time()}</Card.Title>
-      </Card.Header>
-      <Card.Content class="p-4 pt-0">
+    <Card class="border-border shadow-card">
+      <CardHeader class="pb-2">
+        <CardTitle class="text-sm font-semibold text-foreground">{m.reports_over_time()}</CardTitle>
+      </CardHeader>
+      <CardContent class="p-4 pt-0">
         {#if overTime.length === 0}
           <p class="py-4 text-center text-sm text-muted-foreground">{m.common_no_data()}</p>
         {:else}
@@ -236,7 +236,7 @@
             </div>
           </div>
         {/if}
-      </Card.Content>
-    </Card.Root>
+      </CardContent>
+    </Card>
   </div>
 {/if}

@@ -1,7 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
-  import { Button } from '$lib/components/ui/button'
-  import { Badge } from '$lib/components/ui/badge'
+  import { Button, Badge } from '@coms-portal/ui/primitives'
   import { api } from '$lib/api/client'
   import { getErrorMessage } from '$lib/api/client'
   import * as m from '$lib/paraglide/messages'

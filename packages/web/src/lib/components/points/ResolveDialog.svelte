@@ -2,10 +2,7 @@
   import { invalidateAll } from '$app/navigation'
   import { toast } from 'svelte-sonner'
   import { api } from '$lib/api/client'
-  import * as Dialog from '$lib/components/ui/dialog'
-  import { Button } from '$lib/components/ui/button'
-  import { Label } from '$lib/components/ui/label'
-  import { Textarea } from '$lib/components/ui/textarea'
+  import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, Button, Label, Textarea } from '@coms-portal/ui/primitives'
   import { Check, X } from 'lucide-svelte'
   import * as m from '$lib/paraglide/messages'
   import { getErrorMessage } from '$lib/api/client'
@@ -57,16 +54,16 @@
   }
 </script>
 
-<Dialog.Root bind:open>
-  <Dialog.Content class="sm:max-w-[425px] rounded-[20px]">
-    <Dialog.Header>
-      <Dialog.Title>
+<Dialog bind:open>
+  <DialogContent class="sm:max-w-[425px] rounded-[20px]">
+    <DialogHeader>
+      <DialogTitle>
         {type === 'challenge' ? m.resolve_challenge_title() : m.resolve_appeal_title()}
-      </Dialog.Title>
-      <Dialog.Description>
+      </DialogTitle>
+      <DialogDescription>
         {type === 'challenge' ? m.resolve_description_challenge() : m.resolve_description_appeal()}
-      </Dialog.Description>
-    </Dialog.Header>
+      </DialogDescription>
+    </DialogHeader>
     <form onsubmit={onSubmit} class="grid gap-6 py-4">
       <div class="grid gap-3">
         <Label>{m.resolve_decision_label()}</Label>
@@ -99,7 +96,7 @@
           disabled={isSubmitting}
         />
       </div>
-      <Dialog.Footer>
+      <DialogFooter>
         <Button
           type="button"
           variant="outline"
@@ -114,7 +111,7 @@
         >
           {#if isSubmitting}{m.common_submitting()}{:else}{m.resolve_submit()}{/if}
         </Button>
-      </Dialog.Footer>
+      </DialogFooter>
     </form>
-  </Dialog.Content>
-</Dialog.Root>
+  </DialogContent>
+</Dialog>

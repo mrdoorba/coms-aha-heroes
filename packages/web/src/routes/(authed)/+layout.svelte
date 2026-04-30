@@ -4,7 +4,7 @@
   import TopBar from '$lib/components/layout/TopBar.svelte'
   import ServiceBar from '$lib/components/layout/ServiceBar.svelte'
   import MobileNav from '$lib/components/layout/MobileNav.svelte'
-  import PullToRefresh from '$lib/components/ui/PullToRefresh.svelte'
+  import PullToRefresh from '$lib/components/PullToRefresh.svelte'
   import CommandPalette from '$lib/components/CommandPalette.svelte'
   import { uiState } from '$lib/state/uiState.svelte'
   import { userState } from '$lib/state/userState.svelte'
